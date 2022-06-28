@@ -1,0 +1,43 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      # Add an empty line to all file
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        exclude: ^.git/
+        args:
+          - "--fix=crlf"
+
+      # Trims trailing whitespace
+      - id: trailing-whitespace
+
+      # Ensure that links to code on GitHub use the permalinks
+      - id: check-vcs-permalinks
+
+      # Syntax validation
+      - id: check-ast
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+
+      # JSON auto-formatter
+      - id: pretty-format-json
+        args:
+          - "--autofix"
+          - "--indent=4"
+          - "--no-sort-keys"
+
+      # Checks for git-related issues
+      - id: check-case-conflict
+      - id: check-merge-conflict
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v1.3.0
+    hooks:
+      - id: conventional-pre-commit
+        name: Check commit msg
+        stages: [commit-msg]
+        args: []
