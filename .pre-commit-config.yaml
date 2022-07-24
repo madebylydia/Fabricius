@@ -40,4 +40,3 @@ repos:
       - id: conventional-pre-commit
         name: Check commit msg
         stages: [commit-msg]
-        args: []
