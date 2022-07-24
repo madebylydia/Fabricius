@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Fabricius"
-version = "0.0.1-alpha.1"
+version = "0.0.1"
 description = "Fabricius: The supportive templating engine for Python!"
 authors = ["Predeactor <pro.julien.mauroy@gmail.com>"]
 license = "MIT"
@@ -23,6 +23,17 @@ inflection = "^0.5.1"
 black = "^22.3.0"
 isort = "^5.10.1"
 pre-commit = "^2.19.0"
+mypy = "^0.961"
+tox = "^3.25.1"
+tox-gh-actions = "^2.9.1"
+
+# Extra: Docs
+Sphinx = {version = "^5.0.2", optional = true}
+furo = {version = "^2022.6.21", optional = true}
+sphinx-autobuild = {version = "^2021.3.14", optional = true}
+
+[tool.poetry.extras]
+docs = ["Sphinx", "sphinx-autobuild", "furo"]
 
 [tool.black]
 line_length = 99

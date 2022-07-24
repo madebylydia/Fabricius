@@ -1,13 +1,9 @@
 # Fabricius
 
-Fabricius - A Python Project Template engine with superpowers!
+Fabricius - A Python 3.10 Project Template engine with superpowers!
 
-## A PyPi package
+> :warning: Fabricius is a work in progress! Please, play with it with a grain of salt; expect bugs, crashes, non-documented portion of the application & more unexpected behavior.
 
-### Releasing soon...
+Documentation: <https://fabricius.readthedocs.io>
 
-#### hopefully...
-
-##### By the end of the summer.
-
-###### May you cross your finger for it...
+> :warning: Fabricius still does not comes with it's CLI tool! It is a work in progress!
