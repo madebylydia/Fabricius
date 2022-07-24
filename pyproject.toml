@@ -1,16 +1,38 @@
 [tool.poetry]
 name = "Fabricius"
-version = "0.0.1"
+version = "0.0.2"
 description = "Fabricius: The supportive templating engine for Python!"
-authors = ["Predeactor <pro.julien.mauroy@gmail.com>"]
 license = "MIT"
+authors = ["Predeactor <pro.julien.mauroy@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/Predeactor/Fabricius"
+documentation = "https://fabricius.readthedocs.org"
+keywords = ["cookiecutter", "template", "project", "scaffold", "pyscaffold"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Operating System :: OS Independent",
+
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Utilities",
+
+    "Typing :: Typed",
+]
 
 packages = [
     { include = "fabricius" }
 ]
 
-# [tool.poetry.scripts]
-# fabricius = 'fabricius.commands.base:fabricius'
+include = ["README.md", "LICENSE"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -19,6 +41,11 @@ rich = "^12.4.4"
 typing-extensions = "^4.2.0"
 inflection = "^0.5.1"
 
+# Extra: Docs
+Sphinx = { version = "^5.0.2", optional = true }
+furo = { version = "^2022.6.21", optional = true }
+sphinx-autobuild = { version = "^2021.3.14", optional = true }
+
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
 isort = "^5.10.1"
@@ -26,11 +53,6 @@ pre-commit = "^2.19.0"
 mypy = "^0.961"
 tox = "^3.25.1"
 tox-gh-actions = "^2.9.1"
-
-# Extra: Docs
-Sphinx = {version = "^5.0.2", optional = true}
-furo = {version = "^2022.6.21", optional = true}
-sphinx-autobuild = {version = "^2021.3.14", optional = true}
 
 [tool.poetry.extras]
 docs = ["Sphinx", "sphinx-autobuild", "furo"]
