@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Fabricius"
-version = "0.0.2"
+version = "0.0.3"
 description = "Fabricius: The supportive templating engine for Python!"
 license = "MIT"
 authors = ["Predeactor <pro.julien.mauroy@gmail.com>"]

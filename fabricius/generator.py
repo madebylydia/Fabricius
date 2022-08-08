@@ -9,7 +9,9 @@ from fabricius.reporter import Reporter
 
 class Generator(GeneratorContract):
     reporter = Reporter()
-    files = []
+
+    def __init__(self) -> None:
+        self.files = []
 
     def add_file(self, name: str, extension: Optional[str] = None):
         file = FileGenerator(name, extension)
