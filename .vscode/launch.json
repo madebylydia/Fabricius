@@ -1,19 +1,19 @@
 {
-    "configurations": [
-        {
-            "name": "Launch tests",
-            "type": "python",
-            "request": "launch",
-            "module": "unittest",
-            "justMyCode": true
-        },
-        {
-            "type": "firefox",
-            "request": "launch",
-            "reAttach": true,
-            "preLaunchTask": "[Fabricius]: Build docs",
-            "name": "Launch docs",
-            "file": "${workspaceFolder}/docs/build/html/index.html"
-        }
-    ]
+  "configurations": [
+    {
+      "name": "Launch tests",
+      "type": "python",
+      "request": "launch",
+      "module": "unittest",
+      "justMyCode": true
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "reAttach": true,
+      "preLaunchTask": "[Fabricius]: Build docs",
+      "name": "Launch docs",
+      "file": "${workspaceFolder}/docs/build/html/index.html"
+    }
+  ]
 }

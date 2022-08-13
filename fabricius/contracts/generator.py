@@ -3,28 +3,33 @@ from typing import List, Optional
 
 from fabricius.contracts.file_generator import CommitResult
 
-from .file_generator import GeneratorFileContract
+from .file_generator import FileGeneratorContract
 
 
 class GeneratorContract(ABC):
-    files: List[GeneratorFileContract]
+    files: List[FileGeneratorContract]
+    """
+    The list of files to generate.
+
+    .. warning:: Do not edit this property this yourself!
+    """
 
     @abstractmethod
-    def add_file(self, name: str, extension: Optional[str] = None) -> GeneratorFileContract:
+    def add_file(self, name: str, extension: Optional[str] = None) -> FileGeneratorContract:
         """
         Add a file to the generator.
 
         Parameters
         ----------
-        name : str
+        name : :py:class:`str`
             The name of the file
-        extension: Optional, str
+        extension: Optional, :py:class:`str`
             The extension of the file, can be optional.
             If none, no extension will be added.
 
         Returns
         -------
-        GeneratorFileContract :
+        :py:class:`.FileGeneratorContract` :
             The generated file. You then have to set file's options.
         """
         raise NotImplementedError()
@@ -36,5 +41,7 @@ class GeneratorContract(ABC):
 
         Returns
         -------
+        List of :py:class:`.CommitResult` :
+            A list containing the result of each file's commit.
         """
         raise NotImplementedError()

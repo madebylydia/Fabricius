@@ -6,100 +6,102 @@ from typing_extensions import Self
 
 from fabricius.const import FILE_STATE, Data
 
-from .file_base import BaseFile
+from .file_base import BaseFileContract
 from .renderer import RendererContract
 
 
 class CommitResult(TypedDict):
     """
     Return the result of a file commit.
-
-    .. property:: state
-
-       The state of the file.
-
-       :type: :py:const:`FILE_STATE <fabricius.const.FILE_STATE>`
-
-    .. property:: with_data
-
-       The data that has been passed to the file when rendering.
-       None if the commit failed.
-
-       :type: Optional, :py:const:`Data <fabricius.const.Data>`
-
-    .. property:: content
-
-       The final content of the file once created.
-
-       :type: :py:class:`str`
-
-    .. property:: path
-
-       The path of the file.
-       None if the commit failed.
-
-       :type: Optional, :py:class:`pathlib.Path`
-
     """
 
     state: FILE_STATE
+    """
+    The state of the file.
+    """
+
     with_data: Data
+    """
+    The data that has been passed to the file when rendering.
+    """
+
+    with_renderer: Type[RendererContract]
+    """
+    The renderer that has rendered the template.
+    """
+
     template_content: str
+    """
+    The content of the template.
+    """
+
     content: str
+    """
+    The final content of the file once created.
+    """
+
     path: pathlib.Path
+    """
+    The path of the file.
+    """
 
 
 class GeneratorFileExport(TypedDict):
     """
-    A TypedDict object. Used for :py:func:`GeneratorFileContract.to_dict`.
-
-    .. property:: name
-
-       The name of the file.
-
-       :type: :py:class:`str`
-
-    .. property:: state
-
-       The actual state of the file.
-
-       :type: :py:data:`.FILE_STATE`
-
-    .. property:: template_content
-
-       The content of the template file, if any.
-
-       :type: Optional, :py:class:`str`
-
-    .. property:: destination
-
-       The selected destination for the file, if any.
-
-       :type: Optional, :py:class:`pathlib.Path`
-
-    .. property:: renderer
-
-       The renderer that will render the result.
-
-       :type: Type[:py:class:`.RendererContract`]
+    A TypedDict object. Used for :py:func:`FileGeneratorContract.to_dict <FileGeneratorContract.to_dict>`.
     """
 
     name: str
+    """
+    The name of the file.
+    """
+
     state: FILE_STATE
+    """
+    The actual state of the file.
+    """
 
     template_content: Optional[str]
+    """
+    The content of the template file, if any.
+    """
+
     destination: Optional[pathlib.Path]
+    """
+    The selected destination for the file, if any.
+    """
 
     renderer: Type[RendererContract]
+    """
+    The renderer that will render the result.
+    """
+
     data: Data
+    """
+    The data that will be passed the the renderer.
+    """
 
 
-class GeneratorFileContract(BaseFile):
+class FileGeneratorContract(BaseFileContract):
     content: Optional[str]
+    """
+    The content of the template.
+    """
+
     destination: Optional[pathlib.Path]
+    """
+    The selected destination.
+    """
 
     renderer: Type[RendererContract]
+    """
+    The renderer used to render the template.
+    """
+
     data: Data
+    """
+    The data that will be passed to the renderer.
+    """
 
     @abstractmethod
     def __init__(self, name: str, extension: Optional[str]) -> None:
@@ -108,9 +110,9 @@ class GeneratorFileContract(BaseFile):
 
         Parameters
         ----------
-        name : str
+        name : :py:class:`str`
             The name of the file.
-        extension : str
+        extension : Optional, :py:class:`str`
             The extension of the file, without dot, same as ``name="<name>.<extension>"``
         """
         raise NotImplementedError()
@@ -122,7 +124,7 @@ class GeneratorFileContract(BaseFile):
 
         Parameters
         ----------
-        path : str or pathlib.Path
+        path : :py:class:`str` or :py:class:`pathlib.Path`
             The path of the file template.
         """
         raise NotImplementedError()
@@ -134,26 +136,26 @@ class GeneratorFileContract(BaseFile):
 
         Parameters
         ----------
-        content : str
+        content : :py:class:`str`
             The template you want to format.
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def to_directory(self, directory: str | pathlib.Path, *, recursive: bool = False) -> Self:
+    def to_directory(self, directory: str | pathlib.Path, *, recursive: bool = True) -> Self:
         """
         Set the directory where the file will be saved.
 
         Raises
         ------
-        FileNotFoundError :
+        :py:exc:`FileNotFoundError` :
             The given directory does not exist. (And recursive is set to False)
 
         Parameters
         ----------
-        directory : str or pathlib.Path
+        directory : :py:class:`str` or :py:class:`pathlib.Path`
             Where the file will be stored. Does not include the file's name.
-        recursive : bool
+        recursive : :py:class:`bool`
             Create the parents folder if not existing. Default to True.
         """
         raise NotImplementedError()
@@ -179,7 +181,7 @@ class GeneratorFileContract(BaseFile):
 
         Parameters
         ----------
-        renderer : Type[RendererContract]
+        renderer : Type[:py:class:`.RendererContract`]
             A renderer that implements :py:class:`.RendererContract`.
             It must be not initialized.
         """
@@ -193,7 +195,7 @@ class GeneratorFileContract(BaseFile):
         ----------
         data : :py:data:`.Data`
             The data you want to pass to the template.
-        overwrite : bool
+        overwrite : :py:class:`bool`
             If the data that already exists should be deleted. If False, the new data will be
             added on top of the already existing data.
         """
@@ -206,12 +208,12 @@ class GeneratorFileContract(BaseFile):
 
         Raises
         ------
-        NoContentError :
+        :py:exc:`NoContentError` :
             If no content to the file were added.
 
         Returns
         -------
-        str :
+        :py:class:`str` :
             The final content of the file.
         """
         raise NotImplementedError()
@@ -223,19 +225,19 @@ class GeneratorFileContract(BaseFile):
 
         Parameters
         ----------
-        overwrite : bool
+        overwrite : :py:class:`bool`
             If a file exist at the given path, shall the overwrite parameter say if the file should be overwritten or net.
 
         Raises
         ------
-        NoContentError :
+        :py:exc:`NoContentError` :
             If no content to the file were added.
-        NoDestinationError :
+        :py:exc:`NoDestinationError` :
             If no destination/path were designated.
 
         Returns
         -------
-        CommitResult :
+        :py:class:`CommitResult` :
             A dict with information about the created file.
         """
         raise NotImplementedError()
@@ -247,7 +249,7 @@ class GeneratorFileContract(BaseFile):
 
         Returns
         -------
-        GeneratorFileExport :
+        :py:class:`GeneratorFileExport` :
             The exported dict.
         """
         raise NotImplementedError()

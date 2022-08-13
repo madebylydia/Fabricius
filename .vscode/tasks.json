@@ -1,17 +1,17 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "[Fabricius]: Build docs",
-            "type": "shell",
-            "command": "poetry run make html",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "options": {
-                "cwd": "${workspaceFolder}/docs"
-            }
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "[Fabricius]: Build docs",
+      "type": "shell",
+      "command": "poetry run make html",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/docs"
+      }
+    }
+  ]
 }
