@@ -54,11 +54,11 @@ class RepoAlreadyExistError(FabriciusError):
     The repository already exists.
     """
 
-    def __init__(self, repository: str) -> None:
+    def __init__(self, repository_name: str) -> None:
         """
         The repository already exists.
         """
-        super().__init__(f"Repository '{repository}' already exists.")
+        super().__init__(f"Repository '{repository_name}' already exists.")
 
 
 class IntegrityError(FabriciusError):
@@ -79,6 +79,4 @@ class TemplateNotFound(FabriciusError, NotADirectoryError):
     """
 
     def __init__(self, template_name: str) -> None:
-        super().__init__(
-            f"Template '{template_name}' was not found or is not a folder."
-        )
+        super().__init__(f"Template '{template_name}' was not found or is not a folder.")

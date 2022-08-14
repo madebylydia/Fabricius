@@ -14,7 +14,7 @@ def templates_path_is_valid(*, at: Optional[pathlib.Path] = None) -> bool:
     return bool(path_to_templates.exists() and path_to_templates.is_dir())
 
 
-def available_templates(*, at: Optional[pathlib.Path] = None) -> List[Template]:
+def available_internal_templates(*, at: Optional[pathlib.Path] = None) -> List[Template]:
     """
     Return a list of available templates.
     """
@@ -29,5 +29,5 @@ def available_templates(*, at: Optional[pathlib.Path] = None) -> List[Template]:
 
 
 def get_template(template_name: str) -> Optional[pathlib.Path]:
-    if template_name in [t.name for t in available_templates()]:
+    if template_name in [t.name for t in available_internal_templates()]:
         return get_templates_path().joinpath(template_name)

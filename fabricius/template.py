@@ -1,6 +1,7 @@
 import os
 import pathlib
-from typing import Union, Type
+from typing import Type, Union
+
 from typing_extensions import Self
 
 from fabricius.contracts.template import TemplateContract, TemplateDict, TemplateType
@@ -33,16 +34,12 @@ class Template(TemplateContract):
             )
         # All templates in the cwd are internal
         # (Unless you're fucking cwd is the damn external templates folder...)
-        return cls(
-            path.name, path, "internal"
-        )
+        return cls(path.name, path, "internal")
 
     @classmethod
-    def from_external_template(cls: Type[Self], template_name: str):
+    def from_external_template(cls: Type[Self], alias: str):
         base_path = get_external_templates_path()
-        path = base_path.joinpath(template_name)
+        path = base_path.joinpath(alias)
         if not path.exists() or not path.is_dir():
-            raise TemplateNotFound(template_name)
-        return cls(
-            path.name, path, "external"
-        )
+            raise TemplateNotFound(alias)
+        return cls(path.name, path, "external")

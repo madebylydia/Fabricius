@@ -1,8 +1,9 @@
 from fabricius.errors import IntegrityError
 from fabricius.template import Template
+from fabricius.templating.contracts.integrity import IntegrityCheckerContract
 
 
-class IntegrityChecker:
+class IntegrityChecker(IntegrityCheckerContract):
     """
     Check the integrity of a template.
     """

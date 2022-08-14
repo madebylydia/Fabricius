@@ -6,7 +6,9 @@ from rich import get_console
 from rich.table import Table
 from rich.text import Text
 
-from .utils import available_templates
+from fabricius.config import Config
+
+from .utils import available_internal_templates
 
 
 @click.command("templates")
@@ -23,10 +25,13 @@ def cmd_templates(*, working_directory: pathlib.Path):
     List available templates.
     """
     console = get_console()
+    # config = Config.get_config()
 
-    templates = available_templates(at=working_directory)
+    templates = available_internal_templates(at=working_directory)
+    # Todo: Add external templates
+
     if not templates:
-        console.print("[red]Oh no! :( We were unable to find any templates! Sorry...")
+        console.print("[red]Oh no! :( No templates were found.")
         return
 
     table = Table(title="Available templates", show_lines=True)
