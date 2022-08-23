@@ -11,7 +11,6 @@ from .generator import Generator as Generator
 from .renderer import ChevronRenderer as ChevronRenderer
 from .renderer import PythonFormatRenderer as PythonFormatRenderer
 from .renderer import StringTemplateRenderer as StringTemplateRenderer
-from .template import Template as Template
 from .utils import camel_case as camel_case
 from .utils import capital_case as capital_case
 from .utils import dash_case as dash_case

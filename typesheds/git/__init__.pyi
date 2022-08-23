@@ -9,6 +9,7 @@ from git.index import *
 from git.objects import *
 from git.refs import *
 from git.remote import *
+from git.repo import Repo as Repo
 from git.types import PathLike as PathLike
 from git.util import Actor as Actor
 from git.util import BlockingLockFile as BlockingLockFile
@@ -16,4 +17,65 @@ from git.util import LockFile as LockFile
 from git.util import Stats as Stats
 from git.util import rmtree as rmtree
 
-from .repo.base import Repo as Repo
+# Names in __all__ with no definition:
+#   AmbiguousObjectName
+#   BadName
+#   BadObject
+#   BadObjectType
+#   BaseIndexEntry
+#   Blob
+#   BlobFilter
+#   CacheError
+#   CheckoutError
+#   CommandError
+#   Commit
+#   Diff
+#   DiffIndex
+#   Diffable
+#   FetchInfo
+#   GitCmdObjectDB
+#   GitCommandError
+#   GitCommandNotFound
+#   GitDB
+#   GitError
+#   HEAD
+#   Head
+#   HookExecutionError
+#   IndexEntry
+#   IndexFile
+#   IndexObject
+#   InvalidDBRoot
+#   InvalidGitRepositoryError
+#   List
+#   NULL_TREE
+#   NoSuchPathError
+#   ODBError
+#   Object
+#   ParseError
+#   PushInfo
+#   RefLog
+#   RefLogEntry
+#   Reference
+#   Remote
+#   RemoteProgress
+#   RemoteReference
+#   RepositoryDirtyError
+#   RootModule
+#   RootUpdateProgress
+#   Sequence
+#   Submodule
+#   SymbolicReference
+#   TYPE_CHECKING
+#   Tag
+#   TagObject
+#   TagReference
+#   Tree
+#   TreeModifier
+#   Tuple
+#   Union
+#   UnmergedEntriesError
+#   UnsupportedOperation
+#   UpdateProgress
+#   WorkTreeRepositoryUnsupported
+#   safe_decode
+#   to_hex_sha

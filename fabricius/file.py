@@ -120,5 +120,5 @@ class FileGenerator(FileGeneratorContract):
             template_content=self.content,
             content=final_content,
             path=self.destination.joinpath(self.name),
-            with_renderer=self.renderer,
+            with_renderer=self.renderer
         )
