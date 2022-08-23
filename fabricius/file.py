@@ -4,7 +4,7 @@ from typing import Optional, Type
 from typing_extensions import Self
 
 from fabricius.const import Data
-from fabricius.contracts import FileGeneratorContract, RendererContract
+from fabricius.contracts import GeneratorFileContract, RendererContract
 from fabricius.contracts.file_generator import CommitResult, GeneratorFileExport
 from fabricius.errors import NoContentError, NoDestinationError
 from fabricius.renderer import (
@@ -14,7 +14,7 @@ from fabricius.renderer import (
 )
 
 
-class FileGenerator(FileGeneratorContract):
+class FileGenerator(GeneratorFileContract):
     def __init__(self, name: str, extension: Optional[str] = None):
         self.name = f"{name}.{extension}" if extension else name
         self.state = "pending"
@@ -120,5 +120,4 @@ class FileGenerator(FileGeneratorContract):
             template_content=self.content,
             content=final_content,
             path=self.destination.joinpath(self.name),
-            with_renderer=self.renderer
         )

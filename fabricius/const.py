@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, Literal, TypeAlias
 
 Data: TypeAlias = Dict[str, Any]
@@ -16,5 +15,3 @@ The file's state can be one of:
 * persisted
 * deleted
 """
-
-LOG = logging.getLogger("fabricius")

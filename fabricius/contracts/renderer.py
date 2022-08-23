@@ -6,13 +6,16 @@ from fabricius.const import Data
 class RendererContract(ABC):
     """
     A class with purpose to render a string with data given on initialization.
+
+    .. property:: data
+
+       A dictionary that contains data that has been passed to the renderer.
+       Useful to render in a file.
+
+       :type: :py:data:`.Data`
     """
 
     data: Data
-    """
-    A dictionary that contains data that has been passed to the renderer.
-    Useful to render in a file.
-    """
 
     def __init__(self, data: Data) -> None:
         self.data = data
@@ -22,8 +25,7 @@ class RendererContract(ABC):
         """
         Render a string.
 
-        Example
-        -------
+        Example:
 
         .. code-block:: python
 
@@ -35,15 +37,5 @@ class RendererContract(ABC):
            content = MyRenderer({"thing": "world"}).render('Please render the {thing}!')
            print(content)
            # Please render the world!
-
-        Parameters
-        ----------
-        content : :py:class:`str`
-            The content to render.
-
-        Returns
-        -------
-        :py:class:`str` :
-            The final result of the render.
         """
         raise NotImplementedError()

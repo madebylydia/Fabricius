@@ -23,9 +23,9 @@ class Reporter:
 
     @staticmethod
     def stylize_text(status: str, color: str, message: str) -> Text:
-        return Text(f" {status} ", style=Style(bgcolor=color)).append(
-            f" {message}", style=Style(bgcolor="black", color=color)
-        )
+        text = Text(f" {status} ", style=Style(bgcolor=color))
+        text.append(f" {message}", style=Style(bgcolor="black", color=color))
+        return text
 
 
 if __name__ == "__main__":

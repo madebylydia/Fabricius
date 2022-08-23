@@ -7,12 +7,12 @@ def camel_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text: str
         The text you want to format.
 
     Returns
     -------
-    str :
+    str:
         The formatted text.
 
     Example
@@ -32,12 +32,12 @@ def snake_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text: str
         The text you want to format.
 
     Returns
     -------
-    str :
+    str:
         The formatted text.
 
     Example
@@ -57,12 +57,12 @@ def dash_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text: str
         The text you want to format.
 
     Returns
     -------
-    str :
+    str:
         The formatted text.
 
     Example
@@ -82,12 +82,12 @@ def pascal_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text: str
         The text you want to format.
 
     Returns
     -------
-    str :
+    str:
         The formatted text.
 
     Example
@@ -107,12 +107,12 @@ def capital_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text: str
         The text you want to format.
 
     Returns
     -------
-    str :
+    str:
         The formatted text.
 
     Example
@@ -126,22 +126,18 @@ def capital_case(text: str) -> str:
     return inflection.titleize(text)
 
 
-def sentence_case(text: str, *, remove_id_at_end: bool = False) -> str:
+def sentence_case(text: str) -> str:
     """
     Return the text formatted in sentence case
 
     Parameters
     ----------
-    text : str
+    text: str
         The text you want to format.
-    remove_id_at_end : bool
-        If any "_id" at the end of the sentence should be removed.
-        This is the default (And forced) behavior of Inflection, we made possible to make such
-        change optional.
 
     Returns
     -------
-    str :
+    str:
         The formatted text.
 
     Example
@@ -152,9 +148,11 @@ def sentence_case(text: str, *, remove_id_at_end: bool = False) -> str:
        >>> sentence_case(my_text)
        'Some text'
     """
-    # Inflection remove the "_id" part, we restore it.
-    has_ending_id = text.endswith("_id")
+    has_ending_id: bool = False
+    if text.endswith("_id"):
+        has_ending_id = True
+
     result = inflection.humanize(text)
-    if has_ending_id and not remove_id_at_end:
+    if has_ending_id:
         result += " ID"
     return result

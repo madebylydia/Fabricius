@@ -42,12 +42,10 @@ Links
 .. toctree::
    :maxdepth: 2
    :caption: Fabricius API
-   :glob:
 
-   api/modules
-   api/fabricius
-   api/fabricius.contracts
-   api/fabricius.templating
+   api/objects
+   api/constants
+   api/contracts
 
 
 Indices and tables
