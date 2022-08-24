@@ -43,9 +43,10 @@ Links
    :maxdepth: 2
    :caption: Fabricius API
 
-   api/objects
-   api/constants
-   api/contracts
+   api/fabricius
+   api/fabricius.generator
+   api/fabricius.plugins
+   api/modules
 
 
 Indices and tables

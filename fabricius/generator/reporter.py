@@ -26,10 +26,3 @@ class Reporter:
         text = Text(f" {status} ", style=Style(bgcolor=color))
         text.append(f" {message}", style=Style(bgcolor="black", color=color))
         return text
-
-
-if __name__ == "__main__":
-    r = Reporter()
-    r.success("Success!")
-    r.fail("Fail!")
-    r.skip("Skipped!")

@@ -1,4 +1,3 @@
-
 from typing import Optional as Optional
 
 from git.cmd import Git as Git
