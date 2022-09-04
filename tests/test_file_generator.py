@@ -118,6 +118,7 @@ class TestFileGenerator(unittest.TestCase):
         result = file.commit(overwrite=True)
         self.assertIsInstance(result, dict)
         self.assertTrue(self.DESTINATION_PATH.joinpath("python_result.txt").exists())
+        self.assertEqual(file.state, "persisted")
 
         with self.assertRaises(AlreadyCommittedError):
             file.commit()

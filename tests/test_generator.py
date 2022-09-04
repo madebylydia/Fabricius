@@ -5,7 +5,7 @@ from typing import Dict, Optional, Type
 
 from typing_extensions import Self
 
-from fabricius.generator.errors import FabriciusError, PluginConnectionError
+from fabricius.errors import FabriciusError, PluginConnectionError
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.generator.generator import Generator
 from fabricius.plugins.generator import GeneratorPlugin
@@ -88,29 +88,6 @@ class TestGenerator(unittest.TestCase):
     Test Fabricius's generator.
     """
 
-    def test_generator_plugin_connection(self):
-        """
-        Test Generator's plugin connect.
-        """
-        generator = Generator()
-        generator.connect_plugin(PluginToConnect)
-
-        self.assertTrue(PluginToConnect.signals["SETUP"])
-        self.assertIn(PluginToConnect, generator.plugins)
-
-        generator.disconnect_plugin(PluginToConnect)
-        self.assertTrue(PluginToConnect.signals["TEARDOWN"])
-        self.assertNotIn(PluginToConnect, generator.plugins)
-
-        PluginToConnect.raise_setup_error = True
-        with self.assertRaises(PluginConnectionError):
-            generator.connect_plugin(PluginToConnect)
-            self.assertNotIn(PluginToConnect, generator.plugins)
-
-        PluginToConnect.raise_setup_error = True
-        generator.connect_plugin(PluginToConnect, force_append=True)
-        self.assertIn(PluginToConnect, generator.plugins)
-
     def test_plugin_signals(self):
         """
         Test Generator's plugin signals.
@@ -153,3 +130,11 @@ class TestGenerator(unittest.TestCase):
             generator.execute(dry_run=True)
             # Missing required properties for the added file
             signal_is(Signals.ON_COMMIT_FAIL, True, on=new_plugin)
+
+    def test_files(self):
+        """
+        Test Generator's proper files state.
+        """
+        generator = Generator()
+        generator.add_file("test", "txt")
+        self.assertIsInstance(generator.files[0], FileGenerator)

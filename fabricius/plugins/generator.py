@@ -1,26 +1,15 @@
 from typing import Any, Dict, Optional
 
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
+from fabricius.interfaces import BasePlugin
 
 
-class GeneratorPlugin:
+class GeneratorPlugin(BasePlugin):
     """
     A plugin to plug to the :py:class:`fabricius.generator.generator.Generator` class.
 
     You can edit the methods of the class and they'll be run according to their description.
     """
-
-    def setup(self) -> Any:
-        """
-        Called when the plugin has been connected to a generator.
-        """
-        raise NotImplementedError()
-
-    def teardown(self) -> Any:
-        """
-        Called when a plugin is about to be disconnected of a generator.
-        """
-        raise NotImplementedError()
 
     def on_file_add(self, file: FileGenerator) -> Any:
         """

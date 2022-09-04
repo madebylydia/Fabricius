@@ -36,14 +36,6 @@ fabricius.generator.renderer module
    :undoc-members:
    :show-inheritance:
 
-fabricius.generator.reporter module
------------------------------------
-
-.. automodule:: fabricius.generator.reporter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
