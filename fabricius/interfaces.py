@@ -20,7 +20,7 @@ class BasePlugin:
 _P = ParamSpec("_P")
 
 
-class SupportsPlugin():
+class SupportsPlugin:
     plugins: List[BasePlugin]
     """
     A list of plugins to use with the class.
@@ -38,12 +38,12 @@ class SupportsPlugin():
 
         Parameters
         ----------
-        plugin : Type of :py:class:`fabricius.plugins.generator.GeneratorPlugin`
+        plugin : Type of :py:class:`fabricius.interfaces.BasePlugin`
             The plugin to look for.
 
         Returns
         -------
-        Optional, :py:class:`fabricius.plugins.generator.GeneratorPlugin` :
+        Optional, instance of :py:class:`fabricius.interfaces.BasePlugin` :
             The connected plugin, if any.
         """
         for connected_plugin in self.plugins:
@@ -56,7 +56,7 @@ class SupportsPlugin():
 
         Parameters
         ----------
-        plugin : py:class:`fabricius.plugins.generator.GeneratorPlugin`
+        plugin : py:class:`fabricius.interfaces.BasePlugin`
             The plugin to connect.
         force_append : :py:class:`bool`
             In case the plugin's setup did not succeed (Thrown an exception), it will not be
@@ -100,7 +100,7 @@ class SupportsPlugin():
 
         Parameters
         ----------
-        plugin : :py:class:`fabricius.plugins.generator.GeneratorPlugin`
+        plugin : :py:class:`fabricius.interfaces.BasePlugin`
             The plugin to disconnect.
 
         Returns
@@ -116,15 +116,19 @@ class SupportsPlugin():
                 self.plugins.remove(connected_plugin)
         return True
 
-    def _plugin_call(
+    def send_to_plugins(
         self, method: Callable[_P, None], *args: _P.args, **kwargs: _P.kwargs
     ) -> bool:
-        """Call the given method for all connected plugins.
+        """Call a given method for all connected plugins.
 
         Parameters
         ----------
-        method : Callable[..., None]
+        method : Callable[_P, None]
             The method to call.
+        *args : _P.args
+            The arguments to pass.
+        **kwargs : _P.kwargs
+            The positionals arguments to pass.
 
         """
         function_name = method.__name__

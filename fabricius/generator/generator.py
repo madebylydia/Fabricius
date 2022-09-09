@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, ParamSpec, cast
+from typing import Dict, List, Optional, cast
 
 from fabricius.generator.errors import (
     AlreadyCommittedError,
@@ -8,8 +8,6 @@ from fabricius.generator.errors import (
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.interfaces import SupportsPlugin
 from fabricius.plugins.generator import GeneratorPlugin
-
-_P = ParamSpec("_P")
 
 Plugin = cast(GeneratorPlugin, GeneratorPlugin)
 # That might seems useless, but this is to trick static type checkers when using "_plugin_call"
@@ -46,7 +44,7 @@ class Generator(SupportsPlugin):
         """
         file = FileGenerator(name, extension)
         self.files.append(file)
-        self._plugin_call(Plugin.on_file_add, file=file)
+        self.send_to_plugins(Plugin.on_file_add, file=file)
         return file
 
     def execute(
@@ -73,14 +71,14 @@ class Generator(SupportsPlugin):
         """
         result: Dict[FileGenerator, Optional[GeneratorCommitResult]] = {}
 
-        self._plugin_call(Plugin.before_execution)
+        self.send_to_plugins(Plugin.before_execution)
 
         for file in self.files:
 
             try:
-                self._plugin_call(Plugin.before_file_commit, file=file)
+                self.send_to_plugins(Plugin.before_file_commit, file=file)
                 file_result = file.commit(overwrite=allow_overwrite, dry_run=dry_run)
-                self._plugin_call(Plugin.after_file_commit, file=file)
+                self.send_to_plugins(Plugin.after_file_commit, file=file)
 
                 result[file] = file_result
 
@@ -90,10 +88,10 @@ class Generator(SupportsPlugin):
                 FileExistsError,
                 AlreadyCommittedError,
             ) as error:
-                self._plugin_call(Plugin.on_commit_fail, file=file, exception=error)
+                self.send_to_plugins(Plugin.on_commit_fail, file=file, exception=error)
 
             except Exception as error:
-                self._plugin_call(Plugin.on_commit_fail, file=file, exception=error)
+                self.send_to_plugins(Plugin.on_commit_fail, file=file, exception=error)
 
-        self._plugin_call(Plugin.after_execution, results=result)
+        self.send_to_plugins(Plugin.after_execution, results=result)
         return result
