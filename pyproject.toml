@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Fabricius"
-version = "0.0.3"
+version = "0.1.0.dev1"
 description = "Fabricius: The supportive templating engine for Python!"
 license = "MIT"
 authors = ["Predeactor <pro.julien.mauroy@gmail.com>"]
@@ -58,7 +58,7 @@ tox-gh-actions = "^2.9.1"
 docs = ["Sphinx", "sphinx-autobuild", "furo"]
 
 [tool.black]
-line_length = 99
+line-length = 99
 
 [tool.isort]
 profile = "black"

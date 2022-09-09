@@ -148,10 +148,7 @@ def sentence_case(text: str) -> str:
        >>> sentence_case(my_text)
        'Some text'
     """
-    has_ending_id: bool = False
-    if text.endswith("_id"):
-        has_ending_id = True
-
+    has_ending_id = bool(text.endswith("_id"))
     result = inflection.humanize(text)
     if has_ending_id:
         result += " ID"

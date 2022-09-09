@@ -27,7 +27,7 @@ repos:
       - id: pretty-format-json
         args:
           - "--autofix"
-          - "--indent=4"
+          - "--indent=2"
           - "--no-sort-keys"
 
       # Checks for git-related issues
