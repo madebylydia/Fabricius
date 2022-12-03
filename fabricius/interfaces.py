@@ -1,4 +1,4 @@
-from typing import Any, Callable, Generic, List, Optional, Type, ParamSpec, TypeVar, cast
+from typing import Any, Callable, Generic, List, Optional, Type, ParamSpec, TypeVar, cast, Self
 
 from fabricius.errors import PluginConnectionError
 
@@ -178,3 +178,12 @@ class SupportsPlugin(Generic[_PT]):
             except NotImplementedError:
                 return False
         return True
+
+
+class Singleton:
+    _instance = None
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
