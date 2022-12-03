@@ -15,8 +15,8 @@ class TestFileGenerator(unittest.TestCase):
     Test Fabricius's FileGenerator.
     """
 
-    TEMPLATE_PATH = pathlib.Path(__file__, "..", "templates/file").resolve()
-    DESTINATION_PATH = pathlib.Path(__file__, "..", "results/file").resolve()
+    TEMPLATE_PATH = pathlib.Path(__file__, "..", "files", "templates").resolve()
+    DESTINATION_PATH = pathlib.Path(__file__, "..", "results", "file_generator").resolve()
 
     def test_file_name(self):
         """

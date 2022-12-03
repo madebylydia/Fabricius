@@ -8,7 +8,7 @@ class GeneratorPlugin(BasePlugin):
     """
     A plugin to plug to the :py:class:`fabricius.generator.generator.Generator` class.
 
-    You can edit the methods of the class and they'll be run according to their description.
+    You can edit the methods of the class, and they'll be run according to their description.
     """
 
     def on_file_add(self, file: FileGenerator) -> Any:

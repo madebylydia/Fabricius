@@ -1,3 +1,7 @@
+"""
+Utilities shipped with Fabricius.
+"""
+
 import inflection
 
 

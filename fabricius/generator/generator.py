@@ -9,13 +9,13 @@ from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.interfaces import SupportsPlugin
 from fabricius.plugins.generator import GeneratorPlugin
 
-Plugin = cast(GeneratorPlugin, GeneratorPlugin)
-# That might seems useless, but this is to trick static type checkers when using "_plugin_call"
-# If we use "GeneratorPlugin" directly with "_plugin_call", we will also get the "self" args in
+PluginType = cast(GeneratorPlugin, GeneratorPlugin)
+# That might seem useless, but this is to trick static type checkers when using "_plugin_call"
+# If we use "GeneratorPlugin" directly with "send_to_plugins", we will also get the "self" args in
 # the way, by using this variable, we get rid of the "self" and everyone's happy!
 
 
-class Generator(SupportsPlugin):
+class Generator(SupportsPlugin[GeneratorPlugin]):
     files: List[FileGenerator]
     """
     The list of files to generate with the generator.
@@ -44,7 +44,7 @@ class Generator(SupportsPlugin):
         """
         file = FileGenerator(name, extension)
         self.files.append(file)
-        self.send_to_plugins(Plugin.on_file_add, file=file)
+        self.send_to_plugins(PluginType.on_file_add, file=file)
         return file
 
     def execute(
@@ -67,18 +67,17 @@ class Generator(SupportsPlugin):
         Dict[:py:class:`fabricius.generator.file.FileGenerator`, :py:class:`fabricius.generator.file.CommitResult`] :
             A dict containing a file generator and its commit result.
             In case the value is ``None``, this mean that the file was not successfully saved to
-            the disk (Already commited, file already exists, etc.).
+            the disk (Already committed, file already exists, etc.).
         """
         result: Dict[FileGenerator, Optional[GeneratorCommitResult]] = {}
 
-        self.send_to_plugins(Plugin.before_execution)
+        self.send_to_plugins(PluginType.before_execution)
 
         for file in self.files:
-
             try:
-                self.send_to_plugins(Plugin.before_file_commit, file=file)
+                self.send_to_plugins(PluginType.before_file_commit, file=file)
                 file_result = file.commit(overwrite=allow_overwrite, dry_run=dry_run)
-                self.send_to_plugins(Plugin.after_file_commit, file=file)
+                self.send_to_plugins(PluginType.after_file_commit, file=file)
 
                 result[file] = file_result
 
@@ -88,10 +87,11 @@ class Generator(SupportsPlugin):
                 FileExistsError,
                 AlreadyCommittedError,
             ) as error:
-                self.send_to_plugins(Plugin.on_commit_fail, file=file, exception=error)
+                self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
+                # Was there a real reason to separate this error handling?
 
             except Exception as error:
-                self.send_to_plugins(Plugin.on_commit_fail, file=file, exception=error)
+                self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
 
-        self.send_to_plugins(Plugin.after_execution, results=result)
+        self.send_to_plugins(PluginType.after_execution, results=result)
         return result

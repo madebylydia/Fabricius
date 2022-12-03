@@ -5,7 +5,7 @@ from typing import Dict, Optional, Type
 
 from typing_extensions import Self
 
-from fabricius.errors import FabriciusError, PluginConnectionError
+from fabricius.errors import FabriciusError
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.generator.generator import Generator
 from fabricius.plugins.generator import GeneratorPlugin

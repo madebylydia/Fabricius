@@ -4,7 +4,7 @@ from typing import Optional, Type, TypedDict
 
 from typing_extensions import Self
 
-from fabricius.const import FILE_STATE, Data
+from fabricius.const import FILE_STATE, Data, PathStrOrPath
 from fabricius.generator.errors import (
     AlreadyCommittedError,
     NoContentError,
@@ -105,7 +105,7 @@ class FileGenerator:
         self.renderer = PythonFormatRenderer
         self.data = {}
 
-    def from_file(self, path: str | pathlib.Path) -> Self:
+    def from_file(self, path: PathStrOrPath) -> Self:
         """
         Read the content from a file template.
 
@@ -119,7 +119,7 @@ class FileGenerator:
         path : :py:class:`str` or :py:class:`pathlib.Path`
             The path of the file template.
         """
-        path = pathlib.Path(path) if isinstance(path, str) else path
+        path = pathlib.Path(path).resolve()
         self.content = path.read_text()
         return self
 
@@ -135,21 +135,19 @@ class FileGenerator:
         self.content = content
         return self
 
-    def to_directory(self, directory: str | pathlib.Path) -> Self:
+    def to_directory(self, directory: PathStrOrPath) -> Self:
         """
         Set the directory where the file will be saved.
 
         Raises
         ------
-        :py:exc:`FileNotFoundError` :
-            The given directory does not exist. (And recursive is set to False)
+        :py:exc:`NotADirectory` :
+            The given path exists but is not a directory.
 
         Parameters
         ----------
         directory : :py:class:`str` or :py:class:`pathlib.Path`
             Where the file will be stored. Does not include the file's name.
-        recursive : :py:class:`bool`
-            Create the parents folder if not existing. Default to ``True``.
         """
         path = pathlib.Path(directory).resolve()
         if path.exists() and not path.is_dir():

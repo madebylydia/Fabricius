@@ -11,7 +11,7 @@ from fabricius.plugins.generator import GeneratorPlugin
 class GeneratorRichPlugin(GeneratorPlugin):
     verbose: bool
     """
-    Indicate if the plugin should print more informations than usual.
+    Indicate if the plugin should print more information than usual.
     """
 
     console: Console
@@ -34,7 +34,9 @@ class GeneratorRichPlugin(GeneratorPlugin):
 
     def teardown(self):
         if self.verbose:
-            self.console.print("[yellow]:put_litter_in_its_place: Rich plugin is being disconnected from the generator.")
+            self.console.print(
+                "[yellow]:put_litter_in_its_place: Rich plugin is being disconnected from the generator."
+            )
 
     def on_file_add(self, file: FileGenerator):
         if self.verbose:
@@ -42,14 +44,16 @@ class GeneratorRichPlugin(GeneratorPlugin):
 
     def before_execution(self):
         if self.verbose:
-            self.console.print("[yellow]:stopwatch: \".execute\" was called. Generator is about to run!")
+            self.console.print(
+                '[yellow]:stopwatch: ".execute" was called. Generator is about to run!'
+            )
 
     def before_file_commit(self, file: FileGenerator):
         if self.verbose:
-            self.console.print(f":mag: {file.name} is about to be commited!")
+            self.console.print(f":mag: {file.name} is about to be committed!")
 
     def after_file_commit(self, file: FileGenerator):
-        self._print_column("COMMITED", file.name, "green")
+        self._print_column("COMMITTED", file.name, "green")
 
     def on_commit_fail(self, file: FileGenerator, exception: Exception):
         self._print_column("FAILURE", f"{file.name} is a failure!", "red")
