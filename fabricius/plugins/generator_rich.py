@@ -1,8 +1,8 @@
 from typing import Dict, Optional
+
 from rich import get_console
 from rich.console import Console
-from rich.style import Style
-from rich.text import Text
+from rich.prompt import Confirm
 
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.plugins.generator import GeneratorPlugin
@@ -19,14 +19,19 @@ class GeneratorRichPlugin(GeneratorPlugin):
     The console used to print results.
     """
 
-    def __init__(self, *, verbose: bool = False) -> None:
+    ask_for_overwrites: bool
+    """
+    A boolean indicating if the plugin should ask for overwrites when needed.
+    """
+
+    def __init__(self, *, ask_for_overwrites: bool = True, verbose: bool = False) -> None:
+        self.ask_for_overwrites = ask_for_overwrites
         self.verbose = verbose
+
         self.console = get_console()
 
     def _print_column(self, title: str, message: str, color: str | None):
-        text = Text(f" {title} ", Style(bgcolor=color))
-        text.append(f" {message}", Style(bgcolor="black", color=color))
-        self.console.print(text)
+        self.console.print(f"[on {color}] {title} [/] [{color}]{message}[/]")
 
     def setup(self):
         if self.verbose:
@@ -52,12 +57,26 @@ class GeneratorRichPlugin(GeneratorPlugin):
         if self.verbose:
             self.console.print(f":mag: {file.name} is about to be committed!")
 
-    def after_file_commit(self, file: FileGenerator):
+    def after_file_commit(self, file: FileGenerator, result: Optional[GeneratorCommitResult]):
+        if self.verbose:
+            self.console.print(f":mag: {file.name} was committed!")
         self._print_column("COMMITTED", file.name, "green")
 
     def on_commit_fail(self, file: FileGenerator, exception: Exception):
-        self._print_column("FAILURE", f"{file.name} is a failure!", "red")
-        self.console.print_exception()
+        match exception:
+            case FileExistsError():
+                self._print_column("CONFLICT", f"{file.name} already exists", "blue")
+                if self.ask_for_overwrites:
+                    if Confirm.ask("[blue]Overwrite?"):
+                        result = file.commit(overwrite=True)
+                        self.generator.results[file] = result
+                elif self.verbose:
+                    self.console.print(":x: Ignored FileExistsError exception")
+            case _:
+                self._print_column("FAILURE", f"{file.name} has failed!", "red")
+                self.console.print_exception()
 
     def after_execution(self, results: Dict[FileGenerator, Optional[GeneratorCommitResult]]):
+        if self.verbose:
+            self.console.print("[green]:wave: Execution done!")
         return super().after_execution(results)

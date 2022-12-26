@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Dict, List, Optional, cast
 
 from fabricius.generator.errors import (
@@ -7,6 +8,7 @@ from fabricius.generator.errors import (
 )
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.interfaces import SupportsPlugin
+
 from fabricius.plugins.generator import GeneratorPlugin
 
 PluginType = cast(GeneratorPlugin, GeneratorPlugin)
@@ -21,9 +23,47 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
     The list of files to generate with the generator.
     """
 
+    results: Dict[FileGenerator, Optional[GeneratorCommitResult]] = {}
+    """
+    The result of each file commit.
+    """
+
     def __init__(self) -> None:
         self.files = []
         super().__init__()
+
+    def connect_plugin(self, plugin: GeneratorPlugin, *, force_append: bool = False) -> GeneratorPlugin:
+        plugin = super().connect_plugin(plugin, force_append=force_append)
+        plugin.generator = self
+        return plugin
+
+    def _execute_file(self, file: FileGenerator, allow_overwrite: bool):
+        """
+        Attempt to commit a file and return its result.
+        """
+        try:
+            self.send_to_plugins(PluginType.before_file_commit, file=file)
+            try:
+                file_result = file.commit(overwrite=allow_overwrite)
+            except FileExistsError:
+                file_result = None
+            self.send_to_plugins(PluginType.after_file_commit, file=file, result=file_result)
+
+            return file_result
+
+        except (
+            NoContentError,
+            NoDestinationError,
+            FileExistsError,
+            AlreadyCommittedError,
+        ) as error:
+            self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
+            return None
+            # Was there a real reason to separate this error handling?
+
+        except Exception as error:
+            self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
+            return None
 
     def add_file(self, name: str, extension: Optional[str] = None) -> FileGenerator:
         """
@@ -48,7 +88,7 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
         return file
 
     def execute(
-        self, *, allow_overwrite: bool = False, dry_run: bool = False
+        self, *, allow_overwrite: bool = False
     ) -> Dict[FileGenerator, Optional[GeneratorCommitResult]]:
         """
         Execute generator's tasks.
@@ -58,9 +98,6 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
         allow_overwrite : :py:class:`bool`
             If files exist at their set path, shall this parameter say if files should be
             overwritten or not.
-        dry_run : :py:class:`bool`
-            You should not use this. This is mostly used for Fabricius's tests.
-            This parameter indicate if files should be created.
 
         Returns
         -------
@@ -69,29 +106,17 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
             In case the value is ``None``, this mean that the file was not successfully saved to
             the disk (Already committed, file already exists, etc.).
         """
-        result: Dict[FileGenerator, Optional[GeneratorCommitResult]] = {}
-
         self.send_to_plugins(PluginType.before_execution)
 
         for file in self.files:
-            try:
-                self.send_to_plugins(PluginType.before_file_commit, file=file)
-                file_result = file.commit(overwrite=allow_overwrite, dry_run=dry_run)
-                self.send_to_plugins(PluginType.after_file_commit, file=file)
+            if result := self._execute_file(file, allow_overwrite):
+                self.results[file] = result
 
-                result[file] = file_result
+        results = copy(self.results)
 
-            except (
-                NoContentError,
-                NoDestinationError,
-                FileExistsError,
-                AlreadyCommittedError,
-            ) as error:
-                self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
-                # Was there a real reason to separate this error handling?
+        for file in self.files:
+            if file not in results.keys():
+                results[file] = None
 
-            except Exception as error:
-                self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
-
-        self.send_to_plugins(PluginType.after_execution, results=result)
-        return result
+        self.send_to_plugins(PluginType.after_execution, results=results)
+        return results

@@ -21,6 +21,22 @@ fabricius.const module
    :undoc-members:
    :show-inheritance:
 
+fabricius.errors module
+-----------------------
+
+.. automodule:: fabricius.errors
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+fabricius.interfaces module
+---------------------------
+
+.. automodule:: fabricius.interfaces
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 fabricius.utils module
 ----------------------
 

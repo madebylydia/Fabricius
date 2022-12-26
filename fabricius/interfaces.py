@@ -1,9 +1,22 @@
-from typing import Any, Callable, Generic, List, Optional, Type, ParamSpec, TypeVar, cast, Self
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    List,
+    Optional,
+    ParamSpec,
+    Protocol,
+    Type,
+    TypeVar,
+    cast,
+)
+
+from typing_extensions import Self
 
 from fabricius.errors import PluginConnectionError
 
 
-class BasePlugin:
+class BasePlugin(Protocol):
     """
     The base class for all plugins.
     """
@@ -57,13 +70,13 @@ class SupportsPlugin(Generic[_PT]):
             if isinstance(connected_plugin, plugin):
                 return connected_plugin
 
-    def connect_plugin(self, plugin: _PT, *, force_append: bool = False):
+    def connect_plugin(self, plugin: _PT, *, force_append: bool = False) -> _PT:
         """
         Add (Connect) a plugin to the class.
 
         Parameters
         ----------
-        plugin : py:class:`fabricius.interfaces.BasePlugin`
+        plugin : :py:class:`fabricius.interfaces.BasePlugin`
             The plugin to connect.
         force_append : :py:class:`bool`
             In case the plugin's setup did not succeed (Thrown an exception), it will not be
@@ -98,7 +111,7 @@ class SupportsPlugin(Generic[_PT]):
                 ) from error
 
         self.plugins.append(plugin)
-        return True
+        return plugin
 
     def disconnect_plugin(self, plugin: _PT | Type[_PT]) -> bool:
         """

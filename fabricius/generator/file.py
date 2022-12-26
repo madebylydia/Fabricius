@@ -218,7 +218,7 @@ class FileGenerator:
 
         return self.renderer(self.data).render(self.content)
 
-    def commit(self, *, overwrite: bool = False, dry_run: bool = False) -> GeneratorCommitResult:
+    def commit(self, *, overwrite: bool = False) -> GeneratorCommitResult:
         """
         Save the file to the disk.
 
@@ -227,9 +227,6 @@ class FileGenerator:
         overwrite : :py:class:`bool`
             If a file exist at the given path, shall the overwrite parameter say if the file
             should be overwritten or not. Default to ``False``.
-        dry_run : :py:class:`bool`
-            You should not use this. This is mostly used for Fabricius's tests.
-            This parameter indicate if files should be created.
 
         Raises
         ------
@@ -261,17 +258,16 @@ class FileGenerator:
 
         final_content = self.generate()
 
-        if not dry_run:
-            if not self.destination.exists():
-                self.destination.mkdir(parents=True)
-            destination = self.destination.joinpath(self.name)
+        if not self.destination.exists():
+            self.destination.mkdir(parents=True)
+        destination = self.destination.joinpath(self.name)
 
-            if destination.exists() and not overwrite:
-                raise FileExistsError(f"File '{self.name}' already exists.")
+        if destination.exists() and not overwrite:
+            raise FileExistsError(f"File '{self.name}' already exists.")
 
-            with contextlib.suppress(NotADirectoryError):
-                destination.write_text(final_content)
-                self.state = "persisted"
+        with contextlib.suppress(NotADirectoryError):
+            destination.write_text(final_content)
+            self.state = "persisted"
 
         return GeneratorCommitResult(
             name=self.name,

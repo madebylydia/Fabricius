@@ -1,7 +1,10 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.interfaces import BasePlugin
+
+if TYPE_CHECKING:
+    from fabricius.generator import Generator
 
 
 class GeneratorPlugin(BasePlugin):
@@ -9,6 +12,11 @@ class GeneratorPlugin(BasePlugin):
     A plugin to plug to the :py:class:`fabricius.generator.generator.Generator` class.
 
     You can edit the methods of the class, and they'll be run according to their description.
+    """
+
+    generator: "Generator"
+    """
+    The generator that the plugin is connected to.
     """
 
     def on_file_add(self, file: FileGenerator) -> Any:
@@ -41,7 +49,7 @@ class GeneratorPlugin(BasePlugin):
         """
         raise NotImplementedError()
 
-    def after_file_commit(self, file: FileGenerator) -> Any:
+    def after_file_commit(self, file: FileGenerator, result: Optional[GeneratorCommitResult]) -> Any:
         """
         Called when a file has been created and saved locally.
 

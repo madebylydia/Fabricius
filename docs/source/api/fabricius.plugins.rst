@@ -12,6 +12,14 @@ fabricius.plugins.generator module
    :undoc-members:
    :show-inheritance:
 
+fabricius.plugins.generator\_rich module
+----------------------------------------
+
+.. automodule:: fabricius.plugins.generator_rich
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

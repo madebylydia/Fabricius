@@ -129,17 +129,3 @@ class TestFileGenerator(unittest.TestCase):
                 self.DESTINATION_PATH
             ).with_data({"name": "Python's format"})
             file.commit()
-
-    def test_file_commit_dry_run(self):
-        """
-        Test FileGenerator's proper commit's dry run.
-        """
-        file = FileGenerator("python_result_dry", "txt")
-
-        file.from_file(self.TEMPLATE_PATH.joinpath("python_template.txt")).to_directory(
-            self.DESTINATION_PATH
-        ).with_data({"name": "Python's format"})
-
-        result = file.commit(dry_run=True)
-        self.assertIsInstance(result, dict)
-        self.assertFalse(self.DESTINATION_PATH.joinpath("python_result_dry.txt").exists())

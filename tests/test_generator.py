@@ -63,7 +63,7 @@ class MyPlugin(GeneratorPlugin):
         self.signals["BEFORE_FILE_COMMIT"] = True
         return Signals.BEFORE_FILE_COMMIT
 
-    def after_file_commit(self, file: FileGenerator):
+    def after_file_commit(self, file: FileGenerator, result: Optional[GeneratorCommitResult]):
         self.signals["AFTER_FILE_COMMIT"] = True
         return Signals.AFTER_FILE_COMMIT
 
@@ -88,12 +88,19 @@ class TestGenerator(unittest.TestCase):
     Test Fabricius's generator.
     """
 
-    def test_plugin_signals(self):
+    def test_files(self):
         """
-        Test Generator's plugin signals.
+        Test Generator's proper files state.
         """
         generator = Generator()
-        generator.connect_plugin(PluginToConnect)
+        generator.add_file("test", "txt")
+        self.assertIsInstance(generator.files[0], FileGenerator)
+
+    def test_plugin_signals(self):
+        """
+        Test Generator's plugin "signals".
+        """
+        generator = Generator()
 
         def signal_is(signal: Signals, value: bool, *, on: MyPlugin = PluginToConnect):
             signal_name = signal.value
@@ -102,39 +109,28 @@ class TestGenerator(unittest.TestCase):
             else:
                 self.assertFalse(on.signals[signal_name])
 
-        signal_is(Signals.SETUP, True)
-        generator.disconnect_plugin(PluginToConnect)
-        signal_is(Signals.TEARDOWN, True)
         generator.connect_plugin(PluginToConnect)
-        file = generator.add_file("test", "txt")
+        signal_is(Signals.SETUP, True)
+        file = generator.add_file("signals", "txt")
         signal_is(Signals.ON_FILE_ADD, True)
-        file.from_content("Hello {name}.").to_directory(
+        file.from_content("File created for test_plugin_signals.").to_directory(
             pathlib.Path(__file__, "..", "results", "generator")
         ).with_data({"name": "world"})
 
-        generator.execute(dry_run=True)
+        generator.execute()
         signal_is(Signals.BEFORE_EXECUTION, True)
         signal_is(Signals.BEFORE_FILE_COMMIT, True)
         signal_is(Signals.AFTER_FILE_COMMIT, True)
         signal_is(Signals.AFTER_EXECUTION, True)
         signal_is(Signals.ON_COMMIT_FAIL, False)
+        generator.disconnect_plugin(PluginToConnect)
+        signal_is(Signals.TEARDOWN, True)
 
         failing_generator = Generator()
         new_plugin = PluginToConnect.new()
         failing_generator.connect_plugin(new_plugin)
-        # Just making sure it's a brand new plugin with reinitialized signals
-        signal_is(Signals.TEARDOWN, False, on=new_plugin)
-
         file = generator.add_file("test", "txt")
         with self.assertRaises(Exception):
-            generator.execute(dry_run=True)
+            generator.execute()
             # Missing required properties for the added file
             signal_is(Signals.ON_COMMIT_FAIL, True, on=new_plugin)
-
-    def test_files(self):
-        """
-        Test Generator's proper files state.
-        """
-        generator = Generator()
-        generator.add_file("test", "txt")
-        self.assertIsInstance(generator.files[0], FileGenerator)
