@@ -1,6 +1,6 @@
 import unittest
 
-from fabricius.generator.renderer import (
+from fabricius.renderer import (
     ChevronRenderer,
     PythonFormatRenderer,
     Renderer,
@@ -42,14 +42,30 @@ class TestRenderers(unittest.TestCase):
         """
         renderer = StringTemplateRenderer({"name": "String Template"})
         result = renderer.render("I am $name")
-
         self.assertEqual(result, "I am String Template")
+
+        renderer = StringTemplateRenderer({"name_renderer": "String Template"}, safe=False)
+        with self.assertRaises(KeyError):
+            renderer.render("I am $name")
 
     def test_chevron_renderer(self):
         """
         Test Chevron (Mustache) renderer.
         """
-        renderer = ChevronRenderer({"name": "Chevron"})
-        result = renderer.render("I am {{ name }}")
+        renderer = ChevronRenderer(
+            {
+                "name": "Chevron",
+                "value": 10000,
+                "taxed_value": 10000 - (10000 * 0.4),
+                "in_ca": True,
+            }
+        )
+        result = renderer.render(
+            "Hello {{name}}\nYou have just won {{value}} dollars!\n{{#in_ca}}\nWell, {{taxed_value}} dollars, "
+            "after taxes.{{/in_ca}}"
+        )
 
-        self.assertEqual(result, "I am Chevron")
+        self.assertEqual(
+            result,
+            "Hello Chevron\nYou have just won 10000 dollars!\nWell, 6000.0 dollars, after taxes.",
+        )

@@ -1,14 +1,14 @@
 from copy import copy
 from typing import Dict, List, Optional, cast
 
-from fabricius.generator.errors import (
+from fabricius.file import (
     AlreadyCommittedError,
+    File,
+    FileCommitResult,
     NoContentError,
     NoDestinationError,
 )
-from fabricius.generator.file import FileGenerator, GeneratorCommitResult
 from fabricius.interfaces import SupportsPlugin
-
 from fabricius.plugins.generator import GeneratorPlugin
 
 PluginType = cast(GeneratorPlugin, GeneratorPlugin)
@@ -18,12 +18,12 @@ PluginType = cast(GeneratorPlugin, GeneratorPlugin)
 
 
 class Generator(SupportsPlugin[GeneratorPlugin]):
-    files: List[FileGenerator]
+    files: List[File]
     """
     The list of files to generate with the generator.
     """
 
-    results: Dict[FileGenerator, Optional[GeneratorCommitResult]] = {}
+    results: Dict[File, Optional[FileCommitResult]] = {}
     """
     The result of each file commit.
     """
@@ -32,12 +32,14 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
         self.files = []
         super().__init__()
 
-    def connect_plugin(self, plugin: GeneratorPlugin, *, force_append: bool = False) -> GeneratorPlugin:
+    def connect_plugin(
+        self, plugin: GeneratorPlugin, *, force_append: bool = False
+    ) -> GeneratorPlugin:
         plugin = super().connect_plugin(plugin, force_append=force_append)
         plugin.generator = self
         return plugin
 
-    def _execute_file(self, file: FileGenerator, allow_overwrite: bool):
+    def _execute_file(self, file: File, allow_overwrite: bool) -> FileCommitResult | None:
         """
         Attempt to commit a file and return its result.
         """
@@ -65,7 +67,7 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
             self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
             return None
 
-    def add_file(self, name: str, extension: Optional[str] = None) -> FileGenerator:
+    def add_file(self, name: str, extension: Optional[str] = None) -> File:
         """
         Add a file to the generator.
 
@@ -79,17 +81,15 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
 
         Returns
         -------
-        :py:class:`fabricius.generator.file.FileGenerator` :
+        :py:class:`fabricius.generator.file.File` :
             The generated file. You then have to set file's options.
         """
-        file = FileGenerator(name, extension)
+        file = File(name, extension)
         self.files.append(file)
         self.send_to_plugins(PluginType.on_file_add, file=file)
         return file
 
-    def execute(
-        self, *, allow_overwrite: bool = False
-    ) -> Dict[FileGenerator, Optional[GeneratorCommitResult]]:
+    def execute(self, *, allow_overwrite: bool = False) -> Dict[File, Optional[FileCommitResult]]:
         """
         Execute generator's tasks.
 
@@ -101,7 +101,7 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
 
         Returns
         -------
-        Dict[:py:class:`fabricius.generator.file.FileGenerator`, :py:class:`fabricius.generator.file.CommitResult`] :
+        Dict[:py:class:`fabricius.generator.file.File`, :py:class:`fabricius.generator.file.CommitResult`] :
             A dict containing a file generator and its commit result.
             In case the value is ``None``, this mean that the file was not successfully saved to
             the disk (Already committed, file already exists, etc.).

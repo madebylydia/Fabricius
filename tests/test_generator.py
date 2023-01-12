@@ -6,7 +6,7 @@ from typing import Dict, Optional, Type
 from typing_extensions import Self
 
 from fabricius.errors import FabriciusError
-from fabricius.generator.file import FileGenerator, GeneratorCommitResult
+from fabricius.file import File, FileCommitResult
 from fabricius.generator.generator import Generator
 from fabricius.plugins.generator import GeneratorPlugin
 
@@ -51,7 +51,7 @@ class MyPlugin(GeneratorPlugin):
         self.signals["TEARDOWN"] = True
         return Signals.TEARDOWN
 
-    def on_file_add(self, file: FileGenerator):
+    def on_file_add(self, file: File):
         self.signals["ON_FILE_ADD"] = True
         return Signals.ON_FILE_ADD
 
@@ -59,19 +59,19 @@ class MyPlugin(GeneratorPlugin):
         self.signals["BEFORE_EXECUTION"] = True
         return Signals.BEFORE_EXECUTION
 
-    def before_file_commit(self, file: FileGenerator):
+    def before_file_commit(self, file: File):
         self.signals["BEFORE_FILE_COMMIT"] = True
         return Signals.BEFORE_FILE_COMMIT
 
-    def after_file_commit(self, file: FileGenerator, result: Optional[GeneratorCommitResult]):
+    def after_file_commit(self, file: File, result: Optional[FileCommitResult]):
         self.signals["AFTER_FILE_COMMIT"] = True
         return Signals.AFTER_FILE_COMMIT
 
-    def after_execution(self, results: Dict[FileGenerator, Optional[GeneratorCommitResult]]):
+    def after_execution(self, results: Dict[File, Optional[FileCommitResult]]):
         self.signals["AFTER_EXECUTION"] = True
         return Signals.AFTER_EXECUTION
 
-    def on_commit_fail(self, file: FileGenerator, exception: Exception):
+    def on_commit_fail(self, file: File, exception: Exception):
         self.signals["ON_COMMIT_FAIL"] = True
         return Signals.ON_COMMIT_FAIL
 
@@ -94,7 +94,7 @@ class TestGenerator(unittest.TestCase):
         """
         generator = Generator()
         generator.add_file("test", "txt")
-        self.assertIsInstance(generator.files[0], FileGenerator)
+        self.assertIsInstance(generator.files[0], File)
 
     def test_plugin_signals(self):
         """

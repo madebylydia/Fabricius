@@ -1,3 +1,4 @@
+import re
 from typing import (
     Any,
     Callable,
@@ -15,11 +16,56 @@ from typing_extensions import Self
 
 from fabricius.errors import PluginConnectionError
 
+PIID_REGEX = re.compile(r"^([a-z]{3,})-(\d{6})$")
+
 
 class BasePlugin(Protocol):
     """
     The base class for all plugins.
     """
+
+    PIID: Optional[str] = None
+    """
+    The PIID (Plugin Identifier & ID) is a string composed of a name for the plugin that is created
+    """
+
+    @property
+    def has_valid_piid(self) -> bool:
+        """
+        Return a boolean indicating if the plugin has a PIID assigned.
+        This will return False if no PIID are assigned.
+
+        Returns
+        -------
+        bool :
+            If the plugin has a valid PIID.
+        """
+        if not self.PIID:
+            return False
+        piid = PIID_REGEX.match(self.PIID)
+        return piid is not None
+
+    @property
+    def plugin_name(self) -> Optional[str]:
+        """Return the name of the plugin based on the PIID.
+
+        Returns
+        -------
+        Optional[str] :
+            The name of the plugin if defined and valid.
+        """
+        return PIID_REGEX.match(self.PIID).group(1) if self.has_valid_piid else None  # type: ignore
+
+    @property
+    def plugin_id(self) -> Optional[int]:
+        """Return the ID of the plugin base on the PIID.
+
+        Returns
+        -------
+        Optional[int] :
+            The ID of the plugin if defined and valid.
+        """
+        return int(PIID_REGEX.match(self.PIID).group(2)) if self.has_valid_piid else None  # type: ignore
 
     def setup(self) -> Any:
         """
@@ -35,7 +81,15 @@ class BasePlugin(Protocol):
 
 
 _P = ParamSpec("_P")
+"""
+A ParamSpec to help wit fabricius.interface.SupportsPlugin.send_to_plugins to
+retransmit the types and return type.
+"""
 _PT = TypeVar("_PT", bound=BasePlugin)
+"""
+TypeVar indicating which plugin class (Subclass of fabricius.interface.BasePlugin)
+can be accepted.
+"""
 
 
 class SupportsPlugin(Generic[_PT]):

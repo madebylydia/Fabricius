@@ -1,6 +1,6 @@
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from fabricius.generator.file import FileGenerator, GeneratorCommitResult
+from fabricius.file import File, FileCommitResult
 from fabricius.interfaces import BasePlugin
 
 if TYPE_CHECKING:
@@ -19,13 +19,13 @@ class GeneratorPlugin(BasePlugin):
     The generator that the plugin is connected to.
     """
 
-    def on_file_add(self, file: FileGenerator) -> Any:
+    def on_file_add(self, file: File) -> Any:
         """
         Called when a new file has been added to the generator.
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.FileGenerator`
+        file : :py:class:`fabricius.generator.file.File`
             The file that has been added to the generator.
         """
         raise NotImplementedError()
@@ -37,32 +37,30 @@ class GeneratorPlugin(BasePlugin):
         """
         raise NotImplementedError()
 
-    def before_file_commit(self, file: FileGenerator) -> Any:
+    def before_file_commit(self, file: File) -> Any:
         """
         Called when a file is about to be created.
         The file is NOT yet created and is still not saved locally.
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.FileGenerator`
+        file : :py:class:`fabricius.generator.file.File`
             The file that will be generated.
         """
         raise NotImplementedError()
 
-    def after_file_commit(self, file: FileGenerator, result: Optional[GeneratorCommitResult]) -> Any:
+    def after_file_commit(self, file: File, result: Optional[FileCommitResult]) -> Any:
         """
         Called when a file has been created and saved locally.
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.FileGenerator`
+        file : :py:class:`fabricius.generator.file.File`
             The file that has been generated.
         """
         raise NotImplementedError()
 
-    def after_execution(
-        self, results: Dict[FileGenerator, Optional[GeneratorCommitResult]]
-    ) -> Any:
+    def after_execution(self, results: Dict[File, Optional[FileCommitResult]]) -> Any:
         """
         Called when the generator has realized all file generation.
 
@@ -74,13 +72,13 @@ class GeneratorPlugin(BasePlugin):
         """
         raise NotImplementedError()
 
-    def on_commit_fail(self, file: FileGenerator, exception: Exception) -> Any:
+    def on_commit_fail(self, file: File, exception: Exception) -> Any:
         """
         Called when the generator has failed to commit a file.
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.FileGenerator`
+        file : :py:class:`fabricius.generator.file.File`
             The file that has been generated.
         exception : :py:class:`Exception`
             The exception that was raised.

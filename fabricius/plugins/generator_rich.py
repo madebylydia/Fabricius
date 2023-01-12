@@ -1,14 +1,14 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from rich import get_console
 from rich.console import Console
 from rich.prompt import Confirm
 
-from fabricius.generator.file import FileGenerator, GeneratorCommitResult
+from fabricius.file import File, FileCommitResult
 from fabricius.plugins.generator import GeneratorPlugin
 
 
-class GeneratorRichPlugin(GeneratorPlugin):
+class FileRichPlugin(GeneratorPlugin):
     verbose: bool
     """
     Indicate if the plugin should print more information than usual.
@@ -33,36 +33,36 @@ class GeneratorRichPlugin(GeneratorPlugin):
     def _print_column(self, title: str, message: str, color: str | None):
         self.console.print(f"[on {color}] {title} [/] [{color}]{message}[/]")
 
-    def setup(self):
+    def setup(self) -> None:
         if self.verbose:
             self.console.print("[green]:white_check_mark: Rich plugin connected to the generator!")
 
-    def teardown(self):
+    def teardown(self) -> None:
         if self.verbose:
             self.console.print(
                 "[yellow]:put_litter_in_its_place: Rich plugin is being disconnected from the generator."
             )
 
-    def on_file_add(self, file: FileGenerator):
+    def on_file_add(self, file: File) -> None:
         if self.verbose:
             self.console.print(f"[green]:heavy_plus_sign: File added: [underline]{file.name}")
 
-    def before_execution(self):
+    def before_execution(self) -> None:
         if self.verbose:
             self.console.print(
                 '[yellow]:stopwatch: ".execute" was called. Generator is about to run!'
             )
 
-    def before_file_commit(self, file: FileGenerator):
+    def before_file_commit(self, file: File) -> None:
         if self.verbose:
             self.console.print(f":mag: {file.name} is about to be committed!")
 
-    def after_file_commit(self, file: FileGenerator, result: Optional[GeneratorCommitResult]):
+    def after_file_commit(self, file: File, result: Optional[FileCommitResult]) -> None:
         if self.verbose:
             self.console.print(f":mag: {file.name} was committed!")
         self._print_column("COMMITTED", file.name, "green")
 
-    def on_commit_fail(self, file: FileGenerator, exception: Exception):
+    def on_commit_fail(self, file: File, exception: Exception) -> None:
         match exception:
             case FileExistsError():
                 self._print_column("CONFLICT", f"{file.name} already exists", "blue")
@@ -76,7 +76,6 @@ class GeneratorRichPlugin(GeneratorPlugin):
                 self._print_column("FAILURE", f"{file.name} has failed!", "red")
                 self.console.print_exception()
 
-    def after_execution(self, results: Dict[FileGenerator, Optional[GeneratorCommitResult]]):
+    def after_execution(self, results: Dict[File, Optional[FileCommitResult]]) -> Any:
         if self.verbose:
             self.console.print("[green]:wave: Execution done!")
-        return super().after_execution(results)

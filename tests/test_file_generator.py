@@ -1,18 +1,17 @@
 import pathlib
 import unittest
 
-from fabricius.generator.errors import AlreadyCommittedError
-from fabricius.generator.file import FileGenerator
-from fabricius.generator.renderer import (
+from fabricius.file import AlreadyCommittedError, File
+from fabricius.renderer import (
     ChevronRenderer,
     PythonFormatRenderer,
     StringTemplateRenderer,
 )
 
 
-class TestFileGenerator(unittest.TestCase):
+class TestFile(unittest.TestCase):
     """
-    Test Fabricius's FileGenerator.
+    Test Fabricius's File.
     """
 
     TEMPLATE_PATH = pathlib.Path(__file__, "..", "files", "templates").resolve()
@@ -20,25 +19,25 @@ class TestFileGenerator(unittest.TestCase):
 
     def test_file_name(self):
         """
-        Test FileGenerator's proper name.
+        Test File's proper name.
         """
-        file = FileGenerator("my_file_name")
+        file = File("my_file_name")
         self.assertEqual(file.name, "my_file_name")
-        file = FileGenerator("my_file_name", "txt")
+        file = File("my_file_name", "txt")
         self.assertEqual(file.name, "my_file_name.txt")
 
     def test_file_state(self):
         """
-        Test FileGenerator's proper state.
+        Test File's proper state.
         """
-        file = FileGenerator("test")
+        file = File("test")
         self.assertEqual(file.state, "pending")
 
     def test_file_content(self):
         """
-        Test FileGenerator's proper content usage.
+        Test File's proper content usage.
         """
-        file = FileGenerator("test", "txt")
+        file = File("test", "txt")
         file_content = self.TEMPLATE_PATH.joinpath("python_template.txt").read_text()
 
         with self.assertRaises(FileNotFoundError):
@@ -52,9 +51,9 @@ class TestFileGenerator(unittest.TestCase):
 
     def test_file_destination(self):
         """
-        Test FileGenerator's proper destination.
+        Test File's proper destination.
         """
-        file = FileGenerator("test", "txt")
+        file = File("test", "txt")
 
         file.to_directory(self.DESTINATION_PATH)
         self.assertEqual(str(self.DESTINATION_PATH), str(file.destination))
@@ -64,9 +63,9 @@ class TestFileGenerator(unittest.TestCase):
 
     def test_file_renderer(self):
         """
-        Test FileGenerator's proper renderer.
+        Test File's proper renderer.
         """
-        file = FileGenerator("test", "txt")
+        file = File("test", "txt")
         self.assertIs(file.renderer, PythonFormatRenderer)
 
         file.use_mustache()
@@ -80,9 +79,9 @@ class TestFileGenerator(unittest.TestCase):
 
     def test_file_data(self):
         """
-        Test FileGenerator's proper data.
+        Test File's proper data.
         """
-        file = FileGenerator("test", "txt")
+        file = File("test", "txt")
 
         file.with_data({"some": "data"})
         self.assertDictEqual(file.data, {"some": "data"})
@@ -95,9 +94,9 @@ class TestFileGenerator(unittest.TestCase):
 
     def test_file_generate(self):
         """
-        Test FileGenerator's proper generation.
+        Test File's proper generation.
         """
-        file = FileGenerator("test", "txt")
+        file = File("test", "txt")
 
         file.from_content("My name is {name}!")
         file.with_data({"name": "Python"})
@@ -107,9 +106,9 @@ class TestFileGenerator(unittest.TestCase):
 
     def test_file_commit(self):
         """
-        Test FileGenerator's proper commit.
+        Test File's proper commit.
         """
-        file = FileGenerator("python_result", "txt")
+        file = File("python_result", "txt")
 
         file.from_file(self.TEMPLATE_PATH.joinpath("python_template.txt")).to_directory(
             self.DESTINATION_PATH
@@ -124,7 +123,7 @@ class TestFileGenerator(unittest.TestCase):
             file.commit()
 
         with self.assertRaises(FileExistsError):
-            file = FileGenerator("python_result", "txt")
+            file = File("python_result", "txt")
             file.from_file(self.TEMPLATE_PATH.joinpath("python_template.txt")).to_directory(
                 self.DESTINATION_PATH
             ).with_data({"name": "Python's format"})
