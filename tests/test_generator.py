@@ -80,6 +80,7 @@ class MyPlugin(GeneratorPlugin):
         return cls()
 
 
+RESULTS_PATH = pathlib.Path(__file__, "..", "results", "generator")
 PluginToConnect = MyPlugin()
 
 
@@ -95,6 +96,17 @@ class TestGenerator(unittest.TestCase):
         generator = Generator()
         generator.add_file("test", "txt")
         self.assertIsInstance(generator.files[0], File)
+
+    def test_fake(self):
+        """
+        Test Generator's fake.
+        """
+        generator = Generator()
+        file = generator.add_file("test", "txt")
+        file.from_content("Faking this file").to_directory(RESULTS_PATH)
+        generator.fake().execute()
+
+        self.assertFalse(RESULTS_PATH.joinpath("test.txt").exists())
 
     def test_plugin_signals(self):
         """
@@ -113,9 +125,7 @@ class TestGenerator(unittest.TestCase):
         signal_is(Signals.SETUP, True)
         file = generator.add_file("signals", "txt")
         signal_is(Signals.ON_FILE_ADD, True)
-        file.from_content("File created for test_plugin_signals.").to_directory(
-            pathlib.Path(__file__, "..", "results", "generator")
-        ).with_data({"name": "world"})
+        file.from_content("File created for test_plugin_signals.").to_directory(RESULTS_PATH).with_data({"name": "world"})
 
         generator.execute()
         signal_is(Signals.BEFORE_EXECUTION, True)
@@ -134,3 +144,12 @@ class TestGenerator(unittest.TestCase):
             generator.execute()
             # Missing required properties for the added file
             signal_is(Signals.ON_COMMIT_FAIL, True, on=new_plugin)
+
+    def test_commit(self):
+        generator = Generator()
+        file = generator.add_file("test_commit", "txt")
+        file.to_directory(RESULTS_PATH).from_content("Hello world!")
+
+        generator.execute()
+
+        self.assertTrue(RESULTS_PATH.joinpath("test_commit.txt").exists())

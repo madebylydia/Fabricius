@@ -247,7 +247,7 @@ class SupportsPlugin(Generic[_PT]):
         return True
 
 
-class Singleton:
+class Singleton(object):
     _instance = None
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:

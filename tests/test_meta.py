@@ -2,6 +2,7 @@ import re
 import unittest
 
 import fabricius
+from fabricius.interfaces import Singleton
 
 
 class TestProjectMeta(unittest.TestCase):
@@ -12,3 +13,12 @@ class TestProjectMeta(unittest.TestCase):
             fabricius.__version__,
         )
         self.assertIsNotNone(regex, "Your version is not semantic.")
+
+
+class TestProjectUtils(unittest.TestCase):
+    def test_singleton(self):
+
+        class MySingleton(Singleton):
+            pass
+
+        self.assertEqual(id(MySingleton()), id(MySingleton()))

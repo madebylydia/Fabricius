@@ -1,5 +1,6 @@
+import typing
+from typing_extensions import Self
 from copy import copy
-from typing import Dict, List, Optional, cast
 
 from fabricius.file import (
     AlreadyCommittedError,
@@ -11,25 +12,31 @@ from fabricius.file import (
 from fabricius.interfaces import SupportsPlugin
 from fabricius.plugins.generator import GeneratorPlugin
 
-PluginType = cast(GeneratorPlugin, GeneratorPlugin)
+PluginType = typing.cast(GeneratorPlugin, GeneratorPlugin)
 # That might seem useless, but this is to trick static type checkers when using "_plugin_call"
 # If we use "GeneratorPlugin" directly with "send_to_plugins", we will also get the "self" args in
 # the way, by using this variable, we get rid of the "self" and everyone's happy!
 
 
 class Generator(SupportsPlugin[GeneratorPlugin]):
-    files: List[File]
+    files: typing.List[File]
     """
     The list of files to generate with the generator.
     """
 
-    results: Dict[File, Optional[FileCommitResult]] = {}
+    results: typing.Dict[File, typing.Optional[FileCommitResult]] = {}
     """
     The result of each file commit.
     """
 
+    _fake: bool
+    """
+    If the generator should create the files or not.
+    """
+
     def __init__(self) -> None:
         self.files = []
+        self._fake = False
         super().__init__()
 
     def connect_plugin(
@@ -43,6 +50,9 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
         """
         Attempt to commit a file and return its result.
         """
+        if self._fake:
+            file.fake()
+
         try:
             self.send_to_plugins(PluginType.before_file_commit, file=file)
             try:
@@ -67,7 +77,28 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
             self.send_to_plugins(PluginType.on_commit_fail, file=file, exception=error)
             return None
 
-    def add_file(self, name: str, extension: Optional[str] = None) -> File:
+    def fake(self) -> Self:
+        """
+        Tell the generator to not generate files upon execution.
+        Used for testing purposes.
+
+        .. warning::
+           Plugins you connect will not directly know that you've been faking file's
+           generation, they will get the file's result as if it were correctly saved
+           onto the disk. This might create unexpected exceptions.
+        """
+        self._fake = True
+        return self
+
+    def restore(self) -> Self:
+        """
+        Tell the generator to generate files upon execution.
+        Used for testing purposes.
+        """
+        self._fake = False
+        return self
+
+    def add_file(self, name: str, extension: typing.Optional[str] = None) -> File:
         """
         Add a file to the generator.
 
@@ -89,7 +120,7 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
         self.send_to_plugins(PluginType.on_file_add, file=file)
         return file
 
-    def execute(self, *, allow_overwrite: bool = False) -> Dict[File, Optional[FileCommitResult]]:
+    def execute(self, *, allow_overwrite: bool = False) -> typing.Dict[File, typing.Optional[FileCommitResult]]:
         """
         Execute generator's tasks.
 

@@ -118,6 +118,11 @@ class File:
     The data that will be passed to the renderer.
     """
 
+    will_fake: bool
+    """
+    If the file should fake its creation upon commit.
+    """
+
     def __init__(self, name: str, extension: Optional[str] = None):
         """
         Create a file's generator.
@@ -133,6 +138,7 @@ class File:
         self.state = "pending"
         self.content = None
         self.destination = None
+        self.will_fake = False
 
         self.renderer = PythonFormatRenderer
         self.data = {}
@@ -231,6 +237,14 @@ class File:
         self.data.update(data)
         return self
 
+    def fake(self) -> Self:
+        self.will_fake = True
+        return self
+
+    def restore(self) -> Self:
+        self.will_fake = False
+        return self
+
     def generate(self) -> str:
         """
         Generate the file's content.
@@ -290,16 +304,17 @@ class File:
 
         final_content = self.generate()
 
-        if not self.destination.exists():
+        if not self.destination.exists() and (not self.will_fake):
             self.destination.mkdir(parents=True)
         destination = self.destination.joinpath(self.name)
 
         if destination.exists() and not overwrite:
             raise FileExistsError(f"File '{self.name}' already exists.")
 
-        with contextlib.suppress(NotADirectoryError):
-            destination.write_text(final_content)
-            self.state = "persisted"
+        if not self.will_fake:
+            with contextlib.suppress(NotADirectoryError):
+                destination.write_text(final_content)
+        self.state = "persisted"
 
         return FileCommitResult(
             name=self.name,
