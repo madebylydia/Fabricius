@@ -15,7 +15,7 @@ class TestFile(unittest.TestCase):
     """
 
     TEMPLATE_PATH = pathlib.Path(__file__, "..", "files", "templates").resolve()
-    DESTINATION_PATH = pathlib.Path(__file__, "..", "results", "file_generator").resolve()
+    DESTINATION_PATH = pathlib.Path(__file__, "..", "results", "file").resolve()
 
     def test_file_name(self):
         """

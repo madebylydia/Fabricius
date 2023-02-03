@@ -1,7 +1,8 @@
 import re
 import unittest
 
-import fabricius
+from fabricius import __version__ as fabricius_version
+from fabricius.utils import calculate_text_color
 from fabricius.interfaces import Singleton
 
 
@@ -10,7 +11,7 @@ class TestProjectMeta(unittest.TestCase):
         # I hope the guy who made this regex rests in peace.
         regex = re.match(
             r"^([1-9][0-9]*!)?(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$",
-            fabricius.__version__,
+            fabricius_version,
         )
         self.assertIsNotNone(regex, "Your version is not semantic.")
 
@@ -22,3 +23,7 @@ class TestProjectUtils(unittest.TestCase):
             pass
 
         self.assertEqual(id(MySingleton()), id(MySingleton()))
+
+    def test_color_calculation(self):
+        self.assertEqual(calculate_text_color("black"), "bright_white")
+        self.assertEqual(calculate_text_color("bright_white"), "black")

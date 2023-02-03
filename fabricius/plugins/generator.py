@@ -25,7 +25,7 @@ class GeneratorPlugin(BasePlugin):
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.File`
+        file : :py:class:`fabricius.file.File`
             The file that has been added to the generator.
         """
         raise NotImplementedError()
@@ -44,7 +44,7 @@ class GeneratorPlugin(BasePlugin):
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.File`
+        file : :py:class:`fabricius.file.File`
             The file that will be generated.
         """
         raise NotImplementedError()
@@ -55,7 +55,7 @@ class GeneratorPlugin(BasePlugin):
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.File`
+        file : :py:class:`fabricius.file.File`
             The file that has been generated.
         """
         raise NotImplementedError()
@@ -66,9 +66,9 @@ class GeneratorPlugin(BasePlugin):
 
         Parameters
         ----------
-        results : List of :py:class:`fabricius.generator.file.GeneratorCommitResult`
+        results : List of :py:class:`fabricius.file.GeneratorFileCommitResult`
             A list of
-            :py:class:`GeneratorCommitResult <fabricius.generator.file.GeneratorCommitResult>`.
+            :py:class:`GeneratorFileCommitResult <fabricius.file.GeneratorFileCommitResult>`.
         """
         raise NotImplementedError()
 
@@ -78,7 +78,7 @@ class GeneratorPlugin(BasePlugin):
 
         Parameters
         ----------
-        file : :py:class:`fabricius.generator.file.File`
+        file : :py:class:`fabricius.file.File`
             The file that has been generated.
         exception : :py:class:`Exception`
             The exception that was raised.

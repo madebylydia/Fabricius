@@ -52,7 +52,7 @@ class AlreadyCommittedError(FabriciusError):
 
 class FileCommitResult(TypedDict):
     """
-    A CommitResult is returned when a file was successfully saved.
+    A FileCommitResult is returned when a file was successfully saved.
     It returns its information after its creation.
     """
 
@@ -285,14 +285,16 @@ class File:
         :py:exc:`FileExistsError` :
             If the file already exists on the disk and ``overwrite`` is set to ``False``.
 
-            This is different than
+            This is different from
             :py:exc:`AlreadyCommittedError <fabricius.generator.errors.AlreadyCommittedError>`
-            because this indicate that the content of the file this generator was never actually
+            because this indicates that the content of the file this generator was never actually
             saved.
+        :py:exc:`OSError` :
+            The file's name is not valid for the OS.
 
         Returns
         -------
-        :py:class:`fabricius.generator.file.CommitResult` :
+        :py:class:`fabricius.file.FileCommitResult` :
             A typed dict with information about the created file.
         """
         if not self.destination:
@@ -311,10 +313,12 @@ class File:
         if destination.exists() and not overwrite:
             raise FileExistsError(f"File '{self.name}' already exists.")
 
-        if not self.will_fake:
+        if self.will_fake:
+            self.state = "persisted"
+        else:
             with contextlib.suppress(NotADirectoryError):
                 destination.write_text(final_content)
-        self.state = "persisted"
+                self.state = "persisted"
 
         return FileCommitResult(
             name=self.name,

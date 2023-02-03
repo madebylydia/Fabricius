@@ -112,7 +112,7 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
 
         Returns
         -------
-        :py:class:`fabricius.generator.file.File` :
+        :py:class:`fabricius.file.File` :
             The generated file. You then have to set file's options.
         """
         file = File(name, extension)
@@ -132,7 +132,7 @@ class Generator(SupportsPlugin[GeneratorPlugin]):
 
         Returns
         -------
-        Dict[:py:class:`fabricius.generator.file.File`, :py:class:`fabricius.generator.file.CommitResult`] :
+        Dict[:py:class:`fabricius.file.File`, :py:class:`fabricius.file.FileCommitResult`] :
             A dict containing a file generator and its commit result.
             In case the value is ``None``, this mean that the file was not successfully saved to
             the disk (Already committed, file already exists, etc.).

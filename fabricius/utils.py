@@ -1,43 +1,38 @@
-"""
-Utilities shipped with Fabricius.
-"""
 import typing
 import inflection
 
-from math import sqrt
 from rich.color import Color
 
 
-def calculate_text_color(color: Color, *, threshold: int = 150) -> "typing.Literal['black', 'bright_white']":
+def calculate_text_color(color: str | Color, *, threshold: int = 150) -> typing.Literal['black', 'bright_white']:
     """
     Calculate if the text should be in black or white depending on a color.
-    It uses the following formula:
-        (r * 0.299 + g * 0.587 + b * 0.114) > threshold
+    It uses the following formula: (r * 0.299 + g * 0.587 + b * 0.114) > threshold
     Where r, g, and b are the RGB (triplet) values of the color.
 
     Parameters
     ----------
-    color : str
+    color : :py:class:`str` or :py:class:`rich.Color`
         The color we're calculating against to.
-        This must be an HEX color string, (Like this: "#000000")
-    threshold : int
+        This must be a Color class (From Rich)
+    threshold : :py:class:`int`
         The threshold to determine if the text is black or white.
 
     Raises
     ------
-    AttributeError :
-        The triplet is not defined in the color.
+    :py:exc:`rich.color.ColorParseError` :
+        If ``color`` is of typ
 
     Returns
     -------
     str :
         Return either "black" or "bright_white"
     """
-    if not color.triplet:
-        raise AttributeError("Missing triplet in color")
-    r, g, b = tuple(color.triplet)
+    if isinstance(color, str):
+        color = Color.parse(color)
+    r, g, b = tuple(color.get_truecolor())
 
-    return 'black' if (r * 0.299 + g * 0.587 + b * 0.114) > threshold else 'bright_white'  # type: ignore
+    return 'black' if (r * 0.299 + g * 0.587 + b * 0.114) > threshold else 'bright_white'
 
 
 def camel_case(text: str) -> str:
@@ -46,12 +41,12 @@ def camel_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text : :py:class:`str`
         The text you want to format.
 
     Returns
     -------
-    str :
+    :py:class:`str` :
         The formatted text.
 
     Example
@@ -71,12 +66,12 @@ def snake_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text : :py:class:`str`
         The text you want to format.
 
     Returns
     -------
-    str :
+    :py:class:`str` :
         The formatted text.
 
     Example
@@ -96,12 +91,12 @@ def dash_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text : :py:class:`str`
         The text you want to format.
 
     Returns
     -------
-    str :
+    :py:class:`str` :
         The formatted text.
 
     Example
@@ -121,12 +116,12 @@ def pascal_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text : :py:class:`str`
         The text you want to format.
 
     Returns
     -------
-    str :
+    :py:class:`str` :
         The formatted text.
 
     Example
@@ -146,12 +141,12 @@ def capital_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text : :py:class:`str`
         The text you want to format.
 
     Returns
     -------
-    str :
+    :py:class:`str` :
         The formatted text.
 
     Example
@@ -171,12 +166,12 @@ def sentence_case(text: str) -> str:
 
     Parameters
     ----------
-    text : str
+    text : :py:class:`str`
         The text you want to format.
 
     Returns
     -------
-    str :
+    :py:class:`str` :
         The formatted text.
 
     Example

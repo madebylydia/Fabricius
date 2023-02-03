@@ -1,14 +1,14 @@
 import abc
 import string
+import typing
 from collections import UserDict
-from typing import Any, Literal, Optional
 
 import chevron
 
 from fabricius.const import Data
 
 
-class DictAllowMiss(UserDict[str, Any]):
+class DictAllowMiss(UserDict[str, typing.Any]):
     """
     A subclass of Dict to return an empty string in case of missing key, instead of raising an
     error, so that it can play nice with renderer.
@@ -16,12 +16,12 @@ class DictAllowMiss(UserDict[str, Any]):
     :meta private:
     """
 
-    def __missing__(self, _: str) -> Literal[""]:
+    def __missing__(self, _: str) -> typing.Literal[""]:
         return ""
 
 
 class Renderer(abc.ABC):
-    name: Optional[str]
+    name: typing.Optional[str]
     """
     The name of the renderer, not necessary, but suggested to add.
     """
@@ -32,12 +32,30 @@ class Renderer(abc.ABC):
     """
 
     def __init__(self, data: Data) -> None:
+        """
+
+        Parameters
+        ----------
+        data : Data
+            The data to pass to the renderer.
+        """
         self.data = data
 
     @abc.abstractmethod
     def render(self, content: str) -> str:
         """
-        The method that will process a given template input and return a
+        This method will process a given string, the template input and return the processed
+        template as a string too.
+
+        Parameters
+        ----------
+        content : str
+            The template
+
+        Returns
+        -------
+        str :
+            The result of the processed template.
         """
         raise NotImplementedError()
 
@@ -62,8 +80,8 @@ class StringTemplateRenderer(Renderer):
     safe: bool
     """
     Indicate if the renderer should use
-    :py:obj:`python:string.Template.safe_substitute` or
-    :py:obj:`python:string.Template.substitute`
+    :py:meth:`string.Template.safe_substitute` or
+    :py:meth:`string.Template.substitute`
     """
 
     def __init__(self, data: Data, *, safe: bool = True) -> None:

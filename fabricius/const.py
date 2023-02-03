@@ -1,6 +1,6 @@
 import os
 import pathlib
-from typing import Any, Dict, Literal, TypeAlias, Union
+from typing import Any, Dict, Literal, TypeAlias
 
 
 class Colors:
@@ -25,6 +25,9 @@ class Colors:
     SKIP = "bright_blue"
     OVERWRITE = "bright_cyan"
 
+    TITLE = "cyan"
+    INPUT = "magenta"
+
 
 Data: TypeAlias = Dict[str, Any]
 """
@@ -42,7 +45,7 @@ The file's state can be one of:
 * deleted
 """
 
-PathStrOrPath = Union[str, os.PathLike[str], pathlib.Path]
+PathStrOrPath = str | os.PathLike[str] | pathlib.Path
 """
 Represent a path as a :py:class:`str` or a :py:class:`pathlib.Path` object.
 Typically what's used to treat path in Fabricius.

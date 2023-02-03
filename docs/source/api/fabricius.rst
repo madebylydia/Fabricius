@@ -53,6 +53,14 @@ fabricius.renderer module
    :undoc-members:
    :show-inheritance:
 
+fabricius.terminal module
+-------------------------
+
+.. automodule:: fabricius.terminal
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 fabricius.utils module
 ----------------------
 

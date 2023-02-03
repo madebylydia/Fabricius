@@ -52,10 +52,9 @@ Fabricius API
 ^^^^^^^^^^^^^
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    api/fabricius
    api/fabricius.generator
    api/fabricius.plugins
-
-..    api/modules
+   api/modules
