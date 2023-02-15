@@ -80,7 +80,7 @@ class MyPlugin(GeneratorPlugin):
         return cls()
 
 
-RESULTS_PATH = pathlib.Path(__file__, "..", "results", "generator")
+RESULTS_PATH = pathlib.Path(__file__, "..", "results", "generator").resolve()
 PluginToConnect = MyPlugin()
 
 
