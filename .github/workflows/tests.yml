@@ -1,6 +1,7 @@
 name: Fabricius Tests
 on:
   pull_request:
+    types: [opened, ready_for_review]
   push:
 
 jobs:
