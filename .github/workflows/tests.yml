@@ -35,5 +35,5 @@ jobs:
       - name: Install package
         run: poetry install
 
-      - name: Run tests
-        run: poetry run tox .
+      - name: Run Tox
+        run: poetry run tox
