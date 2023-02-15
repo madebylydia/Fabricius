@@ -21,6 +21,13 @@ class DictAllowMiss(UserDict[str, typing.Any]):
 
 
 class Renderer(abc.ABC):
+    """
+    The Renderer is what translate and generates the output of templates. Core of the work.
+
+    You must subclass this class and override the :py:meth:`render` method, if possible, also add
+    a name.
+    """
+
     name: typing.Optional[str]
     """
     The name of the renderer, not necessary, but suggested to add.
@@ -32,13 +39,6 @@ class Renderer(abc.ABC):
     """
 
     def __init__(self, data: Data) -> None:
-        """
-
-        Parameters
-        ----------
-        data : Data
-            The data to pass to the renderer.
-        """
         self.data = data
 
     @abc.abstractmethod
@@ -49,12 +49,12 @@ class Renderer(abc.ABC):
 
         Parameters
         ----------
-        content : str
+        content : :py:class:`str`
             The template
 
         Returns
         -------
-        str :
+        :py:class:`str` :
             The result of the processed template.
         """
         raise NotImplementedError()

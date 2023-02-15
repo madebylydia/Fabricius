@@ -46,7 +46,7 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        prompt : str
+        prompt : :py:class:`str`
             The question to the user.
         prompt_type : Optional, type of :py:class:`rich.prompt.PromptBase`
             The type of prompt. Passing this parameter will make use of the ``.ask`` method.
@@ -61,7 +61,7 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        name : str
+        name : :py:class:`str`
             The title.
         """
         self._console.print(f"{name}", justify="center", style=f"white on {self._colors.TITLE}")
@@ -78,9 +78,9 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        title : str
+        title : :py:class:`str`
             The title of the warning
-        description : str
+        description : :py:class:`str`
             Its description, explains what's wrong.
         """
         self._console.print(f"[{self._get_box_colors(self._colors.WARNING)}] {title} [/] [{self._colors.WARNING}]{description}")
@@ -91,9 +91,9 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        title : str
+        title : :py:class:`str`
             A simple title
-        description : str
+        description : :py:class:`str`
             Its description, explain what was successful.
         """
         self._console.print(f"[{self._get_box_colors(self._colors.SUCCESS)}] {title} [/] [{self._colors.SUCCESS}]{description}")
@@ -104,9 +104,9 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        title : str
+        title : :py:class:`str`
             The title of the skip
-        description : str
+        description : :py:class:`str`
             Its description, explains what was skipped.
         """
         self._console.print(f"[{self._get_box_colors(self._colors.SKIP)}] {title} [/] [{self._colors.SKIP}]{description}")
@@ -117,9 +117,9 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        title : str
+        title : :py:class:`str`
             The title of the overwrite
-        description : str
+        description : :py:class:`str`
             Its description, explains what was overwritten.
         """
         self._console.print(f"[{self._get_box_colors(self._colors.OVERWRITE)}] {title} [/] [{self._colors.OVERWRITE}]{description}")
@@ -131,9 +131,9 @@ class Terminal(Singleton):
 
         Parameters
         ----------
-        title : str
+        title : :py:class:`str`
             The title of the exception, giving more explanation on the error.
-        title_after : bool
+        title_after : :py:class:`bool`
             Indicates if the title should be printed before or after the exception has been printed
         """
         if not title_after:

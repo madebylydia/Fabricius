@@ -30,7 +30,7 @@ class Plugin(typing.Protocol):
 
         Returns
         -------
-        bool :
+        `:py:class:`bool` :
             If the plugin has a valid PIID.
         """
         if not self.PIID:
@@ -44,7 +44,7 @@ class Plugin(typing.Protocol):
 
         Returns
         -------
-        Optional, str :
+        Optional, :py:class:`str` :
             The name of the plugin if defined and valid.
         """
         return PIID_REGEX.match(self.PIID).group(1) if self.has_valid_piid else None  # type: ignore
@@ -55,7 +55,7 @@ class Plugin(typing.Protocol):
 
         Returns
         -------
-        Optional, int :
+        Optional, :py:class:`int` :
             The ID of the plugin if defined and valid.
         """
         return int(PIID_REGEX.match(self.PIID).group(2)) if self.has_valid_piid else None  # type: ignore
