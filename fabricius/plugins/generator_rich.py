@@ -1,11 +1,11 @@
-from typing import Any, Dict, Optional
+import typing
 
 from rich import get_console
 from rich.console import Console
 from rich.prompt import Confirm
 
 from fabricius.file import File, FileCommitResult
-from fabricius.plugins.generator import GeneratorPlugin
+from fabricius.plugins.define import GeneratorPlugin
 
 
 class FileRichPlugin(GeneratorPlugin):
@@ -23,6 +23,8 @@ class FileRichPlugin(GeneratorPlugin):
     """
     A boolean indicating if the plugin should ask for overwrites when needed.
     """
+
+    PIID = "fabricius.file.rich-221564"
 
     def __init__(self, *, ask_for_overwrites: bool = True, verbose: bool = False) -> None:
         self.ask_for_overwrites = ask_for_overwrites
@@ -57,7 +59,7 @@ class FileRichPlugin(GeneratorPlugin):
         if self.verbose:
             self.console.print(f":mag: {file.name} is about to be committed!")
 
-    def after_file_commit(self, file: File, result: Optional[FileCommitResult]) -> None:
+    def after_file_commit(self, file: File, result: typing.Optional[FileCommitResult]) -> None:
         if self.verbose:
             self.console.print(f":mag: {file.name} was committed!")
         self._print_column("COMMITTED", file.name, "green")
@@ -76,6 +78,6 @@ class FileRichPlugin(GeneratorPlugin):
                 self._print_column("FAILURE", f"{file.name} has failed!", "red")
                 self.console.print_exception()
 
-    def after_execution(self, results: Dict[File, Optional[FileCommitResult]]) -> Any:
+    def after_execution(self, results: typing.Dict[File, typing.Optional[FileCommitResult]]) -> typing.Any:
         if self.verbose:
             self.console.print("[green]:wave: Execution done!")

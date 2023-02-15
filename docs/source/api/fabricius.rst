@@ -37,6 +37,14 @@ fabricius.file module
    :undoc-members:
    :show-inheritance:
 
+fabricius.plugin module
+-----------------------
+
+.. automodule:: fabricius.plugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 fabricius.interfaces module
 ---------------------------
 

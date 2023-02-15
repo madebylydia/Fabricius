@@ -1,6 +1,6 @@
 import os
 import pathlib
-from typing import Any, Dict, Literal, TypeAlias
+import typing
 
 
 class Colors:
@@ -29,12 +29,12 @@ class Colors:
     INPUT = "magenta"
 
 
-Data: TypeAlias = Dict[str, Any]
+Data: typing.TypeAlias = typing.Dict[str, typing.Any]
 """
 Represent the data passed to a generator/file, under a form of dictionary.
 """
 
-FILE_STATE = Literal["pending", "persisted", "deleted"]
+FILE_STATE = typing.Literal["pending", "persisted", "deleted"]
 """
 Define the state of a file.
 

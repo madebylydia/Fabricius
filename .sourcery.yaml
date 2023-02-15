@@ -1,0 +1,32 @@
+version: '1'  # The schema version of this config file
+
+ignore:
+- .git
+- venv
+- .venv
+- env
+- .env
+- .tox
+
+rule_settings:
+  enable:
+  - default
+  disable: []
+  rule_types:
+  - refactoring
+  - suggestion
+  - comment
+  python_version: '3.10'
+
+rules: # https://docs.sourcery.ai/custom_rules/reference/
+- id: only-allow-import-typing
+  description: Import typing using import statement, not from statement.
+  pattern: from typing import ...
+  language: python
+  replacement: import typing
+  paths:
+    include:
+      - './fabricius'
+  tests:
+    - match: 'from typing import Any'
+    - no-match: 'import typing'

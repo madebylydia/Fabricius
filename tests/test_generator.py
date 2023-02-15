@@ -1,14 +1,14 @@
 import enum
 import pathlib
 import unittest
-from typing import Dict, Optional, Type
+import typing
 
 from typing_extensions import Self
 
 from fabricius.errors import FabriciusError
 from fabricius.file import File, FileCommitResult
-from fabricius.generator.generator import Generator
-from fabricius.plugins.generator import GeneratorPlugin
+from fabricius.generator import Generator
+from fabricius.plugins.define import GeneratorPlugin
 
 
 class Signals(enum.Enum):
@@ -63,11 +63,11 @@ class MyPlugin(GeneratorPlugin):
         self.signals["BEFORE_FILE_COMMIT"] = True
         return Signals.BEFORE_FILE_COMMIT
 
-    def after_file_commit(self, file: File, result: Optional[FileCommitResult]):
+    def after_file_commit(self, file: File, result: typing.Optional[FileCommitResult]):
         self.signals["AFTER_FILE_COMMIT"] = True
         return Signals.AFTER_FILE_COMMIT
 
-    def after_execution(self, results: Dict[File, Optional[FileCommitResult]]):
+    def after_execution(self, results: typing.Dict[File, typing.Optional[FileCommitResult]]):
         self.signals["AFTER_EXECUTION"] = True
         return Signals.AFTER_EXECUTION
 
@@ -76,7 +76,7 @@ class MyPlugin(GeneratorPlugin):
         return Signals.ON_COMMIT_FAIL
 
     @classmethod
-    def new(cls: Type[Self]) -> Self:
+    def new(cls: typing.Type[Self]) -> Self:
         return cls()
 
 
@@ -125,7 +125,7 @@ class TestGenerator(unittest.TestCase):
         signal_is(Signals.SETUP, True)
         file = generator.add_file("signals", "txt")
         signal_is(Signals.ON_FILE_ADD, True)
-        file.from_content("File created for test_plugin_signals.").to_directory(RESULTS_PATH).with_data({"name": "world"})
+        file.from_content("File created for test_plugin_signals").to_directory(RESULTS_PATH).with_data({"name": "world"})
 
         generator.execute()
         signal_is(Signals.BEFORE_EXECUTION, True)
@@ -153,3 +153,4 @@ class TestGenerator(unittest.TestCase):
         generator.execute()
 
         self.assertTrue(RESULTS_PATH.joinpath("test_commit.txt").exists())
+        self.assertEqual(RESULTS_PATH.joinpath("test_commit.txt").read_text(), "Hello world!")

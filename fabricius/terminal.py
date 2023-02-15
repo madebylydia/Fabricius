@@ -29,6 +29,9 @@ class Terminal(Singleton):
         self._console = rich.get_console()
         self._colors = colors
 
+    def _get_box_colors(self, color: str) -> str:
+        return f"{calculate_text_color(color)} on {color}"
+
     @typing.overload
     def input(self, prompt: str) -> str:
         ...
@@ -45,17 +48,14 @@ class Terminal(Singleton):
         ----------
         prompt : str
             The question to the user.
-
-        Returns
-        -------
-        str :
-            The user's input/answer.
+        prompt_type : Optional, type of :py:class:`rich.prompt.PromptBase`
+            The type of prompt. Passing this parameter will make use of the ``.ask`` method.
         """
         if prompt_type:
             return prompt_type.ask(f"[{self._colors.INPUT}]{prompt}[/]")
         return self._console.input(f"[{self._colors.INPUT}]{prompt}[/]: ")
 
-    def title(self, name: str):
+    def title(self, name: str) -> None:
         """
         Print a title.
 
@@ -72,7 +72,7 @@ class Terminal(Singleton):
         """
         self._console.print()
 
-    def warning(self, title: str, description: str):
+    def warning(self, title: str, description: str) -> None:
         """
         Print a warning.
 
@@ -83,9 +83,9 @@ class Terminal(Singleton):
         description : str
             Its description, explains what's wrong.
         """
-        self._console.print(f"[{calculate_text_color(self._colors.WARNING)} on {self._colors.WARNING}] {title} [/] [{self._colors.WARNING}]{description}")
+        self._console.print(f"[{self._get_box_colors(self._colors.WARNING)}] {title} [/] [{self._colors.WARNING}]{description}")
 
-    def success(self, title: str, description: str):
+    def success(self, title: str, description: str) -> None:
         """
         Print a successful action.
 
@@ -96,9 +96,9 @@ class Terminal(Singleton):
         description : str
             Its description, explain what was successful.
         """
-        self._console.print(f"[{calculate_text_color(self._colors.SUCCESS)} on {self._colors.SUCCESS}] {title} [/] [{self._colors.SUCCESS}]{description}")
+        self._console.print(f"[{self._get_box_colors(self._colors.SUCCESS)}] {title} [/] [{self._colors.SUCCESS}]{description}")
 
-    def skip(self, title: str, description: str):
+    def skip(self, title: str, description: str) -> None:
         """
         Print a skipped action.
 
@@ -109,9 +109,9 @@ class Terminal(Singleton):
         description : str
             Its description, explains what was skipped.
         """
-        self._console.print(f"[{calculate_text_color(self._colors.SKIP)} on {self._colors.SKIP}] {title} [/] [{self._colors.SKIP}]{description}")
+        self._console.print(f"[{self._get_box_colors(self._colors.SKIP)}] {title} [/] [{self._colors.SKIP}]{description}")
 
-    def overwrite(self, title: str, description: str):
+    def overwrite(self, title: str, description: str) -> None:
         """
         Print an overwrite action.
 
@@ -120,12 +120,12 @@ class Terminal(Singleton):
         title : str
             The title of the overwrite
         description : str
-            Its description, explains what was overwrote.
+            Its description, explains what was overwritten.
         """
-        self._console.print(f"[{calculate_text_color(self._colors.OVERWRITE)} on {self._colors.OVERWRITE}] {title} [/] [{self._colors.OVERWRITE}]{description}")
+        self._console.print(f"[{self._get_box_colors(self._colors.OVERWRITE)}] {title} [/] [{self._colors.OVERWRITE}]{description}")
 
 
-    def exception(self, title: str, *, title_after: bool = False):
+    def exception(self, title: str, *, title_after: bool = False) -> None:
         """
         Print a title for an exception and the exception itself using Rich.
 
@@ -137,10 +137,10 @@ class Terminal(Singleton):
             Indicates if the title should be printed before or after the exception has been printed
         """
         if not title_after:
-            self._console.print(f" {title} ", style=f"{calculate_text_color(self._colors.ERROR)} on {self._colors.ERROR}")
+            self._console.print(f" {title} ", style=f"{self._get_box_colors(self._colors.ERROR)}")
         try:
             self._console.print_exception()
         except ValueError:
             self.warning("Cannot render exception", "No exception were raised.")
         if title_after:
-            self._console.print(f" {title} ", style=f"{calculate_text_color(self._colors.ERROR)} on {self._colors.ERROR}")
+            self._console.print(f" {title} ", style=f"{self._get_box_colors(self._colors.ERROR)}")

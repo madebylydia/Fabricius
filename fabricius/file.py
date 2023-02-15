@@ -1,6 +1,6 @@
 import contextlib
 import pathlib
-from typing import Optional, Type, TypedDict
+import typing
 
 from typing_extensions import Self
 
@@ -50,7 +50,7 @@ class AlreadyCommittedError(FabriciusError):
         super().__init__(f"File '{file_name}' has already been committed.")
 
 
-class FileCommitResult(TypedDict):
+class FileCommitResult(typing.TypedDict):
     """
     A FileCommitResult is returned when a file was successfully saved.
     It returns its information after its creation.
@@ -98,17 +98,17 @@ class File:
     The state of the file.
     """
 
-    template_content: Optional[str]
+    template_content: typing.Optional[str]
     """
     The content of the base template, if set.
     """
 
-    destination: Optional[pathlib.Path]
+    destination: typing.Optional[pathlib.Path]
     """
     The destination of the file, if set.
     """
 
-    renderer: Type[Renderer]
+    renderer: typing.Type[Renderer]
     """
     The renderer to use to generate the file.
     """
@@ -123,7 +123,7 @@ class File:
     If the file should fake its creation upon commit.
     """
 
-    def __init__(self, name: str, extension: Optional[str] = None):
+    def __init__(self, name: str, extension: typing.Optional[str] = None) -> None:
         """
         Create a file's generator.
 
@@ -207,7 +207,7 @@ class File:
         self.renderer = StringTemplateRenderer
         return self
 
-    def with_renderer(self, renderer: Type[Renderer]) -> Self:
+    def with_renderer(self, renderer: typing.Type[Renderer]) -> Self:
         """
         Use a custom renderer to render the template.
 
