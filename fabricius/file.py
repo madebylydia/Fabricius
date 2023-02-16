@@ -98,6 +98,11 @@ class File:
     The state of the file.
     """
 
+    content: typing.Optional[str]
+    """
+    The template's content.
+    """
+
     template_content: typing.Optional[str]
     """
     The content of the base template, if set.

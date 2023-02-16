@@ -1,13 +1,15 @@
 import re
 import typing
 
-from fabricius.errors import PluginConnectionError
+from ._typing import Protocol
+
+from .errors import PluginConnectionError
 
 
 PIID_REGEX = re.compile(r"^([a-z]{3,})-(\d{6})$")
 
 
-class Plugin(typing.Protocol):
+class Plugin(Protocol):
     """
     The base class for all plugins.
     """
@@ -17,10 +19,13 @@ class Plugin(typing.Protocol):
     The PIID (Plugin Identifier & ID) is a string composed of a name for the plugin that is created
     """
 
-    _is_connected: bool
+    _connected: bool
+    """
+    Indicate if the plugin has been connected, should NOT be edited manually.
+    """
 
     def __init__(self) -> None:
-        self._is_connected = False
+        self._connected = False
 
     @property
     def has_valid_piid(self) -> bool:
@@ -30,7 +35,7 @@ class Plugin(typing.Protocol):
 
         Returns
         -------
-        `:py:class:`bool` :
+        :py:class:`bool` :
             If the plugin has a valid PIID.
         """
         if not self.PIID:
@@ -62,7 +67,7 @@ class Plugin(typing.Protocol):
 
     @property
     def is_connected(self) -> bool:
-        return self._is_connected
+        return self._connected
 
     def setup(self) -> typing.Any:
         """
@@ -144,9 +149,14 @@ class AcceptPlugins(typing.Generic[_PT]):
         Optional, instance of :py:class:`fabricius.plugin.Plugin` :
             The connected plugin, if any.
         """
-        for connected_plugin in self._plugins:
-            if isinstance(connected_plugin, plugin):
-                return connected_plugin
+        return next(
+            (
+                connected_plugin
+                for connected_plugin in self._plugins
+                if isinstance(connected_plugin, plugin)
+            ),
+            None,
+        )
 
     def connect_plugin(self, plugin: _PT, *, force_append: bool = False) -> _PT:
         """
@@ -192,7 +202,7 @@ class AcceptPlugins(typing.Generic[_PT]):
                 ) from error
 
         self._plugins.append(plugin)
-        plugin._is_connected = True  # type: ignore
+        plugin._connected = True  # type: ignore
         return plugin
 
     def disconnect_plugin(self, plugin: _PT | typing.Type[_PT]) -> None:
@@ -215,7 +225,7 @@ class AcceptPlugins(typing.Generic[_PT]):
                 connected_plugin.teardown()
             finally:
                 self._plugins.remove(connected_plugin)
-                connected_plugin._is_connected = False  # type: ignore
+                connected_plugin._connected = False  # type: ignore
 
 
     def send_to_plugins(
@@ -251,11 +261,11 @@ class AcceptPlugins(typing.Generic[_PT]):
             typing.List[typing.Optional[typing.Callable[_P, None]]],
             [getattr(plugin, method.__name__, None) for plugin in self._plugins ],
         )
-        to_call = [method for method in to_call if method]
 
         for func in to_call:
             try:
-                func(*args, **kwargs)
+                if func:
+                    func(*args, **kwargs)
             except Exception as exception:
                 if silence_exceptions:
                     continue

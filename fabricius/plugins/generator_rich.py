@@ -4,8 +4,8 @@ from rich import get_console
 from rich.console import Console
 from rich.prompt import Confirm
 
-from fabricius.file import File, FileCommitResult
-from fabricius.plugins.define import GeneratorPlugin
+from ..file import File, FileCommitResult
+from ..plugins.define import GeneratorPlugin
 
 
 class FileRichPlugin(GeneratorPlugin):

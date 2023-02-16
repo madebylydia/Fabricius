@@ -34,7 +34,7 @@ jobs:
           cache: 'poetry'
 
       - name: Install package
-        run: poetry install
+        run: poetry install --with dev,actions
 
       - name: Run Tox
         run: poetry run tox

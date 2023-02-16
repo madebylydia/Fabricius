@@ -4,7 +4,7 @@ from typing_extensions import Self
 
 
 class Singleton(object):
-    _instance = None
+    _instance: typing.Optional[Self] = None
 
     def __new__(cls, *args: typing.Any, **kwargs: typing.Any) -> Self:
         if not isinstance(cls._instance, cls):

@@ -2,18 +2,18 @@ import typing
 from typing_extensions import Self
 from copy import copy
 
-from fabricius.file import (
+from .file import (
     AlreadyCommittedError,
     File,
     FileCommitResult,
     NoContentError,
     NoDestinationError,
 )
-from fabricius.plugin import AcceptPlugins
-from fabricius.plugins.define import GeneratorPlugin
+from .plugin import AcceptPlugins
+from .plugins.define import GeneratorPlugin
 
 
-GPlugin = GeneratorPlugin() if typing.TYPE_CHECKING else GeneratorPlugin
+GPlugin = typing.cast(GeneratorPlugin, GeneratorPlugin)
 
 
 class Generator(AcceptPlugins[GeneratorPlugin]):

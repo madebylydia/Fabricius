@@ -1,10 +1,10 @@
 import typing
 
-from fabricius.file import File, FileCommitResult
-from fabricius.plugin import Plugin
+from ...file import File, FileCommitResult
+from ...plugin import Plugin
 
 if typing.TYPE_CHECKING:
-    from fabricius.generator import Generator
+    from ...generator import Generator
 
 
 class GeneratorPlugin(Plugin):

@@ -5,7 +5,7 @@ from collections import UserDict
 
 import chevron
 
-from fabricius.const import Data
+from .const import Data
 
 
 class DictAllowMiss(UserDict[str, typing.Any]):

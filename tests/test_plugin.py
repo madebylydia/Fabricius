@@ -1,17 +1,29 @@
 import unittest
 
-from fabricius.plugin import Plugin
+from fabricius.plugin import Plugin, AcceptPlugins
+
+
+class NeutralPlugin(Plugin):
+    pass
+
+class NeutralEmitter(AcceptPlugins[NeutralPlugin]):
+    pass
 
 
 class TestPlugin(unittest.TestCase):
     """
     Test Fabricius's Plugin.
     """
+    def test_is_connected(self):
+
+        plugin = NeutralPlugin()
+        self.assertFalse(plugin.is_connected)
+
+        emitter = NeutralEmitter()
+        emitter.connect_plugin(plugin)
+        self.assertTrue(plugin.is_connected)
 
     def test_piid(self):
-
-        class NeutralPlugin(Plugin):
-            pass
 
         self.assertFalse(NeutralPlugin().has_valid_piid)
         self.assertIsNone(NeutralPlugin().plugin_name)
