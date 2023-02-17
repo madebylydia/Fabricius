@@ -1,10 +1,11 @@
 import unittest
 
-from fabricius.plugin import Plugin, AcceptPlugins
+from fabricius.plugin import AcceptPlugins, Plugin
 
 
 class NeutralPlugin(Plugin):
     pass
+
 
 class NeutralEmitter(AcceptPlugins[NeutralPlugin]):
     pass
@@ -14,6 +15,7 @@ class TestPlugin(unittest.TestCase):
     """
     Test Fabricius's Plugin.
     """
+
     def test_is_connected(self):
 
         plugin = NeutralPlugin()

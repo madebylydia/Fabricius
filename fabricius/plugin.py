@@ -2,9 +2,7 @@ import re
 import typing
 
 from ._typing import Protocol
-
 from .errors import PluginConnectionError
-
 
 PIID_REGEX = re.compile(r"^([a-z]{3,})-(\d{6})$")
 
@@ -198,7 +196,7 @@ class AcceptPlugins(typing.Generic[_PT]):
             if not force_append:
                 raise PluginConnectionError(
                     plugin.plugin_name or plugin.__class__.__name__,
-                    f"Plugin's setup has thrown an exception: {error}"
+                    f"Plugin's setup has thrown an exception: {error}",
                 ) from error
 
         self._plugins.append(plugin)
@@ -226,7 +224,6 @@ class AcceptPlugins(typing.Generic[_PT]):
             finally:
                 self._plugins.remove(connected_plugin)
                 connected_plugin._connected = False  # type: ignore
-
 
     def send_to_plugins(
         self,
@@ -259,7 +256,7 @@ class AcceptPlugins(typing.Generic[_PT]):
         """
         to_call = typing.cast(
             typing.List[typing.Optional[typing.Callable[_P, None]]],
-            [getattr(plugin, method.__name__, None) for plugin in self._plugins ],
+            [getattr(plugin, method.__name__, None) for plugin in self._plugins],
         )
 
         for func in to_call:

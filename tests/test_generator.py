@@ -1,7 +1,7 @@
 import enum
 import pathlib
-import unittest
 import typing
+import unittest
 
 from typing_extensions import Self
 
@@ -125,7 +125,9 @@ class TestGenerator(unittest.TestCase):
         signal_is(Signals.SETUP, True)
         file = generator.add_file("signals", "txt")
         signal_is(Signals.ON_FILE_ADD, True)
-        file.from_content("File created for test_plugin_signals").to_directory(RESULTS_PATH).with_data({"name": "world"})
+        file.from_content("File created for test_plugin_signals").to_directory(
+            RESULTS_PATH
+        ).with_data({"name": "world"})
 
         generator.execute()
         signal_is(Signals.BEFORE_EXECUTION, True)

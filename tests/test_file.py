@@ -102,7 +102,7 @@ class TestFile(unittest.TestCase):
         file.from_content("Should not be generated").to_directory(path)
         result = file.fake().commit()
 
-        self.assertIs(result['state'], 'persisted')
+        self.assertIs(result["state"], "persisted")
         self.assertFalse(path.joinpath("test.txt").exists())
 
     def test_file_generate(self):

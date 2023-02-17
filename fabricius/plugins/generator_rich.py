@@ -78,6 +78,8 @@ class FileRichPlugin(GeneratorPlugin):
                 self._print_column("FAILURE", f"{file.name} has failed!", "red")
                 self.console.print_exception()
 
-    def after_execution(self, results: typing.Dict[File, typing.Optional[FileCommitResult]]) -> typing.Any:
+    def after_execution(
+        self, results: typing.Dict[File, typing.Optional[FileCommitResult]]
+    ) -> typing.Any:
         if self.verbose:
             self.console.print("[green]:wave: Execution done!")

@@ -2,31 +2,23 @@ import os
 import pathlib
 import typing
 
+from rich.theme import Theme
 
-class Colors:
-    """
-    An Enum indicating which colors to use with the Rich's console.
-
-    You may create your own Colors class by subclassing this class and overwriting the constants.
-
-    Example
-    -------
-
-    class MyColors(fabricius.const.Colors):
-        ERROR = "red"
-        WARNING = "yellow"
-
-        # The others colors are untouched.
-    """
-    ERROR = "bright_red"
-    WARNING = "yellow"
-
-    SUCCESS = "bright_green"
-    SKIP = "bright_blue"
-    OVERWRITE = "bright_cyan"
-
-    TITLE = "cyan"
-    INPUT = "magenta"
+TerminalTheme = Theme(
+    {
+        "fabricius.error": "black on bright_red",
+        "fabricius.warning.box": "white on yellow",
+        "fabricius.warning": "yellow",
+        "fabricius.success.box": "white on bright_green",
+        "fabricius.success": "bright_green",
+        "fabricius.skip.box": "white on bright_blue",
+        "fabricius.skip": "bright_blue",
+        "fabricius.overwrite.box": "white on bright_cyan",
+        "fabricius.overwrite": "bright_cyan",
+        "fabricius.title": "white on cyan",
+        "fabricius.input": "magenta",
+    },
+)
 
 
 Data: typing.TypeAlias = typing.Dict[str, typing.Any]

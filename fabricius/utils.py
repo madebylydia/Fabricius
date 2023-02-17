@@ -1,10 +1,12 @@
 import typing
-import inflection
 
+import inflection
 from rich.color import Color
 
 
-def calculate_text_color(color: str | Color, *, threshold: int = 150) -> typing.Literal['black', 'bright_white']:
+def calculate_text_color(
+    color: str | Color, *, threshold: int = 150
+) -> typing.Literal["black", "bright_white"]:
     """
     Calculate if the text should be in black or white depending on a color.
     It uses the following formula: (r * 0.299 + g * 0.587 + b * 0.114) > threshold
@@ -32,7 +34,7 @@ def calculate_text_color(color: str | Color, *, threshold: int = 150) -> typing.
         color = Color.parse(color)
     r, g, b = tuple(color.get_truecolor())
 
-    return 'black' if (r * 0.299 + g * 0.587 + b * 0.114) > threshold else 'bright_white'
+    return "black" if (r * 0.299 + g * 0.587 + b * 0.114) > threshold else "bright_white"
 
 
 def camel_case(text: str) -> str:

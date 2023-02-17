@@ -1,6 +1,7 @@
 import typing
-from typing_extensions import Self
 from copy import copy
+
+from typing_extensions import Self
 
 from .file import (
     AlreadyCommittedError,
@@ -11,7 +12,6 @@ from .file import (
 )
 from .plugin import AcceptPlugins
 from .plugins.define import GeneratorPlugin
-
 
 GPlugin = typing.cast(GeneratorPlugin, GeneratorPlugin)
 
@@ -118,7 +118,9 @@ class Generator(AcceptPlugins[GeneratorPlugin]):
         self.send_to_plugins(GPlugin.on_file_add, file=file)
         return file
 
-    def execute(self, *, allow_overwrite: bool = False) -> typing.Dict[File, typing.Optional[FileCommitResult]]:
+    def execute(
+        self, *, allow_overwrite: bool = False
+    ) -> typing.Dict[File, typing.Optional[FileCommitResult]]:
         """
         Execute generator's tasks.
 

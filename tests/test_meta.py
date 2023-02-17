@@ -2,8 +2,8 @@ import re
 import unittest
 
 from fabricius import __version__ as fabricius_version
-from fabricius.utils import calculate_text_color
 from fabricius.interfaces import Singleton
+from fabricius.utils import calculate_text_color
 
 
 class TestProjectMeta(unittest.TestCase):
@@ -18,7 +18,6 @@ class TestProjectMeta(unittest.TestCase):
 
 class TestProjectUtils(unittest.TestCase):
     def test_singleton(self):
-
         class MySingleton(Singleton):
             pass
 

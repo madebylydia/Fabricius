@@ -49,7 +49,9 @@ class GeneratorPlugin(Plugin):
         """
         raise NotImplementedError()
 
-    def after_file_commit(self, file: File, result: typing.Optional[FileCommitResult]) -> typing.Any:
+    def after_file_commit(
+        self, file: File, result: typing.Optional[FileCommitResult]
+    ) -> typing.Any:
         """
         Called when a file has been created and saved locally.
 
@@ -60,7 +62,9 @@ class GeneratorPlugin(Plugin):
         """
         raise NotImplementedError()
 
-    def after_execution(self, results: typing.Dict[File, typing.Optional[FileCommitResult]]) -> typing.Any:
+    def after_execution(
+        self, results: typing.Dict[File, typing.Optional[FileCommitResult]]
+    ) -> typing.Any:
         """
         Called when the generator has realized all file generation.
 

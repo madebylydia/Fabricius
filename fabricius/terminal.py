@@ -1,33 +1,29 @@
-from .const import Colors
+import typing
+
+from rich.console import Console
+from rich.theme import Theme
+
+from .const import TerminalTheme
 from .interfaces import Singleton
 from .utils import calculate_text_color
 
-import typing
-import rich
-
-
 if typing.TYPE_CHECKING:
     from rich.prompt import PromptBase
-    from rich.console import Console
 
 
 _PT = typing.TypeVar("_PT")
 
 
 class Terminal(Singleton):
-    _console: "Console"
+    console: "Console"
     """
     The console used to interact.
     """
 
-    _colors: typing.Type[Colors]
-    """
-    The colors to use with renderer text
-    """
-
-    def __init__(self, *, colors: typing.Type[Colors] = Colors):
-        self._console = rich.get_console()
-        self._colors = colors
+    def __init__(self, *, theme: typing.Optional[Theme] = None):
+        self.console = Console(theme=TerminalTheme)
+        if theme:
+            self.console.use_theme(theme, inherit=True)
 
     def _get_box_colors(self, color: str) -> str:
         return f"{calculate_text_color(color)} on {color}"
@@ -40,7 +36,9 @@ class Terminal(Singleton):
     def input(self, prompt: str, *, prompt_type: "typing.Type[PromptBase[_PT]]") -> _PT:
         ...
 
-    def input(self, prompt: str, *, prompt_type: "typing.Optional[typing.Type[PromptBase[_PT]]]" = None) -> str | _PT:
+    def input(
+        self, prompt: str, *, prompt_type: "typing.Optional[typing.Type[PromptBase[_PT]]]" = None
+    ) -> str | _PT:
         """
         Request the input of the user.
 
@@ -52,8 +50,8 @@ class Terminal(Singleton):
             The type of prompt. Passing this parameter will make use of the ``.ask`` method.
         """
         if prompt_type:
-            return prompt_type.ask(f"[{self._colors.INPUT}]{prompt}[/]")
-        return self._console.input(f"[{self._colors.INPUT}]{prompt}[/]: ")
+            return prompt_type.ask(f"[fabricius.input]{prompt}[/]")
+        return self.console.input(f"[fabricius.input]{prompt}[/]: ")
 
     def title(self, name: str) -> None:
         """
@@ -64,13 +62,13 @@ class Terminal(Singleton):
         name : :py:class:`str`
             The title.
         """
-        self._console.print(f"{name}", justify="center", style=f"white on {self._colors.TITLE}")
+        self.console.print(f"{name}", justify="center", style="fabricius.title")
 
     def empty(self):
         """
         Draw an empty line.
         """
-        self._console.print()
+        self.console.print()
 
     def warning(self, title: str, description: str) -> None:
         """
@@ -83,7 +81,7 @@ class Terminal(Singleton):
         description : :py:class:`str`
             Its description, explains what's wrong.
         """
-        self._console.print(f"[{self._get_box_colors(self._colors.WARNING)}] {title} [/] [{self._colors.WARNING}]{description}")
+        self.console.print(f"[fabricius.warning.box] {title} [/] [fabricius.warning]{description}")
 
     def success(self, title: str, description: str) -> None:
         """
@@ -96,7 +94,7 @@ class Terminal(Singleton):
         description : :py:class:`str`
             Its description, explain what was successful.
         """
-        self._console.print(f"[{self._get_box_colors(self._colors.SUCCESS)}] {title} [/] [{self._colors.SUCCESS}]{description}")
+        self.console.print(f"[fabricius.success.box] {title} [/] [fabricius.success]{description}")
 
     def skip(self, title: str, description: str) -> None:
         """
@@ -109,7 +107,7 @@ class Terminal(Singleton):
         description : :py:class:`str`
             Its description, explains what was skipped.
         """
-        self._console.print(f"[{self._get_box_colors(self._colors.SKIP)}] {title} [/] [{self._colors.SKIP}]{description}")
+        self.console.print(f"[fabricius.skip.box] {title} [/] [fabricius.skip]{description}")
 
     def overwrite(self, title: str, description: str) -> None:
         """
@@ -122,8 +120,9 @@ class Terminal(Singleton):
         description : :py:class:`str`
             Its description, explains what was overwritten.
         """
-        self._console.print(f"[{self._get_box_colors(self._colors.OVERWRITE)}] {title} [/] [{self._colors.OVERWRITE}]{description}")
-
+        self.console.print(
+            f"[fabricius.overwrite.box] {title} [/] [fabricius.overwrite]{description}"
+        )
 
     def exception(self, title: str, *, title_after: bool = False) -> None:
         """
@@ -137,10 +136,10 @@ class Terminal(Singleton):
             Indicates if the title should be printed before or after the exception has been printed
         """
         if not title_after:
-            self._console.print(f" {title} ", style=f"{self._get_box_colors(self._colors.ERROR)}")
+            self.console.print(f" {title} ", style="fabricius.error")
         try:
-            self._console.print_exception()
+            self.console.print_exception()
         except ValueError:
             self.warning("Cannot render exception", "No exception were raised.")
         if title_after:
-            self._console.print(f" {title} ", style=f"{self._get_box_colors(self._colors.ERROR)}")
+            self.console.print(f" {title} ", style="fabricius.error")
