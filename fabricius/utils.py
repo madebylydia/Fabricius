@@ -23,7 +23,8 @@ def calculate_text_color(
     Raises
     ------
     :py:exc:`rich.color.ColorParseError` :
-        If ``color`` is of typ
+        If ``color`` is of type :py:class:`str`, this will try to parse the color, this error
+        will be raised if failed to be parsed.
 
     Returns
     -------
