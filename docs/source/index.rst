@@ -1,12 +1,11 @@
-.. Fabricius documentation master file, created by
-   sphinx-quickstart on Tue Jun 28 17:27:26 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Fabricius: The Documentation
+============================
 
-Fabricius - Documentation!
-==========================
+**Fabricius: Python modular render of template engine & project scaffolding.**
 
-Fabricius: Python modular render of template engine & project scaffolding.
+Thank for reading the Fabricius's documentation! We hope you will enjoy reading it and hope you will use our tool!
+
+
 
 Example
 -------
@@ -33,25 +32,29 @@ Example
 Links
 -----
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Guides:
-
-   guide_rendering
+Rendering with Python
+^^^^^^^^^^^^^^^^^^^^^
 
 .. toctree::
    :maxdepth: 2
-   :caption: Fabricius API
+
+   guides/guide_rendering
+
+Rendering from a template project
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 2
+
+   guides/guide_project_rendering
+
+Fabricius API
+^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
 
    api/fabricius
    api/fabricius.generator
    api/fabricius.plugins
    api/modules
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

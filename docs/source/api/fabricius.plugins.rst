@@ -4,10 +4,18 @@ fabricius.plugins package
 Submodules
 ----------
 
-fabricius.plugins.generator module
-----------------------------------
+fabricius.plugins.define.generator module
+-----------------------------------------
 
-.. automodule:: fabricius.plugins.generator
+.. automodule:: fabricius.plugins.define.generator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+fabricius.plugins.generator\_rich module
+----------------------------------------
+
+.. automodule:: fabricius.plugins.generator_rich
    :members:
    :undoc-members:
    :show-inheritance:

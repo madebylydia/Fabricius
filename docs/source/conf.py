@@ -74,5 +74,6 @@ coverage_show_missing_items = True
 
 # -- Options for intersphinx extension ---------------------------------------
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
+    "py": ("https://docs.python.org/3", None),
+    "rich": ("https://rich.readthedocs.io/en/stable", None),
 }

@@ -1,0 +1,40 @@
+name: Fabricius Tests
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+  push:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+
+    runs-on: ubuntu-latest
+    name: Tests - py${{ matrix.python-version }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Load cached Poetry installation
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-0 # To reset cache, increment
+
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
+
+      - name: Install package
+        run: poetry install --with dev,actions
+
+      - name: Run Tox
+        run: poetry run tox

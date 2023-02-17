@@ -1,4 +1,4 @@
-from typing import Optional
+import typing
 
 
 class FabriciusError(Exception):
@@ -6,7 +6,7 @@ class FabriciusError(Exception):
     An error was raised inside Fabricius.
     """
 
-    def __init__(self, error: Optional[object] = None) -> None:
+    def __init__(self, error: typing.Optional[object] = None) -> None:
         """
         An error was raised inside Fabricius.
         """
