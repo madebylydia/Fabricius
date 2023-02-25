@@ -88,6 +88,12 @@ class FileCommitResult(typing.TypedDict):
 
 
 class File:
+    """
+    The File class helps with creating files from templates by taking the template's path,
+    destination's path, the renderer to use, data to include, etc.
+    The base of Fabricius, basically.
+    """
+
     name: str
     """
     The name of the file that will be generated.
@@ -130,8 +136,6 @@ class File:
 
     def __init__(self, name: str, extension: typing.Optional[str] = None) -> None:
         """
-        Create a file's generator.
-
         Parameters
         ----------
         name : :py:class:`str`
@@ -218,16 +222,23 @@ class File:
 
         Parameters
         ----------
-        renderer : Type of :py:class:`fabricius.generator.renderer.Renderer`
+        renderer : Type of :py:class:`fabricius.renderer.Renderer`
             The renderer to use to format the file.
             It must be not initialized.
         """
         self.renderer = renderer
         return self
 
-    def with_data(self, data: Data, *, overwrite: bool = True) -> Self:
+    def with_data(self, data: Data, *, overwrite: bool = True, automatic_str: bool = True) -> Self:
         """
         Add data to pass to the template.
+
+        .. note :: Elements of the data you've passed will be automatically converted to str as to
+            not render incorrectly in the template (For example,
+            ``datetime.datetime(2023, 2, 23, 17, 39, 5, 128944)`` instead of
+            ``2023-02-23 17:39:05.128944``), if you wish to disable this feature, use the
+            ``automatic_str`` keyword parameter.
+            This process is done before the data is registered to the class.
 
         Parameters
         ----------
@@ -236,17 +247,30 @@ class File:
         overwrite : :py:class:`bool`
             If the data that already exists should be deleted. If False, the new data will be
             added on top of the already existing data. Default to ``True``.
+        automatic_str : :py:class:`bool`
+            When passing data, all elements will be automatically converted to :py:class:`str`, as
+            to render each element correctly in the template, and not Python's representation of
+            the elements.
         """
         if overwrite:
             self.data = {}
+        if automatic_str:
+            for key, value in data.items():
+                data[key] = str(value)
         self.data.update(data)
         return self
 
     def fake(self) -> Self:
+        """
+        Indicates that the file should "fake" its creation when committing.
+        """
         self.will_fake = True
         return self
 
     def restore(self) -> Self:
+        """
+        Indicates that the file should not "fake" when committing.
+        """
         self.will_fake = False
         return self
 
