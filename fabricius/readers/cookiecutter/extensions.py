@@ -1,3 +1,5 @@
+# Taken from https://github.com/cookiecutter/cookiecutter/blob/cf81d63bf3d82e1739db73bcbed6f1012890e33e/cookiecutter/extensions.py
+
 """Jinja2 extensions."""
 import json
 import string
