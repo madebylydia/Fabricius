@@ -1,8 +1,8 @@
 import pathlib
 import unittest
 
-from fabricius.file import AlreadyCommittedError, File
-from fabricius.renderer import (
+from fabricius.models.file import AlreadyCommittedError, File
+from fabricius.renderers import (
     ChevronRenderer,
     PythonFormatRenderer,
     StringTemplateRenderer,

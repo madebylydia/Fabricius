@@ -19,25 +19,33 @@ Now that we have our template, we need to *actually* render the file.
 .. code-block:: python
    :caption: source/conf.py
 
-   from fabricius import File
+   from fabricius.file import File
    from datetime import datetime
 
    def run_me():
+       # Create a file object - This won't create the file yet!
        file = File("my_file", "txt")
 
-       # Define the template file - You can also use .from_content
+       # Define the template file - You can also use ".from_content" for string inputs
        file.from_file("template/source.txt")
 
-       # Define the destination
+       # Indicates where the file should go
        file.to_directory("destination/")
 
-       # Include the data to pass for rendering
+       # This is the data that will be sent inside the template
        file.with_data({date: datetime.now(), renderer: "Python's .format"})
 
        # And finally, save the file!
        file.commit()
 
-       # If you wish to simply generate the file's content without saving it, you can use .generate
+       # Alternatively, if you wish to simply generate the file's final content without saving it
+       # to the disk, you can use ".generate" which will
        final_content = file.generate()
 
-   run_me()
+       >>> print(final_content)
+       # Hello! I am template!
+       # Let's render the date of today: 2023-02-23 17:39:09.938789
+
+       # I use Python's .format for rendering!
+
+That's it! You have created a file

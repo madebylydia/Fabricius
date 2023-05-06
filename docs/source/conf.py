@@ -52,7 +52,7 @@ exclude_patterns: "list[str]" = []
 #
 html_theme = "furo"
 html_css_files = [
-    'furo_custom.css',
+    "furo_custom.css",
 ]
 
 # Add any paths that contain custom static files (such as style sheets) here,
