@@ -3,11 +3,11 @@
 """Jinja2 extensions."""
 import json
 import string
-from typing import Any
 import uuid
 from secrets import choice
-from jinja2 import Environment
+from typing import Any
 
+from jinja2 import Environment
 from jinja2.ext import Extension
 from slugify import slugify as pyslugify  # type: ignore
 
@@ -22,7 +22,7 @@ class JsonifyExtension(Extension):
         def jsonify(obj: object):
             return json.dumps(obj, sort_keys=True, indent=4)
 
-        environment.filters['jsonify'] = jsonify
+        environment.filters["jsonify"] = jsonify
 
 
 class RandomStringExtension(Extension):
@@ -53,7 +53,7 @@ class SlugifyExtension(Extension):
             """Slugifies the value."""
             return pyslugify(value, **kwargs)
 
-        environment.filters['slugify'] = slugify
+        environment.filters["slugify"] = slugify
 
 
 class UUIDExtension(Extension):

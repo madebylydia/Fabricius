@@ -1,7 +1,9 @@
 import typing
 
+_F = typing.ParamSpec("_F")
 
-class Signal:
+
+class Signal(typing.Generic[_F]):
     """
     The Listener is the base class used to create listeners of events.
     """
@@ -11,16 +13,16 @@ class Signal:
     The list of listeners that are subscribed to this signal.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, func_hint: typing.Callable[_F, typing.Any] | None = None) -> None:
         self.listeners = []
 
-    def connect(self, listener: typing.Callable[..., typing.Any]) -> None:
+    def connect(self, listener: typing.Callable[_F, typing.Any]) -> None:
         """
         Connects a listener to this signal.
         """
         self.listeners.append(listener)
 
-    def send(self, *args: typing.Any, **kwargs: typing.Any) -> list[typing.Any]:
+    def send(self, *args: _F.args, **kwargs: _F.kwargs) -> list[typing.Any]:
         """
         Sends the signal to all subscribed listeners.
         """

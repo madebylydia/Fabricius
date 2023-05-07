@@ -337,7 +337,7 @@ class File:
                 destination.write_text(final_content)
                 self.state = "persisted"
 
-        before_file_commit.send(file=self)
+        before_file_commit.send(self)
 
         commit = FileCommitResult(
             name=self.name,
@@ -348,5 +348,5 @@ class File:
             destination=self.destination.joinpath(self.name),
         )
 
-        after_file_commit.send(file=self)
+        after_file_commit.send(self)
         return commit

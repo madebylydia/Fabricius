@@ -82,8 +82,6 @@ class Template(typing.Generic[RendererType]):
     def commit(self) -> list[FileCommitResult]:
         results: list[FileCommitResult] = []
 
-        before_file_commit.send(self)
-
         for file in self.files:
             file.with_data(self.data, overwrite=False)
             if self._will_fake:
@@ -93,7 +91,5 @@ class Template(typing.Generic[RendererType]):
                 file.restore()
             result = file.commit()
             results.append(result)
-
-        after_file_commit.send(self)
 
         return results

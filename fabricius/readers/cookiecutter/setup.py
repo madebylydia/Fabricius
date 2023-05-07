@@ -10,7 +10,6 @@ from fabricius.renderers.jinja_renderer import JinjaRenderer
 from fabricius.types import Data, PathStrOrPath
 from fabricius.utils import sentence_case
 
-
 EXTENSIONS = [
     "fabricius.readers.cookiecutter.extensions.JsonifyExtension",
     "fabricius.readers.cookiecutter.extensions.RandomStringExtension",
@@ -26,7 +25,7 @@ def obtain_template_path(base_folder: pathlib.Path) -> pathlib.Path:
     raise TemplateError(base_folder.name, "No template found")
 
 
-def obtain_files(base_folder: pathlib.Path, data: Data) -> list[File]:
+def obtain_files(base_folder: pathlib.Path, output_folder: pathlib.Path, data: Data) -> list[File]:
     files: list[File] = []
     for file_path in base_folder.iterdir():
         if file_path.is_file():
@@ -37,6 +36,7 @@ def obtain_files(base_folder: pathlib.Path, data: Data) -> list[File]:
             file = File(file_name)
             file.from_file(file_path)
             file.use_jinja()
+            file.to_directory(output_folder)
             files.append(file)
     return files
 
@@ -70,8 +70,9 @@ def obtain_user_input(questions: list[Question[typing.Any]]) -> None:
         question.get_answer()
 
 
-def setup(folder: PathStrOrPath) -> Template[type[JinjaRenderer]]:
+def setup(folder: PathStrOrPath, output_folder: PathStrOrPath) -> Template[type[JinjaRenderer]]:
     folder = pathlib.Path(folder).resolve()
+    output_folder = pathlib.Path(output_folder).resolve()
 
     if not folder.joinpath("cookiecutter.json"):
         raise TemplateError(folder.name, "cookiecutter.json does not exist")
@@ -81,14 +82,18 @@ def setup(folder: PathStrOrPath) -> Template[type[JinjaRenderer]]:
     data = {"cookiecutter": {question.question_id: question.answer for question in questions}}
 
     template_path = obtain_template_path(folder)
-    files = obtain_files(template_path, data)
+    files = obtain_files(template_path, output_folder, data)
 
     template = Template(template_path, JinjaRenderer)
     for extension in EXTENSIONS:
         template.renderer.environment.add_extension(extension)
     template.add_files(files)
 
-    print(data)
+    data["cookiecutter"] |= {
+        "_template": str(template.base_folder),
+        "_repo_dir": str(template.base_folder),
+        "_output_dir": str(output_folder),
+    }
     template.push_data(data)
 
     return template
