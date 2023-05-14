@@ -8,6 +8,13 @@ Documentation: <https://fabricius.readthedocs.io>
 
 > :warning: Fabricius still does not comes with it's CLI tool! It is a work in progress!
 
+## 👀 How about checking out the `development` branch?
+
+This branch has been silent for quite a while now, you might believe the project is dead. **IT'S NOT!**
+The true magic is happening behind the scene, available in the `development` branch! If you want to see how things are working out for Fabricius, you should check the stuff out there!
+
+The `master` is here to represent the version of Fabricius that is available on PyPi (As of today, `0.1.0`)
+
 ## Goals:
 
 1. Create a working project from a project template
