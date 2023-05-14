@@ -1,3 +1,4 @@
+import contextlib
 import typing
 
 _F = typing.ParamSpec("_F")
@@ -28,11 +29,7 @@ class Signal(typing.Generic[_F]):
         """
         results: list[typing.Any] = []
         for listener in self.listeners:
-            try:
+            with contextlib.suppress(NotImplementedError):
                 result = listener(*args, **kwargs)
                 results.append(result)
-            except NotImplementedError:
-                pass
-            except Exception as e:
-                results.append(e)
         return results

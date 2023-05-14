@@ -54,8 +54,20 @@ class FileCommitResult(typing.TypedDict):
     The resulting content of the saved file.
     """
 
+    fake: bool
+    """
+    If the file was faked.
+    If faked, the file has not been saved to the disk.
+    """
+
 
 class File:
+    """
+    The builder class to initialize a file template.
+    The result (Through `.generate` method) is the render of the file's content.
+    You can "commit" the file to the disk to persist the file's content.
+    """
+
     name: str
     """
     The name of the file that will be generated.
@@ -134,7 +146,7 @@ class File:
 
     @property
     def can_commit(self) -> typing.Literal["destination", "content", "state", True]:
-        # sourcery skip: assign-if-exp, boolean-if-exp-identity, reintroduce-else, remove-unnecessary-cast, swap-if-expression
+        # sourcery skip: reintroduce-else
         if not self.destination:
             return "destination"
         if not self.content:
@@ -346,6 +358,7 @@ class File:
             template_content=self.content,
             content=final_content,
             destination=self.destination.joinpath(self.name),
+            fake=self._will_fake,
         )
 
         after_file_commit.send(self)

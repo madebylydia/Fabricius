@@ -3,7 +3,7 @@ import typing
 
 from typing_extensions import Self
 
-from fabricius.app.signals import after_file_commit, before_file_commit
+from fabricius.app.signals import after_template_commit, before_template_commit
 from fabricius.exceptions import (
     AlreadyCommittedError,
     ConflictError,
@@ -82,6 +82,8 @@ class Template(typing.Generic[RendererType]):
     def commit(self) -> list[FileCommitResult]:
         results: list[FileCommitResult] = []
 
+        before_template_commit.send(self)
+
         for file in self.files:
             file.with_data(self.data, overwrite=False)
             if self._will_fake:
@@ -91,5 +93,7 @@ class Template(typing.Generic[RendererType]):
                 file.restore()
             result = file.commit()
             results.append(result)
+
+        after_template_commit.send(self, results)
 
         return results

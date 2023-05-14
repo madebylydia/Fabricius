@@ -3,7 +3,7 @@ import typing
 from fabricius.models.signal import Signal
 
 if typing.TYPE_CHECKING:
-    from fabricius.models.file import File
+    from fabricius.models.file import File, FileCommitResult
     from fabricius.models.template import Template
 
     def before_file_commit_hint(file: File):
@@ -18,7 +18,9 @@ if typing.TYPE_CHECKING:
     def before_template_commit_hint(template: Template[typing.Any]):
         ...
 
-    def after_template_commit_hint(template: Template[typing.Any]):
+    def after_template_commit_hint(
+        template: Template[typing.Any], files_commits: list[FileCommitResult]
+    ):
         ...
 
 else:

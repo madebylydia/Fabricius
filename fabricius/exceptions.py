@@ -4,9 +4,6 @@ class FabriciusError(Exception):
     """
 
     def __init__(self, error: object | None = None) -> None:
-        """
-        An error was raised inside Fabricius.
-        """
         super().__init__(error or "Error inside Fabricius. No specific error raised.")
 
 
