@@ -13,58 +13,13 @@ from fabricius.renderers import (
     PythonFormatRenderer,
     StringTemplateRenderer,
 )
-from fabricius.types import Data, PathStrOrPath
-
-FILE_STATE = typing.Literal["pending", "persisted"]
-
-
-class FileCommitResult(typing.TypedDict):
-    """
-    A FileCommitResult is returned when a file was successfully saved.
-    It returns its information after its creation.
-    """
-
-    name: str
-    """
-    The name of the file.
-    """
-
-    state: FILE_STATE
-    """
-    The state of the file. Should always be "persisted".
-    """
-
-    destination: pathlib.Path
-    """
-    Where the file is located/has been saved.
-    """
-
-    data: Data
-    """
-    The data that has been passed during rendering.
-    """
-
-    template_content: str
-    """
-    The original content of the template.
-    """
-
-    content: str
-    """
-    The resulting content of the saved file.
-    """
-
-    fake: bool
-    """
-    If the file was faked.
-    If faked, the file has not been saved to the disk.
-    """
+from fabricius.types import FILE_STATE, Data, FileCommitResult, PathStrOrPath
 
 
 class File:
     """
     The builder class to initialize a file template.
-    The result (Through `.generate` method) is the render of the file's content.
+    The result (Through the :py:meth:`.generate` method) is the render of the file's content.
     You can "commit" the file to the disk to persist the file's content.
     """
 
@@ -110,14 +65,13 @@ class File:
 
     def __init__(self, name: str, extension: typing.Optional[str] = None) -> None:
         """
-        Create a file's generator.
-
         Parameters
         ----------
         name : :py:class:`str`
             The name of the file.
         extension : :py:class:`str`
-            The extension of the file, without dot, same as ``name="<name>.<extension>"``
+            The extension of the file, without dot, same as ``name="<name>.<extension>"`` (Where
+            ``<name>`` and ``<extensions>`` are the arguments given to the class).
         """
         self.name = f"{name}.{extension}" if extension else name
         self.state = "pending"
@@ -270,7 +224,7 @@ class File:
         Set the file to not fake the commit.
         This will ensure that the file gets stored on the machine upon commit.
 
-        .. info ::
+        .. hint ::
            This is the default behavior. It's only useful to use this method if you have used :py:meth:`.fake`.
         """
         self._will_fake = False
@@ -340,7 +294,9 @@ class File:
         destination = self.compute_destination()
 
         if destination.exists() and not overwrite:
-            raise FileExistsError(f"File '{self.name}' already exists.")
+            exception = FileExistsError(f"File '{self.name}' already exists.")
+            exception.filename = self.name
+            raise exception
 
         if self._will_fake:
             self.state = "persisted"

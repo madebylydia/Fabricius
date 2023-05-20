@@ -1,60 +1,68 @@
 Fabricius: The Documentation
 ============================
 
-**Fabricius: Python modular render of template engine & project scaffolding.**
+.. module:: fabricius
 
-Thank for reading the Fabricius's documentation! We hope you will enjoy reading it and hope you will use our tool!
+**Fabricius: Python templates renderer**
 
+Fabricius is a tool that allows you to render files template & projects template.
 
+Key features of Fabricius:
 
-Example
--------
+- (Will) Ship with its own project templating solution
+- Supports CookieCutter templates
+- Extendable with `observers <https://refactoring.guru/design-patterns/observer>`_ (AKA signals)
+- User-friendly API
 
-.. code-block:: python
+Installation
+------------
 
-   from fabricius import Generator
+The primary requirement of Fabricius is `Python <https://python.org>`_.
+It must be a version equal to or greater to Python ``3.10``.
 
-   def create_files():
-       # Create the generator
-       generator = Generator()
+You can install Fabricius using ``pip``, the Python's package manager (It comes bundled with Python). Install Fabricius using the following command:
 
-       # Add a file at "source/core.py"
-       file = generator.add_file("core", "py")
-       file.from_file("template-core.mustache").to_directory("source").with_data({"name": "My Module"}).use_mustache()
+.. code-block::
 
-       # Add a file at "tests/test.py"
-       file = generator.add_file("test", "py")
-       file.from_file("template-test.txt").to_directory("tests").with_data({"name": "My Module"})
+   pip install Fabricius
 
-       # Create the files!
-       generator.execute()
+.. note::
 
-Links
------
+   Typically, Fabricius should be installed globally on your system (As you shouldn't need it in a specific project, it's a tool).
+   As such, Windows might tell you to add the ``--user`` option, if so, try doing ``pip install fabricius --user``!
 
-Rendering with Python
-^^^^^^^^^^^^^^^^^^^^^
+Guides
+------
 
-.. toctree::
-   :maxdepth: 2
+.. important::
+   Guides are not ready yet!
 
-   guides/guide_rendering
-
-Rendering from a template project
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   Fabricius need more time to get ready! While we're working on the documentation too, Fabricius is **not ready**!
+   Guides (for now) are here to show you how Fabricius can work  and how you should expect things to work out.
 
 .. toctree::
-   :maxdepth: 2
-
-   guides/guide_project_rendering
-
-Fabricius API
-^^^^^^^^^^^^^
-
-.. toctree::
+   :caption: Guides
    :maxdepth: 1
 
-   api/fabricius
-   api/fabricius.generator
-   api/fabricius.plugins
-   api/modules
+   guides/guide_create_forge_file
+   guides/guide_rendering
+   guides/guide_cookiecutter_templates
+
+
+API
+---
+
+.. topic:: Careful here, commander!
+
+   This section is reserved for the peoples that are interested to use more complex tools in order to better understand how Fabricius works behind the scene & use it themselves.
+
+   If you believe your use case is easy to tackle down, then you probably don't need to dig into the Fabricius's API.
+
+
+.. toctree::
+   :caption: API
+   :maxdepth: 2
+
+   api/models
+   api/types
+   api/exceptions

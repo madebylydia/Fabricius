@@ -42,13 +42,13 @@ typing-extensions = "^4.2.0"
 inflection = "^0.5.1"
 click = "^8.1.3"
 jinja2 = "^3.1.2"
+jinja2-time = "^0.2.0"
 slugify = "^0.0.1"
 
 # Extra: Docs
 Sphinx = { version = "^5.0.2", optional = true }
 furo = { version = "^2022.6.21", optional = true }
 sphinx-autobuild = { version = "^2021.3.14", optional = true }
-jinja2-time = "^0.2.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -82,6 +82,14 @@ _format_black = "black ."
 _format_isort = "isort ."
 format = ["_format_black", "_format_isort"]
 test = "pytest . -v"
+
+[tool.poe.tasks.docs]
+cmd = "make livehtml"
+cwd = "./docs"
+
+[tool.poe.tasks.docscov]
+cmd = "make html -b coverage"
+cwd = "./docs"
 
 [tool.black]
 line-length = 99

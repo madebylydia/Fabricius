@@ -18,15 +18,45 @@ RendererType = typing.TypeVar("RendererType", bound=type[Renderer])
 
 
 class Template(typing.Generic[RendererType]):
+    """
+    The :py:class:`Template` class represent "a collection of files that, in its whole, represents
+    a project"
+
+    The difference between the :py:class:`.Template` class and a collection of :py:class:`.File`
+    is that a template assumes all of your files have the same properties. (Requires the same
+    renderer, the same data, etc.)
+
+    Typically, a template only use one renderer, and shares the same data across the whole project
+    template.
+
+    The :py:class:`.Template` will assist creating a project, while providing a similar interface
+    of the :py:class:`.File` model.
+    """
+
     state: STATE
+    """
+    The state of the template
+    """
 
     base_folder: pathlib.Path
+    """
+    The folder where the template will be generated.
+    """
 
     files: list[File]
+    """
+    The list of files that will be rendered when committing.
+    """
 
     data: Data
+    """
+    The data to pass to the files.
+    """
 
     renderer: RendererType
+    """
+    The renderer that will be used to generate the files.
+    """
 
     _will_fake: bool
 
@@ -35,6 +65,14 @@ class Template(typing.Generic[RendererType]):
         base_folder: PathStrOrPath,
         renderer: RendererType,
     ) -> None:
+        """
+        Parameters
+        ----------
+        base_folder : :py:const:`fabricius.types.PathStrOrPath`
+            Indication of where the template should be generated.
+        renderer : Type of :py:class:`Renderer`
+            The renderer to use with the template.
+        """
         self.base_folder = pathlib.Path(base_folder)
         self.state = "pending"
         self.files = []
@@ -79,7 +117,7 @@ class Template(typing.Generic[RendererType]):
         self._will_fake = False
         return self
 
-    def commit(self) -> list[FileCommitResult]:
+    def commit(self, *, overwrite: bool = False) -> list[FileCommitResult]:
         results: list[FileCommitResult] = []
 
         before_template_commit.send(self)
@@ -91,7 +129,7 @@ class Template(typing.Generic[RendererType]):
             else:
                 # Just in case they've been set to fake...
                 file.restore()
-            result = file.commit()
+            result = file.commit(overwrite=overwrite)
             results.append(result)
 
         after_template_commit.send(self, results)

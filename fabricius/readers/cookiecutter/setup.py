@@ -13,7 +13,7 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
 )
-from rich.prompt import Prompt, PromptBase
+from rich.prompt import Confirm, Prompt, PromptBase
 from rich.text import TextType
 
 from fabricius.app.signals import after_template_commit, before_template_commit
@@ -23,7 +23,7 @@ from fabricius.models.template import Template
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.readers.cookiecutter.hooks import adapt, get_hooks
 from fabricius.renderers.jinja_renderer import JinjaRenderer
-from fabricius.types import Data, PathStrOrPath
+from fabricius.types import Data, FileCommitResult, PathStrOrPath
 from fabricius.utils import fetch_me_a_beer, sentence_case
 
 EXTENSIONS = [
@@ -102,7 +102,9 @@ def get_questions_only(context: dict[str, typing.Any]):
     return context
 
 
-def get_answer(prompts: dict[str, typing.Any]) -> dict[str, typing.Any]:
+def get_answer(
+    prompts: dict[str, typing.Any], *, no_prompt: bool = False
+) -> dict[str, typing.Any]:
     answers: dict[str, typing.Any] = {}
 
     for question, default_value in prompts.items():
@@ -111,7 +113,7 @@ def get_answer(prompts: dict[str, typing.Any]) -> dict[str, typing.Any]:
             prompt = partial(ChoicesPrompt(sentence_case(question), choices=default_value))
         else:
             prompt = partial(Prompt(sentence_case(question)), default=default_value)
-        answer = prompt()
+        answer = "" if no_prompt else prompt()
         if answer is None:
             answer = ""
         answers[question] = answer
@@ -126,6 +128,33 @@ def setup(
     extra_context: dict[str, typing.Any] = {},
     no_prompt: bool = False,
 ) -> Template[type[JinjaRenderer]]:
+    """Setup a template that will be able to be ran once created.
+
+    Parameters
+    ----------
+    base_folder : :py:const:`PathStrOrPath <fabricius.types.PathStrOrPath>`
+        The folder where the template is located. (Choose the folder where the ``cookiecutter.json``
+        is located, not the template itself)
+    output_folder : :py:const:`PathStrOrPath <fabricius.types.PathStrOrPath>`
+        The folder where the template/files will be created once rendered.
+    extra_context : :py:const:`Data <fabricius.types.Data>`, optional
+        Any extra context to pass to the template.
+        It will override the user's prompt.
+    no_prompt : bool, optional
+        _description_, by default False
+
+    Returns
+    -------
+    Type of :py:class:`fabricius.models.template.Template`
+        The Template that has been generated.
+        It is ready to be committed, and everything has been setup.
+
+    Raises
+    ------
+    TemplateError
+        Exception raised when there's an issue with the template that is most probably due to the
+        template's misconception.
+    """
     # Obtain the required information first
     base_folder = pathlib.Path(base_folder).resolve()
     output_folder = pathlib.Path(output_folder).resolve()
@@ -163,7 +192,9 @@ def setup(
 
     # Begin to get user's prompts.
     questions = get_questions_only(context)
-    prompts = get_answer(questions)
+    prompts = get_answer(questions, no_prompt=no_prompt)
+
+    prompts.update(extra_context)
 
     final_context["cookiecutter"].update(dict(prompts.items()))
 
@@ -180,8 +211,16 @@ def setup(
     return template
 
 
-def run(template: Template[type[JinjaRenderer]]):
-    try:
+def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
+    """Run the CookieCutter template generated using :py:func:`.setup`
+
+    Parameters
+    ----------
+    template : Type of :py:class:`fabricius.models.template.Template`
+        The template to render.
+    """
+
+    def attempt(force: bool) -> list[FileCommitResult]:
         with Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
@@ -190,10 +229,20 @@ def run(template: Template[type[JinjaRenderer]]):
             transient=True,
         ) as progress:
             progress.add_task(fetch_me_a_beer(), start=False)
-            template.commit()
+            return template.commit(overwrite=force)
+
+    try:
+        return attempt(False)
+    except FileExistsError as exception:
+        answer = Confirm.ask(
+            f"File [cyan]{exception.filename}[/] already exists, this probably means that this template has already been created. Overwrite?"
+        )
+        if answer:
+            return attempt(True)
     except FailedHookError as exception:
         if exception.exit_code:
             sys.exit(exception.exit_code)
         else:
             get_console().print(exception)
             sys.exit(1)
+    return []
