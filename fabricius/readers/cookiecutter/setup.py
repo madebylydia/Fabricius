@@ -6,17 +6,11 @@ from functools import partial
 
 from rich import get_console
 from rich.console import Console
-from rich.progress import (
-    BarColumn,
-    Progress,
-    TaskProgressColumn,
-    TextColumn,
-    TimeRemainingColumn,
-)
 from rich.prompt import Confirm, Prompt, PromptBase
 from rich.text import TextType
 
 from fabricius.app.signals import after_template_commit, before_template_commit
+from fabricius.app.ui import TemplateProgressBar
 from fabricius.exceptions import TemplateError
 from fabricius.models.file import File
 from fabricius.models.template import Template
@@ -221,15 +215,16 @@ def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
     """
 
     def attempt(force: bool) -> list[FileCommitResult]:
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TaskProgressColumn(),
-            TimeRemainingColumn(),
-            transient=True,
-        ) as progress:
-            progress.add_task(fetch_me_a_beer(), start=False)
+        progress = TemplateProgressBar(len(template.files))
+        task_id = progress.progress.add_task(fetch_me_a_beer())
+        progress.task = task_id
+        progress.connect()
+        try:
+            progress.progress.start()
             return template.commit(overwrite=force)
+        finally:
+            progress.progress.stop()
+            progress.disconnect()
 
     try:
         return attempt(False)

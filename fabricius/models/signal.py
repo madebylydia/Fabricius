@@ -9,7 +9,7 @@ class Signal(typing.Generic[_F]):
     The Listener is the base class used to create listeners of events.
     """
 
-    listeners: list[typing.Callable[..., typing.Any]]
+    listeners: list[typing.Callable[_F, typing.Any]]
     """
     The list of listeners that are subscribed to this signal.
     """
@@ -19,9 +19,17 @@ class Signal(typing.Generic[_F]):
 
     def connect(self, listener: typing.Callable[_F, typing.Any]) -> None:
         """
-        Connects a listener to this signal.
+        Connect a listener to this signal.
         """
-        self.listeners.append(listener)
+        if listener not in self.listeners:
+            self.listeners.append(listener)
+
+    def disconnect(self, listener: typing.Callable[_F, typing.Any]) -> None:
+        """
+        Disconnect a listener to this signal.
+        """
+        if listener in self.listeners:
+            self.listeners.remove(listener)
 
     def send(self, *args: _F.args, **kwargs: _F.kwargs) -> list[typing.Any]:
         """
