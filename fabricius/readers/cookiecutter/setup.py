@@ -216,15 +216,8 @@ def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
 
     def attempt(force: bool) -> list[FileCommitResult]:
         progress = TemplateProgressBar(len(template.files))
-        task_id = progress.progress.add_task(fetch_me_a_beer())
-        progress.task = task_id
-        progress.connect()
-        try:
-            progress.progress.start()
+        with progress.begin(fetch_me_a_beer()):
             return template.commit(overwrite=force)
-        finally:
-            progress.progress.stop()
-            progress.disconnect()
 
     try:
         return attempt(False)

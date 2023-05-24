@@ -1,4 +1,6 @@
 import logging
+from contextlib import contextmanager
+from typing import Any, Generator
 
 from rich.progress import (
     BarColumn,
@@ -38,14 +40,19 @@ class TemplateProgressBar:
         )
         self.task = None
 
-    def _increase(self, file: File):
+    @contextmanager
+    def begin(self, first_message: str) -> Generator[Progress, Any, None]:
+        try:
+            after_file_commit.connect(self._increase)
+            self.task = self.progress.add_task(first_message)
+            with self.progress as progress:
+                yield progress
+        finally:
+            after_file_commit.disconnect(self._increase)
+            self.progress.stop()
+
+    def _increase(self, file: File) -> None:
         if self.task is None:
             _log.warning("Progress or task not detected. Ignoring.")
             return
         self.progress.update(self.task, total=self.total_files, advance=1, description=file.name)
-
-    def connect(self):
-        after_file_commit.connect(self._increase)
-
-    def disconnect(self):
-        after_file_commit.disconnect(self._increase)

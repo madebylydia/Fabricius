@@ -6,11 +6,9 @@ from rich.color import Color
 
 FABRICIUS_IS_AWESOME = [
     "Generating your project, hang tight!",
-    "Oh, yeah, I can tell your idea is AWESOME! Just wait a picosecond.",
     "Bing, bonk, bang! Scaffolding your next idea...",
-    "Don't pay attention, it'll be ready soon enough ;)",
-    "“Without requirements or design, programming is the art of adding bugs to an empty text file.” - Louis Srygley",
-    "“Good programmers write code that humans can understand.” - Martin Fowler",
+    "Helping you on your next idea!",
+    "Serious work in progress... Give it a second or two!",
 ]
 
 
