@@ -2,22 +2,22 @@ import json
 import pathlib
 import sys
 import typing
+from fnmatch import fnmatch
 from functools import partial
 
 from rich import get_console
-from rich.console import Console
-from rich.prompt import Confirm, Prompt, PromptBase
-from rich.text import TextType
+from rich.prompt import Confirm, Prompt
 
 from fabricius.app.signals import after_template_commit, before_template_commit
 from fabricius.app.ui import TemplateProgressBar
 from fabricius.exceptions import TemplateError
 from fabricius.models.file import File
+from fabricius.models.renderer import Renderer
 from fabricius.models.template import Template
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.readers.cookiecutter.hooks import adapt, get_hooks
 from fabricius.renderers.jinja_renderer import JinjaRenderer
-from fabricius.types import Data, FileCommitResult, PathStrOrPath
+from fabricius.types import FileCommitResult, PathStrOrPath
 from fabricius.utils import fetch_me_a_beer, sentence_case
 
 EXTENSIONS = [
@@ -29,27 +29,14 @@ EXTENSIONS = [
 ]
 
 
-class ChoicesPrompt(PromptBase[typing.Any]):
-    available_choices: int | None
+Context = typing.NewType("Context", dict[str, typing.Any])
+QuestionContext = typing.NewType("QuestionContext", dict[str, typing.Any])
+CookieContext = typing.NewType("CookieContext", dict[str, typing.Any])
 
-    def __init__(
-        self,
-        prompt: TextType = "",
-        *,
-        console: Console | None = None,
-        password: bool = False,
-        choices: list[str] | None = None,
-        show_default: bool = True,
-        show_choices: bool = True,
-    ) -> None:
-        super().__init__(
-            prompt,
-            console=console,
-            password=password,
-            choices=choices,
-            show_default=show_default,
-            show_choices=show_choices,
-        )
+
+class CopyRender(Renderer):
+    def render(self, content: str) -> str:
+        return content
 
 
 def obtain_template_path(base_folder: pathlib.Path) -> pathlib.Path | None:
@@ -63,7 +50,13 @@ def obtain_template_path(base_folder: pathlib.Path) -> pathlib.Path | None:
     )
 
 
-def obtain_files(base_folder: pathlib.Path, output_folder: pathlib.Path, data: Data) -> list[File]:
+def wrap_in_cookie(data: Context) -> CookieContext:
+    return CookieContext({"cookiecutter": data})
+
+
+def obtain_files(
+    base_folder: pathlib.Path, output_folder: pathlib.Path, data: CookieContext
+) -> list[File]:
     files: list[File] = []
     for file_path in base_folder.iterdir():
         if file_path.is_file():
@@ -71,45 +64,57 @@ def obtain_files(base_folder: pathlib.Path, output_folder: pathlib.Path, data: D
                 file_name = JinjaRenderer(data).render(file_path.name)
             else:
                 file_name = file_path.name
-            file = File(file_name).from_file(file_path).use_jinja().to_directory(output_folder)
+            file = File(file_name).from_file(file_path).to_directory(output_folder)
+            if should_copy_not_render(file, data):
+                file.with_renderer(CopyRender)
+            else:
+                file.use_jinja()
             files.append(file)
     return files
 
 
-def read_context_raw(file: pathlib.Path) -> dict[str, typing.Any]:
+def should_copy_not_render(file: File, context: CookieContext) -> bool:
+    print(context)
+    if not context["cookiecutter"].get("_copy_without_render"):
+        return False
+    to_ignore: list[str] = context["cookiecutter"]["_copy_without_render"]
+    for index, value in enumerate(to_ignore):
+        # Render the string
+        to_ignore[index] = JinjaRenderer(context).render(value)
+        print(to_ignore[index])
+    return any(fnmatch(str(file.compute_destination()), value) for value in to_ignore)
+
+
+def read_context_raw(file: pathlib.Path) -> Context:
     if not file.exists():
         raise TemplateError(file.parent.name, f"{file.name} does not exist")
     content = file.read_text()
 
     try:
-        context_data: dict[str, typing.Any] = json.loads(content)
+        context_data = json.loads(content)
     except json.JSONDecodeError as exception:
         raise TemplateError(
             file.parent.name, f"{file.name} does not appear to be a valid JSON file"
         ) from exception
 
-    return context_data
+    return Context(context_data)
 
 
-def get_questions_only(context: dict[str, typing.Any]):
-    context = {key: value for key, value in context.items() if not key.startswith("_")}
-    return context
+def get_questions_only(context: Context) -> QuestionContext:
+    question_context = {key: value for key, value in context.items() if not key.startswith("_")}
+    return QuestionContext(question_context)
 
 
-def get_answer(
-    prompts: dict[str, typing.Any], *, no_prompt: bool = False
-) -> dict[str, typing.Any]:
+def get_answer(prompts: QuestionContext, *, no_prompt: bool = False) -> dict[str, typing.Any]:
     answers: dict[str, typing.Any] = {}
 
     for question, default_value in prompts.items():
         if isinstance(default_value, list):
             default_value = typing.cast(list[str], default_value)
-            prompt = partial(ChoicesPrompt(sentence_case(question), choices=default_value))
+            prompt = partial(Prompt(sentence_case(question), choices=default_value))
         else:
             prompt = partial(Prompt(sentence_case(question)), default=default_value)
         answer = "" if no_prompt else prompt()
-        if answer is None:
-            answer = ""
         answers[question] = answer
 
     return answers
@@ -119,7 +124,7 @@ def setup(
     base_folder: PathStrOrPath,
     output_folder: PathStrOrPath,
     *,
-    extra_context: dict[str, typing.Any] = {},
+    extra_context: dict[str, typing.Any] | None = None,
     no_prompt: bool = False,
 ) -> Template[type[JinjaRenderer]]:
     """Setup a template that will be able to be ran once created.
@@ -149,13 +154,15 @@ def setup(
         Exception raised when there's an issue with the template that is most probably due to the
         template's misconception.
     """
+    if extra_context is None:
+        extra_context = {}
+
     # Obtain the required information first
     base_folder = pathlib.Path(base_folder).resolve()
     output_folder = pathlib.Path(output_folder).resolve()
 
     # Prepare contexts
     cookiecutter_config_path = base_folder.joinpath("cookiecutter.json")
-    final_context: dict[str, typing.Any] = {"cookiecutter": {}}
 
     # Ensure a cookiecutter.json file exists.
     # Obtains the context's raw content & the template's hooks.
@@ -178,6 +185,7 @@ def setup(
             template.renderer.environment.add_extension(extension)
 
     # Add some additional context
+    final_context = wrap_in_cookie(context)
     final_context["cookiecutter"] |= {
         "_template": str(template_folder.resolve()),
         "_repo_dir": str(base_folder.resolve()),
