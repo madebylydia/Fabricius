@@ -14,6 +14,7 @@ from fabricius.exceptions import TemplateError
 from fabricius.models.file import File
 from fabricius.models.renderer import Renderer
 from fabricius.models.template import Template
+from fabricius.readers.cookiecutter.config import get_config
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.readers.cookiecutter.hooks import adapt, get_hooks
 from fabricius.renderers.jinja_renderer import JinjaRenderer
@@ -74,14 +75,12 @@ def obtain_files(
 
 
 def should_copy_not_render(file: File, context: CookieContext) -> bool:
-    print(context)
     if not context["cookiecutter"].get("_copy_without_render"):
         return False
     to_ignore: list[str] = context["cookiecutter"]["_copy_without_render"]
     for index, value in enumerate(to_ignore):
         # Render the string
         to_ignore[index] = JinjaRenderer(context).render(value)
-        print(to_ignore[index])
     return any(fnmatch(str(file.compute_destination()), value) for value in to_ignore)
 
 
@@ -140,7 +139,7 @@ def setup(
         Any extra context to pass to the template.
         It will override the user's prompt.
     no_prompt : bool, optional
-        _description_, by default False
+        If set to True, no questions will be asked to the user. By default False
 
     Returns
     -------
@@ -150,7 +149,7 @@ def setup(
 
     Raises
     ------
-    TemplateError
+    :py:exc:`fabricius.exceptions.TemplateError`
         Exception raised when there's an issue with the template that is most probably due to the
         template's misconception.
     """
@@ -163,6 +162,7 @@ def setup(
 
     # Prepare contexts
     cookiecutter_config_path = base_folder.joinpath("cookiecutter.json")
+    user_config = get_config()
 
     # Ensure a cookiecutter.json file exists.
     # Obtains the context's raw content & the template's hooks.
@@ -198,6 +198,7 @@ def setup(
 
     prompts.update(extra_context)
 
+    final_context["cookiecutter"].update(user_config["default_context"])
     final_context["cookiecutter"].update(dict(prompts.items()))
 
     files = obtain_files(template_folder, output_folder, final_context)

@@ -1,1 +1,0 @@
-# Copier Reader: TBD

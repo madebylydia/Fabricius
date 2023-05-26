@@ -1441,7 +1441,7 @@ files = [
 name = "pyyaml"
 version = "6.0"
 description = "YAML parser and emitter for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -2062,4 +2062,4 @@ docs = ["Sphinx", "furo", "sphinx-autobuild"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f42a654d2373700d08efd8a76ec329be4bd9509fa5cef78a3c7f4fde355c5d73"
+content-hash = "862760bbfa9d9b0700f1ef0656c1d08bbc91ff7ae39f6e49168dbf0d99a0b5de"
