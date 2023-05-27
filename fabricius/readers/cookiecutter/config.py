@@ -6,28 +6,11 @@ import yaml
 
 
 class Config(typing.TypedDict):
-    cookiecutters_dir: str
-    replay_dir: str
     default_context: dict[typing.Any, typing.Any]
-    abbreviations: dict[str, str]
-
-
-class ParsedConfig(typing.TypedDict):
-    cookiecutters_dir: Path
-    replay_dir: Path
-    default_context: dict[typing.Any, typing.Any]
-    abbreviations: dict[str, str]
 
 
 DEFAULT_CONFIG: Config = {
-    "cookiecutters_dir": str(Path("~/.cookiecutters/").expanduser()),
-    "replay_dir": str(Path("~/.cookiecutter_replay/").expanduser()),
     "default_context": {},
-    "abbreviations": {
-        "gh": "https://github.com/{0}.git",
-        "gl": "https://gitlab.com/{0}.git",
-        "bb": "https://bitbucket.org/{0}",
-    },
 }
 
 
@@ -53,14 +36,9 @@ def deep_merge(
     return data
 
 
-def get_config() -> ParsedConfig:
+def get_config() -> Config:
     conf_data = read_config_file()
 
     data: Config = deep_merge(DEFAULT_CONFIG, conf_data)  # wtf?
 
-    return ParsedConfig(
-        cookiecutters_dir=Path(data["cookiecutters_dir"]).expanduser(),
-        replay_dir=Path(data["replay_dir"]).expanduser(),
-        default_context=data["default_context"],
-        abbreviations=data["abbreviations"],
-    )
+    return Config(default_context=data["default_context"])

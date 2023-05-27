@@ -14,6 +14,7 @@ from rich.progress import (
 from fabricius.app.main import logging
 from fabricius.app.signals import after_file_commit
 from fabricius.models.file import File
+from fabricius.types import FileCommitResult
 
 _log = logging.getLogger(__name__)
 
@@ -44,15 +45,15 @@ class TemplateProgressBar:
     def begin(self, first_message: str) -> Generator[Progress, Any, None]:
         try:
             after_file_commit.connect(self._increase)
-            self.task = self.progress.add_task(first_message)
+            self.task = self.progress.add_task(first_message, total=self.total_files)
             with self.progress as progress:
                 yield progress
         finally:
             after_file_commit.disconnect(self._increase)
             self.progress.stop()
 
-    def _increase(self, file: File) -> None:
+    def _increase(self, file: File, result: FileCommitResult) -> None:
         if self.task is None:
             _log.warning("Progress or task not detected. Ignoring.")
             return
-        self.progress.update(self.task, total=self.total_files, advance=1, description=file.name)
+        self.progress.update(self.task, advance=1, description=file.name)

@@ -4,7 +4,11 @@ import typing
 
 from typing_extensions import Self
 
-from fabricius.app.signals import after_file_commit, before_file_commit
+from fabricius.app.signals import (
+    after_file_commit,
+    before_file_commit,
+    on_file_commit_fail,
+)
 from fabricius.exceptions import AlreadyCommittedError, MissingRequiredValueError
 from fabricius.models.renderer import Renderer
 from fabricius.renderers import (
@@ -187,7 +191,7 @@ class File:
 
         Parameters
         ----------
-        renderer : Type of :py:class:`fabricius.generator.renderer.Renderer`
+        renderer : Type of :py:class:`fabricius.models.renderer.Renderer`
             The renderer to use to format the file.
             It must be not initialized.
         """
@@ -298,14 +302,17 @@ class File:
             exception.filename = self.name
             raise exception
 
-        if self._will_fake:
-            self.state = "persisted"
-        else:
-            with contextlib.suppress(NotADirectoryError):
-                destination.write_text(final_content)
-                self.state = "persisted"
-
         before_file_commit.send(self)
+
+        try:
+            if self._will_fake:
+                self.state = "persisted"
+            else:
+                with contextlib.suppress(NotADirectoryError):
+                    destination.write_text(final_content)
+                    self.state = "persisted"
+        except Exception as exception:
+            on_file_commit_fail.send(self)
 
         commit = FileCommitResult(
             name=self.name,
@@ -317,5 +324,5 @@ class File:
             fake=self._will_fake,
         )
 
-        after_file_commit.send(self)
+        after_file_commit.send(self, commit)
         return commit

@@ -64,5 +64,7 @@ API
    :maxdepth: 2
 
    api/models
+   api/renderers
    api/types
+   api/signals
    api/exceptions

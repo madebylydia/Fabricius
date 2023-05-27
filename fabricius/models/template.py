@@ -70,7 +70,7 @@ class Template(typing.Generic[RendererType]):
         ----------
         base_folder : :py:const:`fabricius.types.PathStrOrPath`
             Indication of where the template should be generated.
-        renderer : Type of :py:class:`Renderer`
+        renderer : Type of :py:class:`fabricius.models.renderer.Renderer`
             The renderer to use with the template.
         """
         self.base_folder = pathlib.Path(base_folder)
