@@ -90,6 +90,12 @@ class File:
         """
         Compute the destination of the file.
 
+        Raises
+        ------
+        :py:exc:`fabricius.exceptions.MissingRequiredValueError` :
+            If the object does not have the property "destination" set.
+            (Use :py:meth:`.to_directory`)
+
         Returns
         -------
         pathlib.Path :
@@ -204,7 +210,7 @@ class File:
 
         Parameters
         ----------
-        data : :py:data:`fabricius.const.Data`
+        data : :py:const:`fabricius.types.Data`
             The data you want to pass to the template.
         overwrite : :py:class:`bool`
             If the data that already exists should be deleted. If False, the new data will be
@@ -240,7 +246,7 @@ class File:
 
         Raises
         ------
-        :py:exc:`fabricius.generator.errors.NoContentError` :
+        :py:exc:`fabricius.exceptions.MissingRequiredValue` :
             If no content to the file were added.
 
         Returns
@@ -265,17 +271,15 @@ class File:
 
         Raises
         ------
-        :py:exc:`fabricius.generator.errors.NoContentError` :
-            If no content to the file were added.
-        :py:exc:`fabricius.generator.errors.NoDestinationError` :
-            If no destination/path were designated.
+        :py:exc:`MissingRequiredValueError <fabricius.exceptions.MissingRequiredValueError>` :
+            If a required value was not set. (Content or destination)
         :py:exc:`fabricius.exceptions.AlreadyCommittedError` :
             If the file has already been saved to the disk.
         :py:exc:`FileExistsError` :
             If the file already exists on the disk and ``overwrite`` is set to ``False``.
 
             This is different from
-            :py:exc:`AlreadyCommittedError <fabricius.generator.errors.AlreadyCommittedError>`
+            :py:exc:`AlreadyCommittedError <fabricius.exceptions.AlreadyCommittedError>`
             because this indicates that the content of the file this generator was never actually
             saved.
         :py:exc:`OSError` :
@@ -283,7 +287,7 @@ class File:
 
         Returns
         -------
-        :py:class:`fabricius.file.FileCommitResult` :
+        :py:class:`fabricius.types.FileCommitResult` :
             A typed dict with information about the created file.
         """
         if not self.destination:

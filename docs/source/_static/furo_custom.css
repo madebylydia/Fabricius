@@ -6,7 +6,7 @@
  * take 80% of the screen now (Instead of a ridiculous 40% IMO).
  */
 
-/* .sidebar-drawer {
+.sidebar-drawer {
     width: auto;
 }
 
@@ -37,4 +37,4 @@
         right: -15em;
         top: 0;
     }
-} */
+}

@@ -73,6 +73,9 @@ html_theme_options = {
     "dark_logo": "logo-white.png",
     "announcement": announcement,
 }
+
+
+# -- Options for autodoc extension ------------------------------------------
 autodoc_default_options = {
     "member-order": "bysource",
 }
