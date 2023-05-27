@@ -34,6 +34,16 @@ repos:
       - id: check-case-conflict
       - id: check-merge-conflict
 
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+    - id: black
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+    - id: isort
+
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v1.3.0
     hooks:

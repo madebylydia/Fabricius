@@ -1,7 +1,19 @@
+import random
 import typing
 
 import inflection
 from rich.color import Color
+
+FABRICIUS_IS_AWESOME = [
+    "Generating your project, hang tight!",
+    "Bing, bonk, bang! Scaffolding your next idea...",
+    "Helping you on your next idea!",
+    "Serious work in progress... Give it a second or two!",
+]
+
+
+def fetch_me_a_beer() -> str:
+    return random.choice(FABRICIUS_IS_AWESOME)
 
 
 def calculate_text_color(

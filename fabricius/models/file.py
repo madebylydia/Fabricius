@@ -4,90 +4,29 @@ import typing
 
 from typing_extensions import Self
 
-from fabricius.const import FILE_STATE, Data, PathStrOrPath
-from fabricius.errors import FabriciusError
-from fabricius.renderer import (
+from fabricius.app.signals import (
+    after_file_commit,
+    before_file_commit,
+    on_file_commit_fail,
+)
+from fabricius.exceptions import AlreadyCommittedError, MissingRequiredValueError
+from fabricius.models.renderer import Renderer
+from fabricius.renderers import (
     ChevronRenderer,
+    JinjaRenderer,
     PythonFormatRenderer,
-    Renderer,
     StringTemplateRenderer,
 )
-
-
-class NoContentError(FabriciusError):
-    """
-    The file does not have any content.
-    """
-
-    def __init__(self, file_name: str) -> None:
-        """
-        The file does not have any content.
-        """
-        super().__init__(f"File '{file_name}' was not set with a content/template.")
-
-
-class NoDestinationError(FabriciusError):
-    """
-    The file does not know where to go.
-    """
-
-    def __init__(self, file_name: str) -> None:
-        """
-        The file does not know where to go.
-        """
-        super().__init__(f"File '{file_name}' does not have a destination set.")
-
-
-class AlreadyCommittedError(FabriciusError):
-    """
-    The file has already been committed/persisted.
-    """
-
-    def __init__(self, file_name: str) -> None:
-        """
-        The file has already been committed/persisted.
-        """
-        super().__init__(f"File '{file_name}' has already been committed.")
-
-
-class FileCommitResult(typing.TypedDict):
-    """
-    A FileCommitResult is returned when a file was successfully saved.
-    It returns its information after its creation.
-    """
-
-    name: str
-    """
-    The name of the file.
-    """
-
-    state: FILE_STATE
-    """
-    The state of the file. Should always be "persisted".
-    """
-
-    destination: pathlib.Path
-    """
-    Where the file is located/has been saved.
-    """
-
-    data: Data
-    """
-    The data that has been passed during rendering.
-    """
-
-    template_content: str
-    """
-    The original content of the template.
-    """
-
-    content: str
-    """
-    The resulting content of the saved file.
-    """
+from fabricius.types import FILE_STATE, Data, FileCommitResult, PathStrOrPath
 
 
 class File:
+    """
+    The builder class to initialize a file template.
+    The result (Through the :py:meth:`.generate` method) is the render of the file's content.
+    You can "commit" the file to the disk to persist the file's content.
+    """
+
     name: str
     """
     The name of the file that will be generated.
@@ -98,22 +37,22 @@ class File:
     The state of the file.
     """
 
-    content: typing.Optional[str]
+    content: str | None
     """
     The template's content.
     """
 
-    template_content: typing.Optional[str]
+    template_content: str | None
     """
     The content of the base template, if set.
     """
 
-    destination: typing.Optional[pathlib.Path]
+    destination: pathlib.Path | None
     """
     The destination of the file, if set.
     """
 
-    renderer: typing.Type[Renderer]
+    renderer: type[Renderer]
     """
     The renderer to use to generate the file.
     """
@@ -123,30 +62,63 @@ class File:
     The data that will be passed to the renderer.
     """
 
-    will_fake: bool
+    _will_fake: bool
     """
     If the file should fake its creation upon commit.
     """
 
     def __init__(self, name: str, extension: typing.Optional[str] = None) -> None:
         """
-        Create a file's generator.
-
         Parameters
         ----------
         name : :py:class:`str`
             The name of the file.
         extension : :py:class:`str`
-            The extension of the file, without dot, same as ``name="<name>.<extension>"``
+            The extension of the file, without dot, same as ``name="<name>.<extension>"`` (Where
+            ``<name>`` and ``<extensions>`` are the arguments given to the class).
         """
         self.name = f"{name}.{extension}" if extension else name
         self.state = "pending"
         self.content = None
         self.destination = None
-        self.will_fake = False
+        self._will_fake = False
 
         self.renderer = PythonFormatRenderer
         self.data = {}
+
+    def compute_destination(self) -> pathlib.Path:
+        """
+        Compute the destination of the file.
+
+        Raises
+        ------
+        :py:exc:`fabricius.exceptions.MissingRequiredValueError` :
+            If the object does not have the property "destination" set.
+            (Use :py:meth:`.to_directory`)
+
+        Returns
+        -------
+        pathlib.Path :
+            The final path.
+        """
+        if not self.destination:
+            raise MissingRequiredValueError(self, "destination")
+
+        if not self.destination.exists() and (not self._will_fake):
+            self.destination.mkdir(parents=True)
+        return self.destination.joinpath(self.name)
+
+    @property
+    def can_commit(self) -> typing.Literal["destination", "content", "state", True]:
+        # sourcery skip: reintroduce-else
+        if not self.destination:
+            return "destination"
+        if not self.content:
+            return "content"
+        if self.state == "persisted":
+            return "state"
+
+        return True
 
     def from_file(self, path: str | pathlib.Path) -> Self:
         """
@@ -212,13 +184,20 @@ class File:
         self.renderer = StringTemplateRenderer
         return self
 
+    def use_jinja(self) -> Self:
+        """
+        Use Jinja2 to render the template.
+        """
+        self.renderer = JinjaRenderer
+        return self
+
     def with_renderer(self, renderer: typing.Type[Renderer]) -> Self:
         """
         Use a custom renderer to render the template.
 
         Parameters
         ----------
-        renderer : Type of :py:class:`fabricius.generator.renderer.Renderer`
+        renderer : Type of :py:class:`fabricius.models.renderer.Renderer`
             The renderer to use to format the file.
             It must be not initialized.
         """
@@ -231,7 +210,7 @@ class File:
 
         Parameters
         ----------
-        data : :py:data:`fabricius.const.Data`
+        data : :py:const:`fabricius.types.Data`
             The data you want to pass to the template.
         overwrite : :py:class:`bool`
             If the data that already exists should be deleted. If False, the new data will be
@@ -243,11 +222,22 @@ class File:
         return self
 
     def fake(self) -> Self:
-        self.will_fake = True
+        """
+        Set the file to fake the commit.
+        This will ensure that the file does not get stored on the machine upon commit.
+        """
+        self._will_fake = True
         return self
 
     def restore(self) -> Self:
-        self.will_fake = False
+        """
+        Set the file to not fake the commit.
+        This will ensure that the file gets stored on the machine upon commit.
+
+        .. hint ::
+           This is the default behavior. It's only useful to use this method if you have used :py:meth:`.fake`.
+        """
+        self._will_fake = False
         return self
 
     def generate(self) -> str:
@@ -256,7 +246,7 @@ class File:
 
         Raises
         ------
-        :py:exc:`fabricius.generator.errors.NoContentError` :
+        :py:exc:`fabricius.exceptions.MissingRequiredValue` :
             If no content to the file were added.
 
         Returns
@@ -265,7 +255,7 @@ class File:
             The final content of the file.
         """
         if not self.content:
-            raise NoContentError(self.name)
+            raise MissingRequiredValueError(self, "content")
 
         return self.renderer(self.data).render(self.content)
 
@@ -281,17 +271,15 @@ class File:
 
         Raises
         ------
-        :py:exc:`fabricius.generator.errors.NoContentError` :
-            If no content to the file were added.
-        :py:exc:`fabricius.generator.errors.NoDestinationError` :
-            If no destination/path were designated.
-        :py:exc:`fabricius.generator.errors.AlreadyCommittedError` :
+        :py:exc:`MissingRequiredValueError <fabricius.exceptions.MissingRequiredValueError>` :
+            If a required value was not set. (Content or destination)
+        :py:exc:`fabricius.exceptions.AlreadyCommittedError` :
             If the file has already been saved to the disk.
         :py:exc:`FileExistsError` :
             If the file already exists on the disk and ``overwrite`` is set to ``False``.
 
             This is different from
-            :py:exc:`AlreadyCommittedError <fabricius.generator.errors.AlreadyCommittedError>`
+            :py:exc:`AlreadyCommittedError <fabricius.exceptions.AlreadyCommittedError>`
             because this indicates that the content of the file this generator was never actually
             saved.
         :py:exc:`OSError` :
@@ -299,37 +287,46 @@ class File:
 
         Returns
         -------
-        :py:class:`fabricius.file.FileCommitResult` :
+        :py:class:`fabricius.types.FileCommitResult` :
             A typed dict with information about the created file.
         """
         if not self.destination:
-            raise NoDestinationError(self.name)
+            raise MissingRequiredValueError(self, "destination")
         if not self.content:
-            raise NoContentError(self.name)
+            raise MissingRequiredValueError(self, "content")
         if self.state == "persisted":
             raise AlreadyCommittedError(self.name)
 
         final_content = self.generate()
 
-        if not self.destination.exists() and (not self.will_fake):
-            self.destination.mkdir(parents=True)
-        destination = self.destination.joinpath(self.name)
+        destination = self.compute_destination()
 
         if destination.exists() and not overwrite:
-            raise FileExistsError(f"File '{self.name}' already exists.")
+            exception = FileExistsError(f"File '{self.name}' already exists.")
+            exception.filename = self.name
+            raise exception
 
-        if self.will_fake:
-            self.state = "persisted"
-        else:
-            with contextlib.suppress(NotADirectoryError):
-                destination.write_text(final_content)
+        before_file_commit.send(self)
+
+        try:
+            if self._will_fake:
                 self.state = "persisted"
+            else:
+                with contextlib.suppress(NotADirectoryError):
+                    destination.write_text(final_content)
+                    self.state = "persisted"
+        except Exception as exception:
+            on_file_commit_fail.send(self)
 
-        return FileCommitResult(
+        commit = FileCommitResult(
             name=self.name,
             state=self.state,
             data=self.data,
             template_content=self.content,
             content=final_content,
             destination=self.destination.joinpath(self.name),
+            fake=self._will_fake,
         )
+
+        after_file_commit.send(self, commit)
+        return commit
