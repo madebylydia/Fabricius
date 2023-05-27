@@ -2,15 +2,6 @@ import typing
 
 from fabricius.models.signal import Signal
 
-# __all__ = [
-#     "before_file_commit",
-#     "on_file_commit_fail",
-#     "after_file_commit",
-#     "before_template_commit",
-#     "after_template_commit",
-# ]
-
-
 if typing.TYPE_CHECKING:
     from fabricius.models.file import File, FileCommitResult
     from fabricius.models.template import Template
