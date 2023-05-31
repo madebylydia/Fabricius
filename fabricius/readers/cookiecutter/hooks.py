@@ -19,12 +19,12 @@ class AvailableHooks(typing.TypedDict):
     post_gen_project: typing.Optional[pathlib.Path]
 
 
-def get_hooks(base_folder: pathlib.Path) -> AvailableHooks | None:
+def get_hooks(base_folder: pathlib.Path) -> AvailableHooks:
     hooks_folder = base_folder.joinpath("hooks")
     if not hooks_folder.exists():
-        return None
+        return AvailableHooks(pre_gen_project=None, post_gen_project=None)
 
-    available_hooks: AvailableHooks = {"post_gen_project": None, "pre_gen_project": None}
+    available_hooks = AvailableHooks(pre_gen_project=None, post_gen_project=None)
     for hook_file in hooks_folder.iterdir():
         # annoying mypy moment... requiring literal string...
         if hook_file.stem == "post_gen_project":
@@ -32,7 +32,7 @@ def get_hooks(base_folder: pathlib.Path) -> AvailableHooks | None:
         if hook_file.stem == "pre_gen_project":
             available_hooks["pre_gen_project"] = hook_file
 
-    return None if len(available_hooks) == 0 else available_hooks
+    return available_hooks
 
 
 def run_hook(hook: pathlib.Path, data: Data):

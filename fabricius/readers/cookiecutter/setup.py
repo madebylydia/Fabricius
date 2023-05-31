@@ -16,7 +16,7 @@ from fabricius.models.renderer import Renderer
 from fabricius.models.template import Template
 from fabricius.readers.cookiecutter.config import get_config
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
-from fabricius.readers.cookiecutter.hooks import adapt, get_hooks
+from fabricius.readers.cookiecutter.hooks import AvailableHooks, adapt, get_hooks
 from fabricius.renderers.jinja_renderer import JinjaRenderer
 from fabricius.types import PathStrOrPath
 from fabricius.utils import fetch_me_a_beer, sentence_case
@@ -178,7 +178,7 @@ def setup(
         raise TemplateError(base_folder.name, "No template found")
 
     # Get the template object
-    template = Template(template_folder, JinjaRenderer)
+    template = Template(output_folder, JinjaRenderer)
     for extension in EXTENSIONS:
         template.renderer.environment.add_extension(extension)
     if context.get("_extensions"):
@@ -201,18 +201,25 @@ def setup(
 
     final_context["cookiecutter"].update(user_config["default_context"])
     final_context["cookiecutter"].update(dict(prompts.items()))
+    output_folder = output_folder.joinpath(
+        JinjaRenderer(final_context).render(template_folder.name)
+    )
 
     files = obtain_files(template_folder, output_folder, final_context)
     template.add_files(files)
     template.push_data(final_context)
 
-    if allow_hooks and hooks:
-        if hook_path := hooks["pre_gen_project"]:
-            before_template_commit.connect(adapt(hook_path, "pre"))  # type: ignore
-        if hook_path := hooks["post_gen_project"]:
-            after_template_commit.connect(adapt(hook_path, "post"))  # type: ignore
+    if allow_hooks:
+        connect_hooks(hooks)
 
     return template
+
+
+def connect_hooks(hooks: AvailableHooks):
+    if hook_path := hooks["pre_gen_project"]:
+        before_template_commit.connect(adapt(hook_path, "pre"))  # type: ignore
+    if hook_path := hooks["post_gen_project"]:
+        after_template_commit.connect(adapt(hook_path, "post"))  # type: ignore
 
 
 def run(
