@@ -57,4 +57,11 @@ repos:
       - id: poetry-check
       - id: poetry-lock
       - id: poetry-export
-        args: ["-f", "requirements.txt", "-o", "requirements.txt"]
+        name: "export requirements"
+        args: ["-f", "requirements.txt", "-o", "requirements/requirements.txt"]
+      - id: poetry-export
+        name: "export dev requirements"
+        args: ["-f", "requirements.txt", "--with", "dev", "-o", "requirements/requirements-dev.txt"]
+      - id: poetry-export
+        name: "export docs requirements"
+        args: ["-f", "requirements.txt", "--with", "docs", "-o", "requirements/requirements-docs.txt"]

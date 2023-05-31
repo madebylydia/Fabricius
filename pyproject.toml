@@ -45,12 +45,16 @@ jinja2 = "^3.1.2"
 jinja2-time = "^0.2.0"
 slugify = "^0.0.1"
 pyyaml = "^6.0"
-
-# Extra: Docs
-Sphinx = { version = "^5.0.2", optional = true }
-furo = { version = "^2022.6.21", optional = true }
-sphinx-autobuild = { version = "^2021.3.14", optional = true }
 platformdirs = "^3.5.1"
+
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+Sphinx = "^5.0.2"
+furo = "^2022.6.21"
+sphinx-autobuild = "^2021.3.14"
 
 [tool.poetry.group.dev]
 optional = true
@@ -74,9 +78,6 @@ optional = true
 
 [tool.poetry.group.actions.dependencies]
 tox-gh-actions = "^3.0.0"
-
-[tool.poetry.extras]
-docs = ["Sphinx", "sphinx-autobuild", "furo"]
 
 [tool.poe]
 poetry_command = ""
