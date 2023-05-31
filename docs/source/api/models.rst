@@ -20,4 +20,3 @@ In this page, you're able to visit the available methods in our models and freel
 
 .. autoclass:: fabricius.models.template.Template
    :members:
-   :undoc-members:

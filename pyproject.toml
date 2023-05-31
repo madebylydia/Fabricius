@@ -71,7 +71,8 @@ ipykernel = "^6.22.0"
 pytest = "^7.3.1"
 poethepoet = "^0.20.0"
 
-# [tool.poetry.commands]
+[tool.poetry.scripts]
+fabricius = "fabricius.app.cli.__main__:cli"
 
 [tool.poetry.group.actions]
 optional = true

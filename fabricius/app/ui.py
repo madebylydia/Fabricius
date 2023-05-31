@@ -13,8 +13,7 @@ from rich.progress import (
 
 from fabricius.app.main import logging
 from fabricius.app.signals import after_file_commit
-from fabricius.models.file import File
-from fabricius.types import FileCommitResult
+from fabricius.models.file import File, FileCommitResult
 
 _log = logging.getLogger(__name__)
 

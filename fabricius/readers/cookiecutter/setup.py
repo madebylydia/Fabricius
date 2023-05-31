@@ -11,14 +11,14 @@ from rich.prompt import Confirm, Prompt
 from fabricius.app.signals import after_template_commit, before_template_commit
 from fabricius.app.ui import TemplateProgressBar
 from fabricius.exceptions import TemplateError
-from fabricius.models.file import File
+from fabricius.models.file import File, FileCommitResult
 from fabricius.models.renderer import Renderer
 from fabricius.models.template import Template
 from fabricius.readers.cookiecutter.config import get_config
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.readers.cookiecutter.hooks import adapt, get_hooks
 from fabricius.renderers.jinja_renderer import JinjaRenderer
-from fabricius.types import FileCommitResult, PathStrOrPath
+from fabricius.types import PathStrOrPath
 from fabricius.utils import fetch_me_a_beer, sentence_case
 
 EXTENSIONS = [
@@ -123,6 +123,7 @@ def setup(
     base_folder: PathStrOrPath,
     output_folder: PathStrOrPath,
     *,
+    allow_hooks: bool = False,
     extra_context: dict[str, typing.Any] | None = None,
     no_prompt: bool = False,
 ) -> Template[type[JinjaRenderer]]:
@@ -205,7 +206,7 @@ def setup(
     template.add_files(files)
     template.push_data(final_context)
 
-    if hooks:
+    if allow_hooks and hooks:
         if hook_path := hooks["pre_gen_project"]:
             before_template_commit.connect(adapt(hook_path, "pre"))  # type: ignore
         if hook_path := hooks["post_gen_project"]:
@@ -214,7 +215,13 @@ def setup(
     return template
 
 
-def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
+def run(
+    template: Template[type[JinjaRenderer]],
+    ask_overwrite: bool = True,
+    *,
+    overwrite: bool = False,
+    keep_on_failure: bool = False,
+) -> list[FileCommitResult]:
     """Run the CookieCutter template generated using :py:func:`.setup`
 
     Parameters
@@ -222,6 +229,7 @@ def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
     template : Type of :py:class:`fabricius.models.template.Template`
         The template to render.
     """
+    console = get_console()
 
     def attempt(force: bool) -> list[FileCommitResult]:
         progress = TemplateProgressBar(len(template.files))
@@ -229,8 +237,10 @@ def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
             return template.commit(overwrite=force)
 
     try:
-        return attempt(False)
+        return attempt(overwrite)
     except FileExistsError as exception:
+        if not ask_overwrite:
+            console.print(f"[cyan]{exception.filename}[/] already exist, not overwriting.")
         answer = Confirm.ask(
             f"File [cyan]{exception.filename}[/] already exists, this probably means that this template has already been created. Overwrite?"
         )
@@ -242,4 +252,10 @@ def run(template: Template[type[JinjaRenderer]]) -> list[FileCommitResult]:
         else:
             get_console().print(exception)
             sys.exit(1)
+    except Exception as exception:
+        console.print_exception()
+        console.print(f"An exception has occurred during committing: {exception}")
+
+        if not keep_on_failure:
+            template.cleanup("unlink")
     return []

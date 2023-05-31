@@ -17,7 +17,52 @@ from fabricius.renderers import (
     PythonFormatRenderer,
     StringTemplateRenderer,
 )
-from fabricius.types import FILE_STATE, Data, FileCommitResult, PathStrOrPath
+from fabricius.types import Data, PathStrOrPath
+
+FILE_STATE: typing.TypeAlias = typing.Literal["pending", "persisted", "deleted"]
+
+
+class FileCommitResult(typing.TypedDict):
+    """
+    A FileCommitResult is returned when a file was successfully saved.
+    It returns its information after its creation.
+    """
+
+    name: str
+    """
+    The name of the file.
+    """
+
+    state: FILE_STATE
+    """
+    The state of the file. Should always be "persisted".
+    """
+
+    destination: pathlib.Path
+    """
+    Where the file is located/has been saved.
+    """
+
+    data: Data
+    """
+    The data that has been passed during rendering.
+    """
+
+    template_content: str
+    """
+    The original content of the template.
+    """
+
+    content: str
+    """
+    The resulting content of the saved file.
+    """
+
+    fake: bool
+    """
+    If the file was faked.
+    If faked, the file has not been saved to the disk.
+    """
 
 
 class File:
@@ -271,7 +316,7 @@ class File:
 
         Raises
         ------
-        :py:exc:`MissingRequiredValueError <fabricius.exceptions.MissingRequiredValueError>` :
+        :py:exc:`fabricius.exceptions.MissingRequiredValueError` :
             If a required value was not set. (Content or destination)
         :py:exc:`fabricius.exceptions.AlreadyCommittedError` :
             If the file has already been saved to the disk.
@@ -330,3 +375,14 @@ class File:
 
         after_file_commit.send(self, commit)
         return commit
+
+    def delete(self) -> None:
+        """
+        Delete the file if persisted.
+        """
+        if not self.compute_destination().exists():
+            error = FileNotFoundError(f"Cannot delete {self.name}: File does not exist on disk.")
+            error.filename = self.compute_destination()
+            raise error
+        self.compute_destination().unlink()
+        self.state = "deleted"
