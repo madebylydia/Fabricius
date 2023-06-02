@@ -6,7 +6,7 @@ import tempfile
 import typing
 
 from fabricius.models.file import FileCommitResult
-from fabricius.models.template import Template
+from fabricius.models.generator import Generator
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.renderers.jinja_renderer import JinjaRenderer
 from fabricius.types import Data
@@ -61,33 +61,33 @@ def run_hook(hook: pathlib.Path, data: Data):
 @typing.overload
 def adapt(
     hook: pathlib.Path, type: typing.Literal["pre"]
-) -> typing.Callable[[Template[typing.Any]], typing.Any]:
+) -> typing.Callable[[Generator[typing.Any]], typing.Any]:
     ...
 
 
 @typing.overload
 def adapt(
     hook: pathlib.Path, type: typing.Literal["post"]
-) -> typing.Callable[[Template[typing.Any], list[FileCommitResult]], typing.Any]:
+) -> typing.Callable[[Generator[typing.Any], list[FileCommitResult]], typing.Any]:
     ...
 
 
 def adapt(
     hook: pathlib.Path, type: typing.Literal["pre", "post"]
 ) -> (
-    typing.Callable[[Template[typing.Any]], typing.Any]
-    | typing.Callable[[Template[typing.Any], list[FileCommitResult]], typing.Any]
+    typing.Callable[[Generator[typing.Any]], typing.Any]
+    | typing.Callable[[Generator[typing.Any], list[FileCommitResult]], typing.Any]
 ):
     if type == "pre":
 
-        def pre_wrapper(template: Template[typing.Any]):
+        def pre_wrapper(template: Generator[typing.Any]):
             run_hook(hook, template.data)
 
         return pre_wrapper
 
     if type == "post":
 
-        def post_wrapper(template: Template[typing.Any], files_commit: list[FileCommitResult]):
+        def post_wrapper(template: Generator[typing.Any], files_commit: list[FileCommitResult]):
             run_hook(hook, template.data)
 
         return post_wrapper

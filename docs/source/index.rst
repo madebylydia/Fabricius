@@ -67,4 +67,5 @@ API
    api/renderers
    api/types
    api/signals
+   api/configs
    api/exceptions

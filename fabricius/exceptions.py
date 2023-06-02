@@ -1,3 +1,6 @@
+import pathlib
+
+
 class FabriciusError(Exception):
     """
     An error was raised inside Fabricius.
@@ -15,12 +18,13 @@ class MissingRequiredValueError(FabriciusError):
     """
 
     def __init__(self, instance: object, missing_value: str) -> None:
-        """Parameters
+        """
+        Parameters
         ----------
         instance : object
             The object that holds the missing value.
         missing_value : str
-            The value that was not set.
+            The value that is not set.
         """
         super().__init__(
             f"{instance.__class__.__name__} is missing a required value to be set: "
@@ -63,6 +67,16 @@ class ConflictError(FabriciusError):
             The reason for the conflict.
         """
         super().__init__(f"Conflict error: {instance.__class__.__name__}: {reason}")
+
+
+class ForgeError(FabriciusError):
+    """
+    The template/repository's forge file contains an error that must be resolved.
+    """
+
+    def __init__(self, path: pathlib.Path, key: str, reason: str) -> None:
+        key_indicator = "Error in file" if key == "file" else f'Key "{key}"'
+        super().__init__(f"Forge file ({path.resolve()}) has an error: {key_indicator}: {reason}")
 
 
 class TemplateError(FabriciusError):

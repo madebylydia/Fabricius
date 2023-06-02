@@ -70,6 +70,7 @@ esbonio = "^0.16.1"
 ipykernel = "^6.22.0"
 pytest = "^7.3.1"
 poethepoet = "^0.20.0"
+types-pyyaml = "^6.0.12.10"
 
 [tool.poetry.scripts]
 fabricius = "fabricius.app.cli.__main__:cli"

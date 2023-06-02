@@ -48,10 +48,10 @@ def run(
 
     Mimics the CookieCutter CLI options.
 
-    [ ] verbose,
-    [ ] config_file,
-    [ ] default_config,
-    [ ] skip_if_file_exists,
+    [ ] verbose
+    [ ] config_file
+    [ ] default_config
+    [ ] skip_if_file_exists
     """
     console = rich.get_console()
 

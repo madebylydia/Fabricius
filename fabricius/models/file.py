@@ -19,7 +19,7 @@ from fabricius.renderers import (
 )
 from fabricius.types import Data, PathStrOrPath
 
-FILE_STATE: typing.TypeAlias = typing.Literal["pending", "persisted", "deleted"]
+FILE_STATE: typing.TypeAlias = typing.Literal["pending", "failed", "persisted", "deleted"]
 
 
 class FileCommitResult(typing.TypedDict):
@@ -149,21 +149,17 @@ class File:
         if not self.destination:
             raise MissingRequiredValueError(self, "destination")
 
-        if not self.destination.exists() and (not self._will_fake):
-            self.destination.mkdir(parents=True)
         return self.destination.joinpath(self.name)
 
-    @property
-    def can_commit(self) -> typing.Literal["destination", "content", "state", True]:
-        # sourcery skip: reintroduce-else
+    def can_commit(self) -> tuple[bool, str | None]:
         if not self.destination:
-            return "destination"
+            return False, "Destination not set"
         if not self.content:
-            return "content"
-        if self.state == "persisted":
-            return "state"
+            return False, "Content not set"
+        if self.state == "pending":
+            return False, "File not pending for commit"
 
-        return True
+        return True, None
 
     def from_file(self, path: str | pathlib.Path) -> Self:
         """
@@ -358,9 +354,12 @@ class File:
                 self.state = "persisted"
             else:
                 with contextlib.suppress(NotADirectoryError):
+                    if not destination.parent.exists():
+                        destination.parent.mkdir()
                     destination.write_text(final_content)
                     self.state = "persisted"
         except Exception as exception:
+            self.state = "failed"
             on_file_commit_fail.send(self)
 
         commit = FileCommitResult(

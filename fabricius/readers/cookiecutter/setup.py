@@ -8,12 +8,12 @@ from functools import partial
 from rich import get_console
 from rich.prompt import Confirm, Prompt
 
-from fabricius.app.signals import after_template_commit, before_template_commit
+from fabricius.app.signals import after_generator_commit, before_generator_commit
 from fabricius.app.ui import TemplateProgressBar
 from fabricius.exceptions import TemplateError
 from fabricius.models.file import File, FileCommitResult
+from fabricius.models.generator import Generator
 from fabricius.models.renderer import Renderer
-from fabricius.models.template import Template
 from fabricius.readers.cookiecutter.config import get_config
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.readers.cookiecutter.hooks import AvailableHooks, adapt, get_hooks
@@ -126,7 +126,7 @@ def setup(
     allow_hooks: bool = False,
     extra_context: dict[str, typing.Any] | None = None,
     no_prompt: bool = False,
-) -> Template[type[JinjaRenderer]]:
+) -> Generator[type[JinjaRenderer]]:
     """Setup a template that will be able to be ran once created.
 
     Parameters
@@ -178,7 +178,7 @@ def setup(
         raise TemplateError(base_folder.name, "No template found")
 
     # Get the template object
-    template = Template(output_folder, JinjaRenderer)
+    template = Generator(output_folder, JinjaRenderer)
     for extension in EXTENSIONS:
         template.renderer.environment.add_extension(extension)
     if context.get("_extensions"):
@@ -217,13 +217,13 @@ def setup(
 
 def connect_hooks(hooks: AvailableHooks):
     if hook_path := hooks["pre_gen_project"]:
-        before_template_commit.connect(adapt(hook_path, "pre"))  # type: ignore
+        before_generator_commit.connect(adapt(hook_path, "pre"))  # type: ignore
     if hook_path := hooks["post_gen_project"]:
-        after_template_commit.connect(adapt(hook_path, "post"))  # type: ignore
+        after_generator_commit.connect(adapt(hook_path, "post"))  # type: ignore
 
 
 def run(
-    template: Template[type[JinjaRenderer]],
+    template: Generator[type[JinjaRenderer]],
     ask_overwrite: bool = True,
     *,
     overwrite: bool = False,

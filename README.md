@@ -8,6 +8,14 @@ Documentation: <https://fabricius.readthedocs.io>
 
 > :warning: Fabricius still does not comes with it's CLI tool! It is a work in progress!
 
+## Defining terms
+
+It is important to define the terms that Fabricius uses.
+
+1. **Template** : A template lays the base of an application, it is what will be renderer with Fabricius using the data it'll be given.
+2. **Repository** : Contains one or more templates. All templates that are contained inside the repository can be rendered.
+3. **Project** : A project is the result of Fabricius rendering a template, it is the final code that has been created.
+
 ## Goals:
 
 1. Create a working project from a project template
