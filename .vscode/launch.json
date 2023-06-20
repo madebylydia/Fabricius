@@ -4,10 +4,8 @@
     {
       "name": "Launch tests",
       "type": "python",
-      "module": "unittest",
-      "args": [
-        "--failfast"
-      ],
+      "module": "pytest",
+      "cwd": "${workspaceFolder}",
       "request": "launch",
       "console": "integratedTerminal",
       "justMyCode": true

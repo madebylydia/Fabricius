@@ -20,7 +20,7 @@ class AvailableHooks(typing.TypedDict):
 
 
 def get_hooks(base_folder: pathlib.Path) -> AvailableHooks:
-    hooks_folder = base_folder.joinpath("hooks")
+    hooks_folder = base_folder / "hooks"
     if not hooks_folder.exists():
         return AvailableHooks(pre_gen_project=None, post_gen_project=None)
 

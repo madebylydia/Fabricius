@@ -1,6 +1,6 @@
 import logging
+import typing
 from contextlib import contextmanager
-from typing import Any, Generator
 
 from rich.progress import (
     BarColumn,
@@ -8,10 +8,10 @@ from rich.progress import (
     TaskID,
     TaskProgressColumn,
     TextColumn,
+    TimeElapsedColumn,
     TimeRemainingColumn,
 )
 
-from fabricius.app.main import logging
 from fabricius.app.signals import after_file_commit
 from fabricius.models.file import File, FileCommitResult
 
@@ -41,7 +41,7 @@ class TemplateProgressBar:
         self.task = None
 
     @contextmanager
-    def begin(self, first_message: str) -> Generator[Progress, Any, None]:
+    def begin(self, first_message: str) -> typing.Generator[Progress, typing.Any, None]:
         try:
             after_file_commit.connect(self._increase)
             self.task = self.progress.add_task(first_message, total=self.total_files)
@@ -56,3 +56,22 @@ class TemplateProgressBar:
             _log.warning("Progress or task not detected. Ignoring.")
             return
         self.progress.update(self.task, advance=1, description=file.name)
+
+
+class UnknownProgressBar:
+    def __init__(self) -> None:
+        self.progress = Progress(
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TimeElapsedColumn(),
+            transient=True,
+        )
+
+    @contextmanager
+    def begin(self, description: str) -> typing.Generator[Progress, typing.Any, None]:
+        try:
+            self.progress.add_task(description, total=None)
+            with self.progress as progress:
+                yield progress
+        finally:
+            self.progress.stop()

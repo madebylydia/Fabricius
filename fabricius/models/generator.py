@@ -23,7 +23,8 @@ class Generator(typing.Generic[RendererType]):
     is that a template assumes all of your files have the same properties, (Requires the same
     renderer, the same data, etc.) and it will commit all the files using one method call.
 
-    Typically, a generator only use one renderer, and shares the same data across the whole template.
+    Typically, a generator only use one renderer, and shares the same data across the whole
+    template.
 
     The :py:class:`.Generator` will assist creating a project, while providing a similar interface
     of the :py:class:`.File` model.
@@ -95,7 +96,8 @@ class Generator(typing.Generic[RendererType]):
         if file.destination and file.compute_destination() in self.__files_destinations:
             raise ConflictError(
                 file,
-                f"File {file.name} has a destination that already is present in Generator's destinations.",
+                f"File {file.name} has a destination that already is present in Generator's"
+                " destinations.",
             )
 
         self.files.append(file)

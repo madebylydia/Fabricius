@@ -1,19 +1,18 @@
 import json
+import typing
 from pathlib import Path
-from typing import TypedDict
 
 from platformdirs import user_config_path
 
 DEFAULT_CONFIG: "SerializedConfig" = {"stored_repos": {}}
-CONFIG_FILE = "user.json"
+CONFIG_PATH = user_config_path("fabricius", ensure_exists=True) / "user.json"
 
 
 def read_config() -> "SerializedConfig":
-    config_file = user_config_path("fabricius").joinpath(CONFIG_FILE)
-    if not config_file.exists():
+    if not CONFIG_PATH.exists():
         write_to_config(json.dumps(DEFAULT_CONFIG))
 
-    data: "SerializedConfig" = json.loads(config_file.read_text())
+    data = json.loads(CONFIG_PATH.read_text())
 
     final = DEFAULT_CONFIG.copy()
     final.update(data)
@@ -21,14 +20,14 @@ def read_config() -> "SerializedConfig":
 
 
 def write_to_config(content: str) -> None:
-    file = user_config_path("fabricius").joinpath(CONFIG_FILE)
+    file = CONFIG_PATH
     if not file.exists():
-        file.parent.mkdir(parents=True)
+        file.parent.mkdir(parents=True, exist_ok=True)
         file.touch()
     file.write_text(content)
 
 
-class SerializedConfig(TypedDict):
+class SerializedConfig(typing.TypedDict):
     stored_repos: dict[str, str]
 
 
@@ -42,6 +41,12 @@ class Config:
         return SerializedConfig(
             stored_repos={key: str(value.resolve()) for key, value in self.stored_repos.items()}
         )
+
+    def to_json(self) -> str:
+        return json.dumps(self.serialize())
+
+    def persist(self) -> None:
+        write_to_config(self.to_json())
 
     @classmethod
     def get(cls) -> "Config":

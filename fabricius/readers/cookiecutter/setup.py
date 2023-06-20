@@ -132,8 +132,8 @@ def setup(
     Parameters
     ----------
     base_folder : :py:const:`PathStrOrPath <fabricius.types.PathStrOrPath>`
-        The folder where the template is located. (Choose the folder where the ``cookiecutter.json``
-        is located, not the template itself)
+        The folder where the template is located. (Choose the folder where the
+        ``cookiecutter.json`` is located, not the template itself)
     output_folder : :py:const:`PathStrOrPath <fabricius.types.PathStrOrPath>`
         The folder where the template/files will be created once rendered.
     extra_context : :py:const:`Data <fabricius.types.Data>`, optional
@@ -162,7 +162,7 @@ def setup(
     output_folder = pathlib.Path(output_folder).resolve()
 
     # Prepare contexts
-    cookiecutter_config_path = base_folder.joinpath("cookiecutter.json")
+    cookiecutter_config_path = base_folder / "cookiecutter.json"
     user_config = get_config()
 
     # Ensure a cookiecutter.json file exists.
@@ -201,9 +201,7 @@ def setup(
 
     final_context["cookiecutter"].update(user_config["default_context"])
     final_context["cookiecutter"].update(dict(prompts.items()))
-    output_folder = output_folder.joinpath(
-        JinjaRenderer(final_context).render(template_folder.name)
-    )
+    output_folder = output_folder / JinjaRenderer(final_context).render(template_folder.name)
 
     files = obtain_files(template_folder, output_folder, final_context)
     template.add_files(files)
@@ -249,7 +247,8 @@ def run(
         if not ask_overwrite:
             console.print(f"[cyan]{exception.filename}[/] already exist, not overwriting.")
         answer = Confirm.ask(
-            f"File [cyan]{exception.filename}[/] already exists, this probably means that this template has already been created. Overwrite?"
+            f"File [cyan]{exception.filename}[/] already exists, this probably means that this"
+            " template has already been created. Overwrite?"
         )
         if answer:
             return attempt(True)

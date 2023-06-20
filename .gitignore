@@ -166,3 +166,5 @@ cython_debug/
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/tasks.json
+
+tests/report/

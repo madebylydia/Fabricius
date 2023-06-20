@@ -2,7 +2,7 @@ from pathlib import Path
 
 import click
 
-plugin_folder = Path(__file__).parent.joinpath("commands")
+plugin_folder = Path(__file__).parent / "commands"
 
 
 class FabriciusCLI(click.MultiCommand):
@@ -17,7 +17,7 @@ class FabriciusCLI(click.MultiCommand):
 
     def get_command(self, ctx: click.Context, cmd_name: str) -> click.Command | None:
         ns: dict[str, click.Command] = {}
-        fn = plugin_folder.joinpath(f"{cmd_name}.py")
+        fn = plugin_folder / f"{cmd_name}.py"
         with open(fn) as f:
             code = compile(f.read(), fn, "exec")
             eval(code, ns, ns)

@@ -1,3 +1,4 @@
+import pathlib
 import random
 import typing
 
@@ -14,6 +15,28 @@ FABRICIUS_IS_AWESOME = [
 
 def fetch_me_a_beer() -> str:
     return random.choice(FABRICIUS_IS_AWESOME)
+
+
+def determine_kind(path: pathlib.Path) -> typing.Literal["fabricius", "cookiecutter"] | None:
+    """
+    Attempt to determine the kind of project we're facing at the given path.
+    Returning None means that the project kind cannot be determined.
+
+    Parameters
+    ----------
+    path : :py:class:`pathlib.Path`
+        The path to the project we want to check.
+
+    Returns
+    -------
+    str :
+        Return either ``fabricius`` or ``cookiecutter``. Can also return :py:const:`None` if the
+        type of project cannot be determined.
+    """
+    if (path / "forge.py").exists():
+        return "fabricius"
+    if (path / "cookiecutter.json").exists():
+        return "fabricius"
 
 
 def calculate_text_color(
@@ -41,7 +64,7 @@ def calculate_text_color(
     Returns
     -------
     str :
-        Return either "black" or "bright_white"
+        Return either "black" or "bright_white".
     """
     if isinstance(color, str):
         color = Color.parse(color)

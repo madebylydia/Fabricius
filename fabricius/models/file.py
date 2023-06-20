@@ -149,7 +149,7 @@ class File:
         if not self.destination:
             raise MissingRequiredValueError(self, "destination")
 
-        return self.destination.joinpath(self.name)
+        return self.destination / self.name
 
     def can_commit(self) -> tuple[bool, str | None]:
         if not self.destination:
@@ -276,7 +276,8 @@ class File:
         This will ensure that the file gets stored on the machine upon commit.
 
         .. hint ::
-           This is the default behavior. It's only useful to use this method if you have used :py:meth:`.fake`.
+           This is the default behavior. It's only useful to use this method if you have used
+           :py:meth:`.fake`.
         """
         self._will_fake = False
         return self
@@ -368,7 +369,7 @@ class File:
             data=self.data,
             template_content=self.content,
             content=final_content,
-            destination=self.destination.joinpath(self.name),
+            destination=self.destination / self.name,
             fake=self._will_fake,
         )
 
