@@ -29,7 +29,7 @@ classifiers = [
 ]
 
 packages = [
-    { include = "fabricius" }
+    { include = "fabricius", from = "src" },
 ]
 
 include = ["README.md", "LICENSE"]
@@ -37,16 +37,22 @@ include = ["README.md", "LICENSE"]
 [tool.poetry.dependencies]
 python = "^3.10"
 chevron = "^0.14.0"
-rich = "^12.4.4"
+rich = "^13.3.3"
 typing-extensions = "^4.2.0"
 inflection = "^0.5.1"
 click = "^8.1.3"
 jinja2 = "^3.1.2"
 jinja2-time = "^0.2.0"
 slugify = "^0.0.1"
-pyyaml = "^6.0"
 platformdirs = "^3.5.1"
+clickloader = "^0.1.3"
+pydantic = "^2.2.0"
+gitpython = "^3.1.32"
+aspreno = "^1.0.0.dev2"
+typer = "^0.9.0"
 
+[tool.poetry.scripts]
+fabricius = 'fabricius.cli:main'
 
 [tool.poetry.group.docs]
 optional = true
@@ -67,14 +73,11 @@ esbonio = "^0.16.1"
 ipykernel = "^6.22.0"
 pytest = "^7.3.1"
 poethepoet = "^0.20.0"
-types-pyyaml = "^6.0.12.10"
 pytest-pretty = "^1.2.0"
 pytest-html = "^3.2.0"
 pytest-cov = "^4.1.0"
 ruff = "^0.0.272"
-
-[tool.poetry.scripts]
-fabricius = "fabricius.app.cli.__main__:cli"
+types-pyyaml = "^6.0.12.11"
 
 [tool.poetry.group.actions]
 optional = true
@@ -88,8 +91,8 @@ poetry_command = ""
 [tool.poe.tasks]
 _format_black = "black ."
 _format_isort = "isort ."
-_ruff = "ruff ./fabricius"
-_mypy = "mypy ./fabricius --enable-incomplete-feature=Unpack"
+_ruff = "ruff ./src/fabricius"
+_mypy = "mypy -p fabricius --enable-incomplete-feature=Unpack"
 format = ["_format_black", "_format_isort"]
 test = "pytest . --html=tests/report/index.html --cov-config=.coveragerc --cov-context=test --cov-report=term-missing --cov-report=html --cov=fabricius"
 lint = ["_ruff", "_mypy"]

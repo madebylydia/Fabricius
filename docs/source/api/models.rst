@@ -14,7 +14,7 @@ In this page, you're able to visit the available methods in our models and freel
    :members:
 
 
-.. autoclass:: fabricius.models.renderer.Renderer
+.. autoclass:: fabricius.models.composer.Composer
    :members:
 
 
