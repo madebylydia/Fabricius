@@ -1,17 +1,18 @@
 import pathlib
-import shutil
 
 import click
 from rich import get_console
 from rich.prompt import Confirm
 
 from fabricius.app.config import Config
+from fabricius.utils import force_rm
 
 
 @click.command()
 def integrity():
     """
     Check Fabricius's Config integrity.
+    Useful when something goes wrong inside Fabricius.
     """
     found_integrity_issues = 0
     resolved_integrity_issues = 0
@@ -49,7 +50,7 @@ def integrity():
 
         if Confirm.ask("Delete these folders?"):
             for path in unknown_folders:
-                shutil.rmtree(path)
+                force_rm(path)
                 resolved_integrity_issues += 1
 
     if not found_integrity_issues:

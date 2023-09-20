@@ -10,7 +10,9 @@ from fabricius.exceptions import ExpectationFailedException
 from fabricius.utils import deep_merge
 
 _log = logging.getLogger(__name__)
-DEFAULT_CONFIG_PATH = platformdirs.user_config_path("fabricius").joinpath("config.json")
+DEFAULT_CONFIG_PATH = platformdirs.user_config_path("fabricius", ensure_exists=True).joinpath(
+    "config.json"
+)
 
 
 _F = typing.ParamSpec("_F")
@@ -39,14 +41,12 @@ class Config(pydantic.BaseModel):
 
     @classmethod
     def get(cls, file: pathlib.Path | None = None) -> "Config":
-        config_file = file
-        default = False
-        if not config_file:
-            config_file = DEFAULT_CONFIG_PATH
-            default = True
+        config_file = file or DEFAULT_CONFIG_PATH
+        default = True if config_file == DEFAULT_CONFIG_PATH else False
 
         if not config_file.exists() and default:
             _log.debug(f"Creating new config file at {config_file.resolve()}")
+            config_file.parent.touch()
             config_file.touch()
             config_file.write_text(Config.defaults().model_dump_json())
 

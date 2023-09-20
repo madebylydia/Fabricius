@@ -1,7 +1,13 @@
+import os
+import shutil
+import stat
 import typing
 
 import inflection
 from rich.color import Color
+
+if typing.TYPE_CHECKING:
+    from _typeshed import StrOrBytesPath
 
 
 class DictAllowMiss(dict[str, typing.Any]):
@@ -236,3 +242,11 @@ def sentence_case(text: str) -> str:
     if has_ending_id:
         result += " ID"
     return result
+
+
+def force_rm(path: "StrOrBytesPath"):
+    def on_rmtree_exception(_: typing.Callable[..., typing.Any], path: str, __: typing.Any):
+        os.chmod(path, stat.S_IWRITE)
+        os.unlink(path)
+
+    shutil.rmtree(path, onerror=on_rmtree_exception)

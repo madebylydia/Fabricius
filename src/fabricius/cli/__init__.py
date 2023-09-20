@@ -25,4 +25,5 @@ def cli(log_level: typing.Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL
 def main():
     aspreno.register_global_handler(aspreno.ExceptionHandler())
     ccl.register_commands(cli, pathlib.Path(__file__, "..", "commands").resolve())
+
     cli()
