@@ -4,12 +4,9 @@ import typing
 
 from fabricius.exceptions import UserInputException
 
-_QT = typing.TypeVar("_QT", bound=typing.Callable[[str], typing.Any])
-"""The return type of a question."""
-
 
 @dataclasses.dataclass(kw_only=True)
-class QuestionConfig(typing.Generic[_QT]):
+class QuestionConfig[QuestionType: type]:
     id: str
     """
     The "ID" of the question.
@@ -26,7 +23,7 @@ class QuestionConfig(typing.Generic[_QT]):
     If None, the question's ID will be printed instead.
     """
 
-    type: _QT | None
+    type: QuestionType | None
     """
     The type the question must be.
 
@@ -55,7 +52,7 @@ class QuestionConfig(typing.Generic[_QT]):
     If None, the user is free to pass anything.
     """
 
-    def answer(self, user_answer: str) -> _QT:
+    def validate(self, user_answer: str) -> QuestionType:
         """
         Attempt to return the expected output of the user's input (TL;DR get user's final answer)
 
@@ -71,7 +68,7 @@ class QuestionConfig(typing.Generic[_QT]):
 
         Raises
         ------
-        UserInputException
+        fabricius.exceptions.UserInputException
             Raised when either the question is not contained into the list of choice, or the
             answer cannot be converted to the given type.
         """
@@ -82,7 +79,8 @@ class QuestionConfig(typing.Generic[_QT]):
                 return self.type(user_answer)
             except TypeError as exception:
                 raise UserInputException(user_answer, str(type(self.type))) from exception
-        return typing.cast(_QT, user_answer)
+        else:
+            return typing.cast(QuestionType, user_answer)
 
 
 @dataclasses.dataclass(kw_only=True)

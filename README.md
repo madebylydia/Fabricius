@@ -13,8 +13,15 @@ Documentation: <https://fabricius.readthedocs.io>
 It is important to define the terms that Fabricius uses.
 
 1. **Template** : A template lays the base of an application, it is what will be renderer with Fabricius using the data it'll be given.
+    - Rules:
+        - Only one composer can be used
+        - Only one reader can be set (Eg. either Fabricius's builtin reader or CookieCutter, but not both).
+
 2. **Repository** : Contains one or more templates. All templates that are contained inside the repository can be rendered.
 3. **Project** : A project is the result of Fabricius rendering a template, it is the final code that has been created.
+    - Rules:
+        - If there is any file existing at the destination, do not overwrite.
+        - Allow atomic creation : Delete all files that were created if needed.
 
 ## Goals:
 

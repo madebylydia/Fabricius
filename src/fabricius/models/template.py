@@ -52,3 +52,6 @@ class Template:
         if self.has_cookiecutter_file:
             return "cookiecutter"
         return None
+
+    def with_renderer(self) -> typing.Self:
+        return self

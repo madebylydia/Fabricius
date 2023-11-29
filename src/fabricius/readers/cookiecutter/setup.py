@@ -8,18 +8,17 @@ from functools import partial
 from rich import get_console
 from rich.prompt import Confirm, Prompt
 
+from fabricius.app.ui import ProgressBar, progress_bar
+from fabricius.composers import JinjaComposer
 from fabricius.composers.jinja import JinjaComposer
 from fabricius.configurator.reader.cookiecutter import CookieCutterConfigReader
-from fabricius.exceptions import TemplateError
 from fabricius.models.composer import Composer
 from fabricius.models.file import File, FileCommitResult
 from fabricius.models.generator import Generator
 from fabricius.readers.cookiecutter.exceptions import FailedHookError
 from fabricius.readers.cookiecutter.hooks import AvailableHooks, adapt, get_hooks
-from fabricius.renderers.jinja_renderer import JinjaRenderer
 from fabricius.signals import after_generator_start, before_generator_start
 from fabricius.types import PathLike
-from fabricius.ui import ProgressBar, progress_bar
 from fabricius.utils import fetch_me_a_beer, sentence_case
 
 EXTENSIONS = [

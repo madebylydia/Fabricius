@@ -102,8 +102,8 @@ class Generator:
         self._default_destination = pathlib.Path(path)
         return self
 
-    def atomic(self):
-        self._atomic = True
+    def atomic(self, value: bool):
+        self._atomic = value
         return self
 
     def execute(self, *, allow_overwrite: bool = False) -> dict[File, FileCommitResult | None]:
@@ -130,10 +130,11 @@ class Generator:
                 if result := self._execute_file(file, allow_overwrite):
                     self.results[file] = result
             except Exception as exception:
-                if not self._atomic:
-                    raise exception
-                for file in self.results:
-                    file.compute_destination().unlink()
+                if self._atomic:
+                    for existing_file in self.results:
+                        existing_file.compute_destination().unlink()
+                raise exception
+                # NOTE: Something feels off here.
 
         results = copy.copy(self.results)
 

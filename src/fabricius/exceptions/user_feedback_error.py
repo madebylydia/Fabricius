@@ -23,3 +23,4 @@ class UserFeedbackError(FabriciusError):
     def handle(self, exit_code: int = 0, **kwargs: typing.Any) -> typing.NoReturn:
         get_console().print(self.message)
         sys.exit(exit_code)
+        # NOTE: That's probably not the best way to do things... Rewrite?

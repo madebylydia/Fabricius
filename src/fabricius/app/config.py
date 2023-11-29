@@ -40,13 +40,13 @@ class Config(pydantic.BaseModel):
         self.config_file.write_text(self.model_dump_json())
 
     @classmethod
-    def get(cls, file: pathlib.Path | None = None) -> "Config":
-        config_file = file or DEFAULT_CONFIG_PATH
+    def get(cls, config_file: pathlib.Path = DEFAULT_CONFIG_PATH) -> "Config":
         default = True if config_file == DEFAULT_CONFIG_PATH else False
 
+        # Create default config file if needed.
         if not config_file.exists() and default:
             _log.debug(f"Creating new config file at {config_file.resolve()}")
-            config_file.parent.touch()
+            config_file.parent.mkdir(parents=True)
             config_file.touch()
             config_file.write_text(Config.defaults().model_dump_json())
 

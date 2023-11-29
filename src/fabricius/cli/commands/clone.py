@@ -11,6 +11,7 @@ from fabricius.utils import snake_case
 
 
 @click.command()
+@click.pass_context
 @click.argument("repository", type=click.STRING)
 @click.argument("as_name", type=click.STRING, required=False, default=None)
 @click.option(
@@ -22,7 +23,7 @@ from fabricius.utils import snake_case
     ),
     default=lambda: Config.get().download_path,
 )
-def clone(repository: str, as_name: str | None, *, at: pathlib.Path):
+def clone(ctx: click.Context, repository: str, as_name: str | None, *, at: pathlib.Path):
     """
     Download a repository and store it inside Fabricius.
     """

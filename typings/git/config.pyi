@@ -15,16 +15,16 @@ from typing import (
 
 from _typeshed import Incomplete
 from git.repo.base import Repo
-from git.types import _T, Lit_config_levels, PathLike
+from git.types import Lit_config_levels, PathLike
 from git.util import LockFile
 
 T_ConfigParser = TypeVar("T_ConfigParser", bound="GitConfigParser")
 T_OMD_value = TypeVar("T_OMD_value", str, bytes, int, float, bool)
 OrderedDict_OMD = OrderedDict
-OrderedDict_OMD = OrderedDict[str, List[T_OMD_value]]
+OrderedDict_OMD_T = OrderedDict[str, List[T_OMD_value]]
 
 class MetaParserBuilder(abc.ABCMeta):
-    def __new__(cls, name: str, bases: Tuple, clsdict: Dict[str, Any]) -> MetaParserBuilder: ...
+    def __new__(cls, name: str, bases: Tuple[Any], clsdict: Dict[str, Any]) -> MetaParserBuilder: ...
 
 class SectionConstraint(Generic[T_ConfigParser]):
     def __init__(self, config: T_ConfigParser, section: str) -> None: ...
@@ -36,7 +36,7 @@ class SectionConstraint(Generic[T_ConfigParser]):
     def __enter__(self) -> SectionConstraint[T_ConfigParser]: ...
     def __exit__(self, exception_type: str, exception_value: str, traceback: str) -> None: ...
 
-class _OMD(OrderedDict_OMD):
+class _OMD[_T](OrderedDict_OMD):
     def __setitem__(self, key: str, value: _T) -> None: ...
     def add(self, key: str, value: Any) -> None: ...
     def setall(self, key: str, values: List[_T]) -> None: ...

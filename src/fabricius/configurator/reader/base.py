@@ -6,18 +6,14 @@ if typing.TYPE_CHECKING:
     from fabricius.configurator.universal import UniversalConfig
 
 
-_PD = typing.TypeVar("_PD")
-"""The return type of the parsed data."""
-
-
-class BaseReader(abc.ABC, typing.Generic[_PD]):
+class BaseReader[ParsedData: typing.Any](abc.ABC):
     config_file: pathlib.Path
 
     def __init__(self, file: pathlib.Path) -> None:
         self.config_file = file
 
     @abc.abstractmethod
-    def process(self) -> _PD:
+    def process(self) -> ParsedData:
         """
         Process the raw content of a file so it can be analyzed by the :py:meth:`.to_universal`
         method.
@@ -25,7 +21,7 @@ class BaseReader(abc.ABC, typing.Generic[_PD]):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def to_universal(self, parsed_data: _PD) -> "UniversalConfig":
+    def to_universal(self, parsed_data: ParsedData) -> "UniversalConfig":
         """
         An abstract class that must return an
         :py:class:`fabricius.configurator.universal.UniversalConfig` class.

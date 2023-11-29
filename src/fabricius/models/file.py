@@ -16,7 +16,9 @@ from fabricius.models.composer import Composer
 from fabricius.signals import after_file_commit, before_file_commit, on_file_commit_fail
 from fabricius.types import Data, PathLike
 
-FILE_STATE: typing.TypeAlias = typing.Literal["pending", "failed", "persisted", "deleted"]
+FILE_STATE: typing.TypeAlias = typing.Literal[
+    "pending", "processing", "failed", "persisted", "deleted"
+]
 
 
 class FileCommitResult(typing.TypedDict):
@@ -82,11 +84,6 @@ class File:
     content: str | None
     """
     The template's content.
-    """
-
-    template_content: str | None
-    """
-    The content of the base template, if set.
     """
 
     destination: pathlib.Path | None
@@ -335,8 +332,6 @@ class File:
         if self.state == "persisted":
             raise FileCommitException(self, ErrorReason.ALREADY_PERSISTED)
 
-        final_content = self.generate()
-
         destination = self.compute_destination()
 
         if destination.exists() and not overwrite:
@@ -344,7 +339,10 @@ class File:
             exception.filename = self.name
             raise exception
 
+        self.state = "processing"
+
         before_file_commit.send(self)
+        final_content = self.generate()
 
         try:
             if self._will_fake:
