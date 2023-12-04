@@ -10,6 +10,8 @@ Documentation: <https://fabricius.readthedocs.io>
 
 ## Project Status Update
 
+### #1. Slowing down.
+
 Hi! Fabricius's developer writing.
 
 This is to report how things are going for Fabricius, maybe it get interest for some peoples, or not, well, whoever you might be, if you're reading this, thanks for passing by :)
@@ -26,6 +28,12 @@ So overall, Fabricius is more or less frozen for the time being because of my pe
 I'm not particularly interested in someone else taking up my work (If any??) but... there's a license so... if I ever don't keep up... code's here!
 
 Thanks for reading, apologizes for these little words, but I hope to "be back" soon enough!
+
+### 2. Going forward!
+
+THINGS ARE GOING CLEANER IN MY HEAD! Finally!
+
+Fabricius is going back to having some awesome time! :) Check out branch I'm working on from time to time (At this time, dev/structure)
 
 ## Goals
 
