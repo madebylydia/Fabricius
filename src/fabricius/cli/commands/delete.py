@@ -4,12 +4,13 @@ from rich.prompt import Confirm
 
 from fabricius.app.config import Config
 from fabricius.app.ui.progress_bar import ProgressBarNoText
+from fabricius.cli.utils import pass_config
 from fabricius.exceptions.user_feedback_error import UserFeedbackError
 from fabricius.utils import force_rm
 
 
 @click.command()
-@click.argument("alias", type=click.STRING, help="The name of the repository to delete.")
+@click.argument("alias", type=click.STRING)
 @click.option(
     "-y",
     "--yes",
@@ -18,13 +19,12 @@ from fabricius.utils import force_rm
     is_flag=True,
     help="Skip the confirm prompt if this flag is given.",
 )
-def delete(alias: str, *, no_confirm: bool = False):
+@pass_config
+def delete(config: Config, alias: str, *, no_confirm: bool = False):
     """
     Delete a downloaded repository.
     """
     console = get_console()
-
-    config = Config.get()
 
     if alias not in config.stored_repositories:
         raise UserFeedbackError(f"Repository [green]{alias}[/] does not exists.")

@@ -3,15 +3,16 @@ from rich import get_console
 from rich.table import Table
 
 from fabricius.app.config import Config
+from fabricius.cli.utils import pass_config
 
 
 @click.command()
-def list():
+@pass_config
+def list(config: Config):
     """
     List repositories stored by Fabricius.
     """
     console = get_console()
-    config = Config.get()
 
     if len(config.stored_repositories) == 0:
         return console.print("There is no repository stored.")

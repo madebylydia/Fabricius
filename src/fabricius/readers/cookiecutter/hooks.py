@@ -8,7 +8,7 @@ import typing
 from fabricius.composers.jinja import JinjaComposer
 from fabricius.models.file import FileCommitResult
 from fabricius.models.generator import Generator
-from fabricius.readers.cookiecutter.exceptions import FailedHookError
+from fabricius.exceptions import SignalException
 from fabricius.types import Data
 
 HOOKS = ["pre_gen_project", "post_gen_project"]
@@ -49,13 +49,13 @@ def run_hook(hook: pathlib.Path, data: Data):
     try:
         proc_exit = subprocess.Popen(cmd, shell=sys.platform.startswith("win"), cwd=".").wait(10)
         if proc_exit != 0:
-            raise FailedHookError(hook.name, f"Exit status: {proc_exit}")
+            raise SignalException(hook.name, f"Exit status: {proc_exit}")
     except OSError as exception:
         if exception.errno == errno.ENOEXEC:
-            raise FailedHookError(
+            raise SignalException(
                 hook.name, "Might be an empty file or missing a shebang"
             ) from exception
-        raise FailedHookError(f"Exception: {exception}") from exception
+        raise SignalException(hook.name, f"Exception: {exception}") from exception
 
 
 @typing.overload
@@ -79,14 +79,12 @@ def adapt(
     | typing.Callable[[Generator, list[FileCommitResult]], typing.Any]
 ):
     if type == "pre":
-
         def pre_wrapper(template: Generator):
             run_hook(hook, template.data)
 
         return pre_wrapper
 
     if type == "post":
-
         def post_wrapper(template: Generator, files_commit: list[FileCommitResult]):
             run_hook(hook, template.data)
 

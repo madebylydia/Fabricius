@@ -1,10 +1,14 @@
 import copy
 import pathlib
-from typing import Self
+from fabricius.utils import force_rm
+import typing
+from fabricius import exceptions
+from fabricius.composers import PythonFormatComposer
+from fabricius.models.composer import Composer
 
 from fabricius.models.file import File, FileCommitResult
 from fabricius.signals import after_generator_start, before_generator_start
-from fabricius.types import PathLike
+from fabricius.types import Data, PathLike
 
 
 class Generator:
@@ -13,12 +17,22 @@ class Generator:
     The list of files to generate with the generator.
     """
 
+    data: Data
+    """
+    The data to pass to the files at generation.
+    """
+
+    composer: type[Composer]
+    """
+    The composer to use to render the files.
+    """
+
     results: dict[File, FileCommitResult | None] = {}
     """
     The result of each file commit.
     """
 
-    _default_destination: pathlib.Path | None = None
+    base_folder: pathlib.Path | None = None
     """
     A path indicating the default destination for a newly created File instance.
     """
@@ -37,6 +51,7 @@ class Generator:
 
     def __init__(self) -> None:
         self.files = []
+        self.composer = PythonFormatComposer
         self._atomic = False
         self._fake = False
         super().__init__()
@@ -54,7 +69,7 @@ class Generator:
             file_result = None
         return file_result
 
-    def fake(self) -> Self:
+    def fake(self) -> typing.Self:
         """
         Tell the generator to not generate files upon execution.
         Used for testing purposes.
@@ -67,12 +82,28 @@ class Generator:
         self._fake = True
         return self
 
-    def restore(self) -> Self:
+    def restore(self) -> typing.Self:
         """
         Tell the generator to generate files upon execution.
         Used for testing purposes.
         """
         self._fake = False
+        return self
+
+    def to_directory(self, directory: PathLike, *, allow_not_empty: bool = False) -> typing.Self:
+        path = pathlib.Path(directory).resolve()
+        if path.exists() and not path.is_dir():
+            raise exceptions.ExpectationFailedException(f"Path {path} is not a directory.")
+        if not allow_not_empty and path.exists() and not path.iterdir():
+            raise exceptions.ExpectationFailedException(f"Directory {path} is not empty.")
+        return self
+
+    def with_data(self, data: Data):
+        self.data = data
+        return self
+
+    def use_composer(self, composer: type[Composer]):
+        self.composer = composer
         return self
 
     def add_file(self, name: str, extension: str | None = None) -> File:
@@ -98,7 +129,7 @@ class Generator:
         self.files.append(file)
         return file
 
-    def with_destination(self, path: PathLike) -> Self:
+    def with_destination(self, path: PathLike) -> typing.Self:
         self._default_destination = pathlib.Path(path)
         return self
 
@@ -144,3 +175,63 @@ class Generator:
 
         after_generator_start.send(self)
         return results
+
+    def _cleanup_rmdir(self):
+        """
+        Do a cleanup by attempting removing the directory.
+
+        .. warning::
+
+           This is a destructive action, all files will be deleted in this directory.
+           May God bless us and hope nothing bad happens here.
+        """
+        if not self.base_folder:
+            raise exceptions.PreconditionException(self, "No base folder set.")
+        if not self.base_folder.exists():
+            error = FileNotFoundError(f"Directory {self.base_folder.resolve()} does not exist.")
+            error.filename = self.base_folder
+            raise error
+        force_rm(self.base_folder)
+
+    def _cleanup_unlink(self) -> None:
+        """
+        Do a cleanup by removing all committed file.
+        """
+        for file in [file for file in self.files if file.state == "persisted"]:
+            file.delete()
+
+    def cleanup(self, method: typing.Literal["rmdir", "unlink"] | None = None):
+        """
+        Cleanup the destination folder. Either remove the folder and its content or committed
+        linked to this generator.
+
+        **Methods**
+
+        rmdir :
+            Cleanup the generator by removing the folder and its content.
+
+            .. warning:: This will remove ALL content present in this folder, thus, you should
+               rather prefer using the unlink method.
+
+        unlink :
+            Cleanup the generator by removing files that have been committed.
+
+        Parameters
+        ----------
+        method : str, either ``rmdir`` or ``unlink``, optional
+            The method to use, see explanations above.
+            If omitted, ``rmdir`` will be used if :py:attr:`.was_folder_existing_before` is
+            ``True`` and ``unlink`` if ``False``.
+        """
+        if self._atomic:
+            match method:
+                case "rmdir":
+                    self._cleanup_rmdir()
+                case "unlink":
+                    self._cleanup_unlink()
+                case None:
+                    self._cleanup_unlink()
+            self.state = "deleted"
+        else:
+            for file in [file for file in self.files if file.state == "persisted"]:
+                file.delete()

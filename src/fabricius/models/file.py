@@ -15,6 +15,7 @@ from fabricius.exceptions.file_commit_exception import ErrorReason, FileCommitEx
 from fabricius.models.composer import Composer
 from fabricius.signals import after_file_commit, before_file_commit, on_file_commit_fail
 from fabricius.types import Data, PathLike
+from fabricius.utils import contains_files
 
 FILE_STATE: typing.TypeAlias = typing.Literal[
     "pending", "processing", "failed", "persisted", "deleted"
@@ -190,7 +191,7 @@ class File:
 
         Raises
         ------
-        :py:exc:`ExpectationFailedException` :
+        :py:exc:`fabricius.exceptions.ExpectationFailedException` :
             The given path exists but is not a directory.
             OR
             The given path is not empty and ``allow_not_empty`` is set to ``False``.
@@ -198,7 +199,7 @@ class File:
         path = pathlib.Path(directory).resolve()
         if path.exists() and not path.is_dir():
             raise ExpectationFailedException(f"{path} is not a directory.")
-        if path.exists() and not path.iterdir() and not allow_not_empty:
+        if not allow_not_empty and contains_files(path):
             raise ExpectationFailedException(f"{path} contains files.")
         self.destination = path
         return self

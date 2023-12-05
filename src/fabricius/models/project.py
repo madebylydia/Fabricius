@@ -1,6 +1,8 @@
 import pathlib
 import typing
 
+from fabricius.models.file import File
+
 PROJECT_STATE: typing.TypeAlias = typing.Literal["pending", "processing", "failed", "persisted"]
 
 
@@ -14,4 +16,13 @@ class Project:
 
     state: PROJECT_STATE
 
+    _files: list[File]
+
     _will_fake: bool
+
+    def add_file(self, file: File):
+        self._files.append(file)
+        return self
+
+    def generate(self) -> None:
+        pass

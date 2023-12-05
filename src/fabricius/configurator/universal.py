@@ -1,6 +1,7 @@
 import dataclasses
 import pathlib
 import typing
+from fabricius.configurator.reader.base import BaseReader
 
 from fabricius.exceptions import UserInputException
 
@@ -101,3 +102,8 @@ class UniversalConfig:
     """
     A list of questions to ask to the users.
     """
+
+    @classmethod
+    def obtain(cls, reader: BaseReader[typing.Any]):
+        data = reader.process()
+        return reader.to_universal(data)

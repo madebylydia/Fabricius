@@ -1,6 +1,7 @@
 import contextlib
 import typing
 
+
 class Signal[**FuncHint]:
     """
     The Listener is the base class used to create listeners of events.

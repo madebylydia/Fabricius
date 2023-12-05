@@ -24,7 +24,9 @@ OrderedDict_OMD = OrderedDict
 OrderedDict_OMD_T = OrderedDict[str, List[T_OMD_value]]
 
 class MetaParserBuilder(abc.ABCMeta):
-    def __new__(cls, name: str, bases: Tuple[Any], clsdict: Dict[str, Any]) -> MetaParserBuilder: ...
+    def __new__(
+        cls, name: str, bases: Tuple[Any], clsdict: Dict[str, Any]
+    ) -> MetaParserBuilder: ...
 
 class SectionConstraint(Generic[T_ConfigParser]):
     def __init__(self, config: T_ConfigParser, section: str) -> None: ...

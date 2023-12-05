@@ -7,6 +7,7 @@ import inflection
 from rich.color import Color
 
 if typing.TYPE_CHECKING:
+    import pathlib
     from _typeshed import StrOrBytesPath
 
 
@@ -22,6 +23,25 @@ class DictAllowMiss(dict[str, typing.Any]):
         return ""
 
 
+def contains_files(path: pathlib.Path) -> bool:
+    """
+    Check if a directory contains files.
+
+    Parameters
+    ----------
+    path : :py:class:`pathlib.Path`
+        The path to check.
+
+    Returns
+    -------
+    :py:class:`bool` :
+        True if the directory contains files, False otherwise.
+    """
+    if not path.exists():
+        return False
+    return any(path.iterdir())
+
+
 def deep_merge(
     original: dict[typing.Any, typing.Any], copy_from: dict[typing.Any, typing.Any]
 ) -> dict[typing.Any, typing.Any]:
@@ -29,8 +49,8 @@ def deep_merge(
     Deeply merges two dictionaries. If a key from original dictionary is conflicting, value from
     the dict we copy from is preferred.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     original : :py:class:`dict`
         The original dictionary.
     copy_from : :py:class:`dict`
@@ -245,6 +265,22 @@ def sentence_case(text: str) -> str:
 
 
 def force_rm(path: "StrOrBytesPath"):
+    """
+    A modified version of rmtree, which allow for removal of directory that contains git files.
+
+    Parameters
+    ----------
+    path : :py:class:`str` or :py:class:`bytes`
+        The path to remove.
+
+    Raises
+    ------
+    :py:exc:`OSError` :
+        If the path is not a directory.
+    :py:exc:`PermissionError` :
+        If the path is not writable.
+
+    """
     def on_rmtree_exception(_: typing.Callable[..., typing.Any], path: str, __: typing.Any):
         os.chmod(path, stat.S_IWRITE)
         os.unlink(path)

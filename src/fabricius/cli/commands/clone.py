@@ -6,12 +6,12 @@ from rich import get_console
 
 from fabricius.app.config import Config
 from fabricius.app.ui.progress_bar import ProgressBar
+from fabricius.cli.utils import pass_config
 from fabricius.exceptions.user_feedback_error import UserFeedbackError
 from fabricius.utils import snake_case
 
 
 @click.command()
-@click.pass_context
 @click.argument("repository", type=click.STRING)
 @click.argument("as_name", type=click.STRING, required=False, default=None)
 @click.option(
@@ -21,9 +21,10 @@ from fabricius.utils import snake_case
         "Where the cloned repository will be stored. If not indicated, it will be stored inside "
         "Fabricius's default download path ?"
     ),
-    default=lambda: Config.get().download_path,
+    default=None,
 )
-def clone(ctx: click.Context, repository: str, as_name: str | None, *, at: pathlib.Path):
+@pass_config
+def clone(config: Config, repository: str, as_name: str | None, *, at: pathlib.Path | None):
     """
     Download a repository and store it inside Fabricius.
     """
@@ -31,13 +32,14 @@ def clone(ctx: click.Context, repository: str, as_name: str | None, *, at: pathl
 
     alias = snake_case(as_name or repository.lower().split("/")[-1])
 
-    config = Config.get()
-
     if alias in config.stored_repositories:
         raise UserFeedbackError(
-            f"Repository [green]{alias}[/] already exists. Delete the repository first or use a "
+            f"The alias [green]{alias}[/] already exists. Delete the repository first or use a "
             "different alias."
         )
+
+    if at is None:
+        at = config.download_path
 
     repo_local_path = (at / alias).resolve()
 
@@ -68,5 +70,5 @@ def clone(ctx: click.Context, repository: str, as_name: str | None, *, at: pathl
 
     console.print(
         f"Repository [green]{alias}[/] has been cloned and saved at {repo_local_path}.\n\n🌟 You "
-        "can now use it with [bold]fabricius build"
+        "can now use it with [red bold]fabricius build[/]."
     )

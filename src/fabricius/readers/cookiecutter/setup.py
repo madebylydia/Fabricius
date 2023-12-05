@@ -7,19 +7,20 @@ from functools import partial
 
 from rich import get_console
 from rich.prompt import Confirm, Prompt
+from fabricius import exceptions
 
 from fabricius.app.ui import ProgressBar, progress_bar
 from fabricius.composers import JinjaComposer
-from fabricius.composers.jinja import JinjaComposer
 from fabricius.configurator.reader.cookiecutter import CookieCutterConfigReader
+from fabricius.configurator.universal import UniversalConfig
 from fabricius.models.composer import Composer
 from fabricius.models.file import File, FileCommitResult
 from fabricius.models.generator import Generator
-from fabricius.readers.cookiecutter.exceptions import FailedHookError
+from fabricius.exceptions import PreconditionException
 from fabricius.readers.cookiecutter.hooks import AvailableHooks, adapt, get_hooks
 from fabricius.signals import after_generator_start, before_generator_start
 from fabricius.types import PathLike
-from fabricius.utils import fetch_me_a_beer, sentence_case
+from fabricius.utils import sentence_case
 
 EXTENSIONS = [
     "fabricius.readers.cookiecutter.extensions.JsonifyExtension",
@@ -126,7 +127,7 @@ def setup(
     allow_hooks: bool = False,
     extra_context: dict[str, typing.Any] | None = None,
     no_prompt: bool = False,
-) -> Generator[type[JinjaRenderer]]:
+) -> Generator:
     """Setup a template that will be able to be ran once created.
 
     Parameters
@@ -163,19 +164,19 @@ def setup(
 
     # Prepare contexts
     cookiecutter_config_path = base_folder / "cookiecutter.json"
-    user_config = CookieCutterConfigReader(cookiecutter_config_path).to_universal()
+    user_config = UniversalConfig.obtain(CookieCutterConfigReader(cookiecutter_config_path))
 
     # Ensure a cookiecutter.json file exists.
     # Obtains the context's raw content & the template's hooks.
     if not cookiecutter_config_path.exists():
-        raise TemplateError(base_folder.name, "cookiecutter.json does not exist")
+        raise PreconditionException(base_folder.name, "cookiecutter.json does not exist")
     context = read_context_raw(cookiecutter_config_path)
     hooks = get_hooks(base_folder)
 
     # Obtain the location of the template, if any.
     template_folder = obtain_template_path(base_folder)
     if not template_folder:
-        raise TemplateError(base_folder.name, "No template found")
+        raise PreconditionException(base_folder.name, "No template found")
 
     # Get the template object
     template = Generator(output_folder, JinjaRenderer)
@@ -201,7 +202,7 @@ def setup(
 
     final_context["cookiecutter"].update(user_config["default_context"])
     final_context["cookiecutter"].update(dict(prompts.items()))
-    output_folder = output_folder / JinjaRenderer(final_context).render(template_folder.name)
+    output_folder = output_folder / JinjaComposer(final_context).render(template_folder.name)
 
     files = obtain_files(template_folder, output_folder, final_context)
     template.add_files(files)
@@ -215,13 +216,13 @@ def setup(
 
 def connect_hooks(hooks: AvailableHooks):
     if hook_path := hooks["pre_gen_project"]:
-        before_generator_start.connect(adapt(hook_path, "pre"))  # type: ignore
+        before_generator_start.connect(adapt(hook_path, "pre"))  # pyright: ignore[reportGeneralTypeIssues]
     if hook_path := hooks["post_gen_project"]:
-        after_generator_start.connect(adapt(hook_path, "post"))  # type: ignore
+        after_generator_start.connect(adapt(hook_path, "post"))  # pyright: ignore[reportGeneralTypeIssues]
 
 
 def run(
-    template: Generator[type[JinjaComposer]],
+    template: Generator,
     ask_overwrite: bool = True,
     *,
     overwrite: bool = False,
@@ -255,7 +256,7 @@ def run(
         )
         if answer:
             return attempt(True)
-    except FailedHookError as exception:
+    except exceptions.SignalException as exception:
         if exception.exit_code:
             sys.exit(exception.exit_code)
         else:

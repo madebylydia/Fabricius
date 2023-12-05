@@ -5,11 +5,13 @@ from rich import get_console
 from rich.prompt import Confirm
 
 from fabricius.app.config import Config
+from fabricius.cli.utils import pass_config
 from fabricius.utils import force_rm
 
 
 @click.command()
-def integrity():
+@pass_config
+def integrity(config: Config):
     """
     Check Fabricius's Config integrity.
     Useful when something goes wrong inside Fabricius.
@@ -17,7 +19,6 @@ def integrity():
     found_integrity_issues = 0
     resolved_integrity_issues = 0
     console = get_console()
-    config = Config.get()
 
     # Ensure all folders are present from config
 

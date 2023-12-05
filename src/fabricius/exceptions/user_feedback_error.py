@@ -8,7 +8,10 @@ from fabricius.exceptions.base import FabriciusError
 
 class UserFeedbackError(FabriciusError):
     """
-    Raised when an error should print to the console a message.
+    Exception raised to show a user-friendly message.
+
+    This exception is used to display a message to the user without showing the traceback.
+    It is intended to provide helpful information or instructions to the user when an error occurs.
     """
 
     message: str
@@ -21,6 +24,5 @@ class UserFeedbackError(FabriciusError):
         super().__init__(message, *args, **kwargs)
 
     def handle(self, exit_code: int = 0, **kwargs: typing.Any) -> typing.NoReturn:
-        get_console().print(self.message)
+        get_console().print(kwargs["traceback"])
         sys.exit(exit_code)
-        # NOTE: That's probably not the best way to do things... Rewrite?
