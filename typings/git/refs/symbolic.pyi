@@ -56,7 +56,7 @@ class SymbolicReference:
         reference: Union["SymbolicReference", str] = ...,
         logmsg: Union[str, None] = ...,
         force: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> T_References: ...
     def rename(self, new_path: PathLike, force: bool = ...) -> SymbolicReference: ...
     @classmethod

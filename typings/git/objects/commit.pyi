@@ -62,7 +62,7 @@ class Commit(base.Object, TraversableIterableObj, Diffable, Serializable):
         repo: Repo,
         rev: Union[str, "Commit", "SymbolicReference"],
         paths: Union[PathLike, Sequence[PathLike]] = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Iterator["Commit"]: ...
     def iter_parents(
         self, paths: Union[PathLike, Sequence[PathLike]] = ..., **kwargs: Any

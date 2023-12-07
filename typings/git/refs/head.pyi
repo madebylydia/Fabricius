@@ -19,7 +19,7 @@ class HEAD(SymbolicReference):
         index: bool = ...,
         working_tree: bool = ...,
         paths: Union[PathLike, Sequence[PathLike], None] = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> HEAD: ...
 
 class Head(Reference):

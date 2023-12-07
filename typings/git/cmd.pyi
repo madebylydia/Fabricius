@@ -64,7 +64,7 @@ class Git(LazyMixin):
         command: Union[str, Sequence[Any]],
         *,
         as_process: Literal[False] = ...,
-        stdout_as_string: Literal[True]
+        stdout_as_string: Literal[True],
     ) -> Union[str, Tuple[int, str, str]]: ...
     @overload
     def execute(
@@ -72,7 +72,7 @@ class Git(LazyMixin):
         command: Union[str, Sequence[Any]],
         *,
         as_process: Literal[False] = ...,
-        stdout_as_string: Literal[False] = ...
+        stdout_as_string: Literal[False] = ...,
     ) -> Union[bytes, Tuple[int, bytes, str]]: ...
     @overload
     def execute(
@@ -81,7 +81,7 @@ class Git(LazyMixin):
         *,
         with_extended_output: Literal[False],
         as_process: Literal[False],
-        stdout_as_string: Literal[True]
+        stdout_as_string: Literal[True],
     ) -> str: ...
     @overload
     def execute(
@@ -90,7 +90,7 @@ class Git(LazyMixin):
         *,
         with_extended_output: Literal[False],
         as_process: Literal[False],
-        stdout_as_string: Literal[False]
+        stdout_as_string: Literal[False],
     ) -> bytes: ...
     def environment(self) -> Dict[str, str]: ...
     def update_environment(self, **kwargs: Any) -> Dict[str, Union[str, None]]: ...

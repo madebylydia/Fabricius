@@ -17,7 +17,7 @@ class Diffable:
         other: Union[Type["Index"], "Tree", "Commit", None, str, object] = ...,
         paths: Union[PathLike, List[PathLike], Tuple[PathLike, ...], None] = ...,
         create_patch: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> DiffIndex: ...
 
 T_Diff = TypeVar("T_Diff", bound="Diff")

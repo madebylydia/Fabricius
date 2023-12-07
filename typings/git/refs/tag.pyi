@@ -22,7 +22,7 @@ class TagReference(Reference):
         reference: Union[str, "SymbolicReference"] = ...,
         logmsg: Union[str, None] = ...,
         force: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TagReference: ...
     @classmethod
     def delete(cls, repo: Repo, *tags: TagReference) -> None: ...

@@ -67,13 +67,13 @@ class IndexFile(LazyMixin, git_diff.Diffable, Serializable):
         self,
         items: Sequence[Union[PathLike, Blob, BaseIndexEntry, "Submodule"]],
         working_tree: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[str]: ...
     def move(
         self,
         items: Sequence[Union[PathLike, Blob, BaseIndexEntry, "Submodule"]],
         skip_errors: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[Tuple[str, str]]: ...
     def commit(
         self,
@@ -91,7 +91,7 @@ class IndexFile(LazyMixin, git_diff.Diffable, Serializable):
         paths: Union[None, Iterable[PathLike]] = ...,
         force: bool = ...,
         fprogress: Callable = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Union[None, Iterator[PathLike], Sequence[PathLike]]: ...
     entries: Incomplete
     def reset(
@@ -100,12 +100,12 @@ class IndexFile(LazyMixin, git_diff.Diffable, Serializable):
         working_tree: bool = ...,
         paths: Union[None, Iterable[PathLike]] = ...,
         head: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> IndexFile: ...
     def diff(
         self,
         other: Union[Type["git_diff.Diffable.Index"], "Tree", "Commit", str, None] = ...,
         paths: Union[PathLike, List[PathLike], Tuple[PathLike, ...], None] = ...,
         create_patch: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> git_diff.DiffIndex: ...

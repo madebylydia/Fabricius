@@ -98,7 +98,7 @@ class Remote(LazyMixin, IterableObj):
         new_url: str,
         old_url: Optional[str] = ...,
         allow_unsafe_protocols: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Remote: ...
     def add_url(self, url: str, allow_unsafe_protocols: bool = ..., **kwargs: Any) -> Remote: ...
     def delete_url(self, url: str, **kwargs: Any) -> Remote: ...
@@ -127,7 +127,7 @@ class Remote(LazyMixin, IterableObj):
         kill_after_timeout: Union[None, float] = ...,
         allow_unsafe_protocols: bool = ...,
         allow_unsafe_options: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> IterableList[FetchInfo]: ...
     def pull(
         self,
@@ -136,7 +136,7 @@ class Remote(LazyMixin, IterableObj):
         kill_after_timeout: Union[None, float] = ...,
         allow_unsafe_protocols: bool = ...,
         allow_unsafe_options: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> IterableList[FetchInfo]: ...
     def push(
         self,
@@ -147,7 +147,7 @@ class Remote(LazyMixin, IterableObj):
         kill_after_timeout: Union[None, float] = ...,
         allow_unsafe_protocols: bool = ...,
         allow_unsafe_options: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> PushInfoList: ...
     @property
     def config_reader(self) -> SectionConstraint[GitConfigParser]: ...

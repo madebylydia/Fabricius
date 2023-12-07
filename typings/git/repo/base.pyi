@@ -114,7 +114,7 @@ class Repo:
         ref: Union[str, "SymbolicReference"] = ...,
         message: Optional[str] = ...,
         force: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TagReference: ...
     def delete_tag(self, *tags: TagReference) -> None: ...
     def create_remote(self, name: str, url: str, **kwargs: Any) -> Remote: ...
@@ -130,7 +130,7 @@ class Repo:
         self,
         rev: Union[str, Commit, "SymbolicReference", None] = ...,
         paths: Union[PathLike, Sequence[PathLike]] = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Iterator[Commit]: ...
     def merge_base(self, *rev: TBD, **kwargs: Any) -> List[Union[Commit_ish, None]]: ...
     def is_ancestor(self, ancestor_rev: Commit, rev: Commit) -> bool: ...
@@ -159,7 +159,7 @@ class Repo:
         file: str,
         incremental: bool = ...,
         rev_opts: Optional[List[str]] = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> List[List[Commit | List[str | bytes] | None]] | Iterator[BlameEntry] | None: ...
     @classmethod
     def init(
@@ -168,7 +168,7 @@ class Repo:
         mkdir: bool = ...,
         odbt: Type[GitCmdObjectDB] = ...,
         expand_vars: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Repo: ...
     def clone(
         self,
@@ -179,7 +179,7 @@ class Repo:
         multi_options: Optional[List[str]] = ...,
         allow_unsafe_protocols: bool = ...,
         allow_unsafe_options: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Repo: ...
     @classmethod
     def clone_from(
@@ -193,14 +193,14 @@ class Repo:
         multi_options: Optional[List[str]] = ...,
         allow_unsafe_protocols: bool = ...,
         allow_unsafe_options: bool = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Repo: ...
     def archive(
         self,
         ostream: Union[TextIO, BinaryIO],
         treeish: Optional[str] = ...,
         prefix: Optional[str] = ...,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Repo: ...
     def has_separate_working_tree(self) -> bool: ...
     rev_parse = fun_rev_parse

@@ -62,7 +62,7 @@ furo = "^2022.6.21"
 sphinx-autobuild = "^2021.3.14"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.3.0"
+black = "^23.11.0"
 isort = "^5.12.0"
 pre-commit = "^2.19.0"
 mypy = "^1.3.0"
@@ -105,6 +105,7 @@ cmd = "make html -b coverage"
 cwd = "./docs"
 
 [tool.black]
+target-version = ["py312"]
 line-length = 99
 
 [tool.isort]

@@ -14,7 +14,7 @@ class RemoteReference(Head):
         common_path: Union[PathLike, None] = ...,
         remote: Union["Remote", None] = ...,
         *args: Any,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Iterator["RemoteReference"]: ...
     @classmethod
     def delete(cls, repo: Repo, *refs: RemoteReference, **kwargs: Any) -> None: ...
