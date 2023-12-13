@@ -13,7 +13,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     name: Tests on ${{ matrix.os }} using py${{ matrix.python-version }}
-
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -27,12 +29,23 @@ jobs:
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          install-parallel: true
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
+
+      - run: |
+          source .venv/scripts/activate
+        if: runner.os == 'Windows'
+      - run: |
+          source .venv/bin/activate
+        if: runner.os != 'Windows'
 
       - name: Install package
         run: poetry install --with dev,actions
