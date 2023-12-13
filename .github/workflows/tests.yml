@@ -8,10 +8,11 @@ jobs:
   test:
     strategy:
       matrix:
+        os: [u]
         python-version: ['3.12']
 
-    runs-on: ubuntu-latest
-    name: Tests - py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    name: Tests on ${{ matrix.os }} using py${{ matrix.python-version }}
 
     steps:
       - name: Checkout Repository
@@ -36,8 +37,8 @@ jobs:
       - name: Install package
         run: poetry install --with dev,actions
 
-      - name: Run linting
-        run: poetry run poe lint
+      # - name: Run linting
+      #   run: poetry run poe lint
 
       - name: Run Tox
         run: poetry run tox

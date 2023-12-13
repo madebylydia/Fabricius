@@ -32,7 +32,6 @@ def cli(
     _log.info(f"Log have been set to {log_level}.")
 
     ctx.ensure_object(dict)
-    ctx.find_object(Config)
     ctx.obj["config"] = Config.load(get_or_create_default_config())
 
 
