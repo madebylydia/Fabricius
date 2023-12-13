@@ -1,8 +1,8 @@
 import dataclasses
 import pathlib
 import typing
-from fabricius.configurator.reader.base import BaseReader
 
+from fabricius.configurator.reader.base import BaseReader
 from fabricius.exceptions import UserInputException
 
 
@@ -44,6 +44,13 @@ class QuestionConfig[QuestionType: type]:
        # <type 'int'>
        # You don't need to know what ".answer" does, but it basically will do the conversion based
        # on what you've given as a type and make other checks.
+    """
+
+    default: QuestionType | None
+    """
+    The default value of the question.
+
+    If None, the user will be prompted to answer the question.
     """
 
     choices: list[str] | None

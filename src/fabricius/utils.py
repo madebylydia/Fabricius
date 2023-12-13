@@ -8,6 +8,7 @@ from rich.color import Color
 
 if typing.TYPE_CHECKING:
     import pathlib
+
     from _typeshed import StrOrBytesPath
 
 
@@ -23,7 +24,7 @@ class DictAllowMiss(dict[str, typing.Any]):
         return ""
 
 
-def contains_files(path: pathlib.Path) -> bool:
+def contains_files(path: "pathlib.Path") -> bool:
     """
     Check if a directory contains files.
 
@@ -43,8 +44,9 @@ def contains_files(path: pathlib.Path) -> bool:
 
 
 def deep_merge(
-    original: dict[typing.Any, typing.Any], copy_from: dict[typing.Any, typing.Any]
-) -> dict[typing.Any, typing.Any]:
+    to_dict: typing.Mapping[typing.Any, typing.Any],
+    from_dict: typing.Mapping[typing.Any, typing.Any],
+) -> typing.Mapping[typing.Any, typing.Any]:
     """
     Deeply merges two dictionaries. If a key from original dictionary is conflicting, value from
     the dict we copy from is preferred.
@@ -62,9 +64,9 @@ def deep_merge(
         A new dictionary that is the result of merging both dictionaries.
     """
 
-    merged_dict = original.copy()
+    merged_dict = to_dict.copy()
 
-    for key, value in copy_from.items():
+    for key, value in from_dict.items():
         if key in merged_dict:
             if isinstance(merged_dict[key], dict) and isinstance(value, dict):
                 merged_dict[key] = deep_merge(merged_dict[key], value)  # type: ignore
@@ -281,6 +283,7 @@ def force_rm(path: "StrOrBytesPath"):
         If the path is not writable.
 
     """
+
     def on_rmtree_exception(_: typing.Callable[..., typing.Any], path: str, __: typing.Any):
         os.chmod(path, stat.S_IWRITE)
         os.unlink(path)

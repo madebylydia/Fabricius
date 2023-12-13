@@ -89,11 +89,10 @@ class Config(pydantic.BaseModel):
             A Config object initialized with the loaded configuration.
 
         """
-        _log.debug("Loading config from %s", config_file)
 
         data = config_file.read_text()
         data_as_dict = json.loads(data)
-        _log.debug("Raw config data: %s", data_as_dict)
+        _log.debug("Raw config data (From %s) : %s", config_file.resolve(), data_as_dict)
 
         final = deep_merge(Config.defaults().model_dump(), data_as_dict)
         final["config_file"] = config_file

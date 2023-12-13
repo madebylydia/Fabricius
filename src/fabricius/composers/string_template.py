@@ -1,7 +1,6 @@
 import string
 
 from fabricius.models.composer import Composer
-from fabricius.types import Data
 from fabricius.utils import DictAllowMiss
 
 
@@ -15,9 +14,9 @@ class StringTemplateComposer(Composer):
     :py:meth:`string.Template.substitute`
     """
 
-    def __init__(self, data: Data, *, safe: bool = True) -> None:
+    def __init__(self, *, safe: bool = True) -> None:
         self.safe = safe
-        super().__init__(data)
+        super().__init__()
 
     def render(self, content: str) -> str:
         if self.safe:

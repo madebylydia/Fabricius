@@ -2,10 +2,11 @@ import pathlib
 import typing
 
 
-class QuestionV1(typing.TypedDict):
+class QuestionV1[QuestionType: typing.Any](typing.TypedDict):
     id: str
     help: str
-    type: typing.Any
+    type: QuestionType
+    default: QuestionType
     choices: list[str]
 
 
@@ -14,7 +15,7 @@ class TemplateV1(typing.TypedDict):
     type: typing.Literal["template"]
     root: pathlib.Path
     method: typing.Literal["run", "setup"]
-    questions: list[QuestionV1]
+    questions: list[QuestionV1[typing.Any]]
 
 
 class RepositoryV1(typing.TypedDict):

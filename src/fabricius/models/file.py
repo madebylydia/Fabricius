@@ -10,12 +10,16 @@ from fabricius.composers import (
     PythonFormatComposer,
     StringTemplateComposer,
 )
-from fabricius.exceptions import ExpectationFailedException, PreconditionException
+from fabricius.exceptions import PreconditionException
 from fabricius.exceptions.file_commit_exception import ErrorReason, FileCommitException
 from fabricius.models.composer import Composer
-from fabricius.signals import after_file_commit, before_file_commit, on_file_commit_fail
-from fabricius.types import Data, PathLike
-from fabricius.utils import contains_files
+from fabricius.signals import (
+    after_file_commit,
+    before_file_commit,
+    on_file_commit_fail,
+    on_file_deleted,
+)
+from fabricius.types import MutableData, PathLike
 
 FILE_STATE: typing.TypeAlias = typing.Literal[
     "pending", "processing", "failed", "persisted", "deleted"
@@ -43,7 +47,7 @@ class FileCommitResult(typing.TypedDict):
     Where the file is located/has been saved.
     """
 
-    data: Data
+    data: MutableData
     """
     The data that has been passed during rendering.
     """
@@ -92,22 +96,27 @@ class File:
     The destination of the file, if set.
     """
 
-    composer: type[Composer]
+    composer: Composer
     """
     The composer to use to generate the file.
     """
 
-    data: Data
+    data: MutableData
     """
     The data that will be passed to the composer.
     """
 
-    _will_fake: bool
+    will_fake: bool
     """
     If the file should fake its creation upon commit.
     """
 
-    def __init__(self, name: str, extension: typing.Optional[str] = None) -> None:
+    should_overwrite: bool
+    """
+    If the file should overwrite an existing file upon commit.
+    """
+
+    def __init__(self, name: str, extension: str | None = None) -> None:
         """
         Parameters
         ----------
@@ -121,10 +130,11 @@ class File:
         self.state = "pending"
         self.content = None
         self.destination = None
-        self._will_fake = False
+        self.will_fake = False
+        self.should_overwrite = False
 
-        self.composer = PythonFormatComposer
-        self.data = Data({})
+        self.composer = PythonFormatComposer()
+        self.data = {}
 
     def compute_destination(self) -> pathlib.Path:
         """
@@ -138,7 +148,7 @@ class File:
 
         Returns
         -------
-        pathlib.Path :
+        :py:class:`pathlib.Path` :
             The final path.
         """
         if not self.destination:
@@ -176,31 +186,29 @@ class File:
         self.content = content
         return self
 
-    def to_directory(self, directory: PathLike, *, allow_not_empty: bool = False) -> Self:
+    def to_directory(self, directory: PathLike) -> Self:
         """
         Set the directory where the file will be saved.
+
+        .. warning ::
+           If a file already exist at this location, it will raise an exception if you do not
+           allow for :py:meth:`.overwrite` first.
 
         Parameters
         ----------
         directory : :py:class:`str` or :py:class:`pathlib.Path`
             Where the file will be stored. Does not include the file's name.
 
-        allow_not_empty : :py:class:`bool`
-            If the directory is not empty, :py:exc:`ExpectationFailedException` will be raised if
-            set to ``False``.
-
         Raises
         ------
-        :py:exc:`fabricius.exceptions.ExpectationFailedException` :
+        :py:exc:`NotADirectoryError` :
             The given path exists but is not a directory.
-            OR
-            The given path is not empty and ``allow_not_empty`` is set to ``False``.
         """
         path = pathlib.Path(directory).resolve()
         if path.exists() and not path.is_dir():
-            raise ExpectationFailedException(f"{path} is not a directory.")
-        if not allow_not_empty and contains_files(path):
-            raise ExpectationFailedException(f"{path} contains files.")
+            error = NotADirectoryError(f"{path} is not a directory.")
+            error.filename = path
+            raise error
         self.destination = path
         return self
 
@@ -208,24 +216,24 @@ class File:
         """
         Use chevron (Mustache) to render the template.
         """
-        self.composer = ChevronComposer
+        self.composer = ChevronComposer()
         return self
 
     def use_string_template(self) -> Self:
         """
         Use string.Template to render the template.
         """
-        self.composer = StringTemplateComposer
+        self.composer = StringTemplateComposer()
         return self
 
     def use_jinja(self) -> Self:
         """
         Use Jinja2 to render the template.
         """
-        self.composer = JinjaComposer
+        self.composer = JinjaComposer()
         return self
 
-    def with_composer(self, composer: typing.Type[Composer]) -> Self:
+    def with_composer(self, composer: Composer) -> Self:
         """
         Use a custom composer to render the template.
 
@@ -238,7 +246,7 @@ class File:
         self.composer = composer
         return self
 
-    def with_data(self, data: Data, *, overwrite: bool = True) -> Self:
+    def with_data(self, data: MutableData, *, overwrite: bool = True) -> Self:
         """
         Add data to pass to the template.
 
@@ -251,34 +259,46 @@ class File:
             added on top of the already existing data. Default to ``True``.
         """
         if overwrite:
-            self.data = Data({})
+            self.data = {}
         self.data.update(data)
         return self
 
-    def fake(self) -> Self:
+    def overwrite(self, should_overwrite: bool) -> Self:
+        """
+        Set the file to overwrite or not.
+        This will overwrite any existing file that might be already be on the disk.
+
+        Parameters
+        ----------
+        should_overwrite : :py:class:`bool`
+            The value to set the overwrite parameter to.
+        """
+        self.should_overwrite = should_overwrite
+        return self
+
+    def fake(self, should_fake: bool) -> Self:
         """
         Set the file to fake the commit.
         This will ensure that the file does not get stored on the machine upon commit.
-        """
-        self._will_fake = True
-        return self
 
-    def restore(self) -> Self:
-        """
-        Set the file to not fake the commit.
-        This will ensure that the file gets stored on the machine upon commit.
+        .. warning::
+           Plugins you connect will not directly know that you've been faking file's
+           generation, they will get the file's result as if it were correctly saved
+           onto the disk. This might create unexpected exceptions.
 
-        .. hint ::
-
-           This is the default behavior. It's only useful to use this method if you have used
-           :py:meth:`.fake`.
+        Parameters
+        ----------
+        should_fake : :py:class:`bool`
+            The value to set the fake parameter to.
         """
-        self._will_fake = False
+        self.will_fake = should_fake
         return self
 
     def generate(self) -> str:
         """
         Generate the file's content.
+        This method does not store the file on the disk, but just generate the final content. You
+        should use :py:meth:`.commit` to save the file permanently.
 
         Raises
         ------
@@ -293,26 +313,20 @@ class File:
         if not self.content:
             raise PreconditionException(self, "content must be set")
 
-        return self.composer(self.data).render(self.content)
+        return self.composer.push_data(self.data).render(self.content)
 
-    def commit(self, *, overwrite: bool = False) -> FileCommitResult:
+    def commit(self) -> FileCommitResult:
         """
         Save the file to the disk.
-
-        Parameters
-        ----------
-        overwrite : :py:class:`bool`
-            If a file exist at the given path, shall the overwrite parameter say if the file
-            should be overwritten or not. Default to ``False``.
 
         Raises
         ------
         :py:exc:`fabricius.exceptions.PreconditionException` :
             If a required value was not set. (Content or destination)
         :py:exc:`fabricius.exceptions.FileCommitException` :
-            If the file has already been saved to the disk.
+            If the file has already been persisted, deleted, or being persisted.
         :py:exc:`FileExistsError` :
-            If the file already exists on the disk and ``overwrite`` is set to ``False``.
+            If the file already exists on the disk and the file is not set to overwrite.
 
             This is different from
             :py:exc:`AlreadyCommittedError <fabricius.exceptions.AlreadyCommittedError>`
@@ -330,28 +344,35 @@ class File:
             raise PreconditionException(self, "destination must be set.")
         if not self.content:
             raise PreconditionException(self, "content must be set.")
+        if self.state == "processing":
+            raise FileCommitException(self, ErrorReason.IS_PENDING)
         if self.state == "persisted":
             raise FileCommitException(self, ErrorReason.ALREADY_PERSISTED)
+        if self.state == "deleted":
+            raise FileCommitException(self, ErrorReason.ALREADY_DELETED)
+        if self.state == "failed":
+            raise FileCommitException(self, ErrorReason.FAILED)
 
         destination = self.compute_destination()
 
-        if destination.exists() and not overwrite:
+        if destination.exists() and not self.should_overwrite:
             exception = FileExistsError(f"File '{self.name}' already exists.")
             exception.filename = self.name
             raise exception
 
         self.state = "processing"
 
-        before_file_commit.send(self)
         final_content = self.generate()
 
         try:
-            if self._will_fake:
+            before_file_commit.send(self)
+
+            if self.will_fake:
                 self.state = "persisted"
             else:
                 with contextlib.suppress(NotADirectoryError):
                     if not destination.parent.exists():
-                        destination.parent.mkdir()
+                        destination.parent.mkdir(parents=True)
                     destination.write_text(final_content)
                     self.state = "persisted"
         except Exception as exception:
@@ -365,7 +386,7 @@ class File:
             template_content=self.content,
             content=final_content,
             destination=self.destination / self.name,
-            fake=self._will_fake,
+            fake=self.will_fake,
         )
 
         after_file_commit.send(self, commit)
@@ -381,3 +402,4 @@ class File:
             raise error
         self.compute_destination().unlink()
         self.state = "deleted"
+        on_file_deleted.send(self)

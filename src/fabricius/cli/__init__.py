@@ -24,19 +24,20 @@ def cli(
 ):
     logging.basicConfig(
         level=log_level,
-        format="%(name)s (%(funcName)s) : %(asctime)s : %(message)s",
+        format="%(name)s (%(funcName)s) : %(message)s",
         handlers=[RichHandler()],
-        datefmt="%H:%M:%S.%f",
+        datefmt="%H:%M:%S",
     )
     _log.root.setLevel(log_level)
     _log.info(f"Log have been set to {log_level}.")
 
     ctx.ensure_object(dict)
+    ctx.find_object(Config)
     ctx.obj["config"] = Config.load(get_or_create_default_config())
 
 
 def main():
     aspreno.register_global_handler(aspreno.ExceptionHandler())
-    ccl.register_commands(cli, pathlib.Path(__file__, "..", "commands").resolve())
+    ccl.register_commands(cli, pathlib.Path(__file__, "..", "commands").resolve(), "file")
 
     cli()

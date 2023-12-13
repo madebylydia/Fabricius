@@ -24,5 +24,5 @@ class UserFeedbackError(FabriciusError):
         super().__init__(message, *args, **kwargs)
 
     def handle(self, exit_code: int = 0, **kwargs: typing.Any) -> typing.NoReturn:
-        get_console().print(kwargs["traceback"])
+        get_console().print(self.message)
         sys.exit(exit_code)

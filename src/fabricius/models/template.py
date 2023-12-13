@@ -17,6 +17,11 @@ class Template:
     The path of the template.
     """
 
+    files: dict[str, File]
+    """
+    A dictionnary indicating the files to render.
+    """
+
     state: TEMPLATE_STATE
     """
     The actual state of the template.

@@ -22,6 +22,7 @@ class FabriciusError(ArgumentedException):
 
     The difference between an exception and an error is that an error might prevent the application
     from continuing its normal workflow, and might exit when possible.
+    Especially used for the CLI part of the application.
     """
 
     def __init__(

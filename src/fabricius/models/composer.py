@@ -22,8 +22,21 @@ class Composer(abc.ABC):
     A dictionary that contains data passed by the users to pass inside the template.
     """
 
-    def __init__(self, data: Data) -> None:
+    def __init__(self) -> None:
+        self.data = {}
+
+    def push_data(self, data: Data) -> typing.Self:
+        """
+        Push data into the composer.
+        Overwrites the previous data.
+
+        Parameters
+        ----------
+        data : :py:class:`dict`
+            The data to push.
+        """
         self.data = data
+        return self
 
     @abc.abstractmethod
     def render(self, content: str) -> str:

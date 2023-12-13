@@ -6,17 +6,17 @@ import tempfile
 import typing
 
 from fabricius.composers.jinja import JinjaComposer
+from fabricius.exceptions import SignalException
 from fabricius.models.file import FileCommitResult
 from fabricius.models.generator import Generator
-from fabricius.exceptions import SignalException
 from fabricius.types import Data
 
 HOOKS = ["pre_gen_project", "post_gen_project"]
 
 
 class AvailableHooks(typing.TypedDict):
-    pre_gen_project: typing.Optional[pathlib.Path]
-    post_gen_project: typing.Optional[pathlib.Path]
+    pre_gen_project: pathlib.Path | None
+    post_gen_project: pathlib.Path | None
 
 
 def get_hooks(base_folder: pathlib.Path) -> AvailableHooks:
@@ -40,7 +40,7 @@ def run_hook(hook: pathlib.Path, data: Data):
     with tempfile.NamedTemporaryFile(
         delete=False, suffix=hook.suffix, mode="wb"
     ) as temporary_file:
-        final_content = JinjaComposer(data).render(hook.read_text())
+        final_content = JinjaComposer().push_data(data).render(hook.read_text())
         temporary_file.write(final_content.encode("utf-8"))
 
     path = pathlib.Path(temporary_file.name).resolve()
@@ -61,31 +61,33 @@ def run_hook(hook: pathlib.Path, data: Data):
 @typing.overload
 def adapt(
     hook: pathlib.Path, type: typing.Literal["pre"]
-) -> typing.Callable[[Generator], typing.Any]:
+) -> typing.Callable[[Generator[JinjaComposer]], typing.Any]:
     ...
 
 
 @typing.overload
 def adapt(
     hook: pathlib.Path, type: typing.Literal["post"]
-) -> typing.Callable[[Generator, list[FileCommitResult]], typing.Any]:
+) -> typing.Callable[[Generator[JinjaComposer], list[FileCommitResult]], typing.Any]:
     ...
 
 
 def adapt(
     hook: pathlib.Path, type: typing.Literal["pre", "post"]
 ) -> (
-    typing.Callable[[Generator], typing.Any]
-    | typing.Callable[[Generator, list[FileCommitResult]], typing.Any]
+    typing.Callable[[Generator[JinjaComposer]], typing.Any]
+    | typing.Callable[[Generator[JinjaComposer], list[FileCommitResult]], typing.Any]
 ):
     if type == "pre":
-        def pre_wrapper(template: Generator):
+
+        def pre_wrapper(template: Generator[JinjaComposer]):
             run_hook(hook, template.data)
 
         return pre_wrapper
 
     if type == "post":
-        def post_wrapper(template: Generator, files_commit: list[FileCommitResult]):
+
+        def post_wrapper(template: Generator[JinjaComposer], files_commit: list[FileCommitResult]):
             run_hook(hook, template.data)
 
         return post_wrapper

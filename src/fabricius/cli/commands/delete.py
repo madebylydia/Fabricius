@@ -4,8 +4,8 @@ from rich.prompt import Confirm
 
 from fabricius.app.config import Config
 from fabricius.app.ui.progress_bar import ProgressBarNoText
+from fabricius.cli.exceptions import UserFeedbackError
 from fabricius.cli.utils import pass_config
-from fabricius.exceptions.user_feedback_error import UserFeedbackError
 from fabricius.utils import force_rm
 
 
@@ -17,7 +17,7 @@ from fabricius.utils import force_rm
     "no_confirm",
     type=click.BOOL,
     is_flag=True,
-    help="Skip the confirm prompt if this flag is given.",
+    help="Skip the confirm prompt if this option is given.",
 )
 @pass_config
 def delete(config: Config, alias: str, *, no_confirm: bool = False):

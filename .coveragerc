@@ -1,8 +1,10 @@
 [run]
-source = fabricius
+source =
+    src/fabricius
 
 [report]
 precision = 1
+show_missing = True
 
 [html]
 directory = tests/htmlcov

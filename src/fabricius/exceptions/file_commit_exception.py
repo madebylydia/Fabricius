@@ -11,6 +11,9 @@ if typing.TYPE_CHECKING:
 class ErrorReason(enum.StrEnum):
     ALREADY_EXIST = "File {} already exist on disk."
     ALREADY_PERSISTED = "File {} is already persisted and cannot be re-committed."
+    ALREADY_DELETED = "File {} is already deleted and cannot be re-committed."
+    IS_PENDING = "File {} is pending and cannot be committed."
+    FAILED = "File {} failed to be committed. Create a new File instance to retry."
 
 
 class FileCommitException(FabriciusException):

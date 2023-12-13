@@ -6,8 +6,8 @@ from rich import get_console
 
 from fabricius.app.config import Config
 from fabricius.app.ui.progress_bar import ProgressBar
+from fabricius.cli.exceptions import UserFeedbackError
 from fabricius.cli.utils import pass_config
-from fabricius.exceptions.user_feedback_error import UserFeedbackError
 from fabricius.utils import snake_case
 
 
@@ -19,7 +19,7 @@ from fabricius.utils import snake_case
     type=pathlib.Path,
     help=(
         "Where the cloned repository will be stored. If not indicated, it will be stored inside "
-        "Fabricius's default download path ?"
+        "Fabricius's default download path."
     ),
     default=None,
 )
@@ -30,7 +30,7 @@ def clone(config: Config, repository: str, as_name: str | None, *, at: pathlib.P
     """
     console = get_console()
 
-    alias = snake_case(as_name or repository.lower().split("/")[-1])
+    alias = as_name if as_name is not None else snake_case(repository.lower().split("/")[-1])
 
     if alias in config.stored_repositories:
         raise UserFeedbackError(
@@ -69,6 +69,6 @@ def clone(config: Config, repository: str, as_name: str | None, *, at: pathlib.P
     config.persist()
 
     console.print(
-        f"Repository [green]{alias}[/] has been cloned and saved at {repo_local_path}.\n\n🌟 You "
-        "can now use it with [red bold]fabricius build[/]."
+        f"Repository [green]{alias}[/] has been cloned and saved at {repo_local_path}.\n\n"
+        "🌟 You can now use it with [red bold]fabricius build[/]."
     )
