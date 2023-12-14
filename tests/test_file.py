@@ -1,4 +1,7 @@
+import os
 import pathlib
+import stat
+import sys
 import typing
 import uuid
 
@@ -184,7 +187,7 @@ def test_file_commit_create_parents_folder(file: File, tmp_path: pathlib.Path):
     assert path.exists()
 
 
-def test_fill_commit_fake(file: File, tmp_path: pathlib.Path):
+def test_file_commit_fake(file: File, tmp_path: pathlib.Path):
     fill_fake_information(file, tmp_path)
     file.fake(True)
     result = file.commit()
@@ -221,7 +224,10 @@ def test_file_commit_signals(file: File, tmp_path: pathlib.Path):
 def test_file_commit_fail(file: File, tmp_path: pathlib.Path):
     fill_fake_information(file, tmp_path)
     old_permissions = tmp_path.stat().st_mode
-    tmp_path.chmod(0o111)
+    if os.name == "nt":
+        tmp_path.chmod(stat.S_IREAD)
+    else:
+        tmp_path.chmod(0o111)
     has_failed = False
 
     def signal_handler_fail(file: File):
