@@ -37,7 +37,7 @@ jobs:
         run: poetry run tox
 
       - name : Upload test report
-        if: ! cancelled()
+        if: ${{ ! cancelled() }}
         uses: actions/upload-artifact@v3
         with:
           name: tests-report-${{ matrix.os }}-py${{ matrix.python-version }}
