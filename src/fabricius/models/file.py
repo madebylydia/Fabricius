@@ -1,5 +1,6 @@
 import contextlib
 import pathlib
+import stat
 import typing
 
 from typing_extensions import Self
@@ -11,7 +12,11 @@ from fabricius.composers import (
     StringTemplateComposer,
 )
 from fabricius.exceptions import PreconditionException
-from fabricius.exceptions.file_commit_exception import ErrorReason, FileCommitException
+from fabricius.exceptions.commit_exception.file_commit_exception import (
+    ErrorReason,
+    FileCommitException,
+)
+from fabricius.exceptions.commit_exception.missing_permissions import MissingPermissions
 from fabricius.models.composer import Composer
 from fabricius.signals import (
     after_file_commit,
@@ -19,11 +24,13 @@ from fabricius.signals import (
     on_file_commit_fail,
     on_file_deleted,
 )
-from fabricius.types import MutableData, PathLike
+from fabricius.types import Data, MutableData, PathLike
 
-FILE_STATE: typing.TypeAlias = typing.Literal[
-    "pending", "processing", "failed", "persisted", "deleted"
-]
+FILE_STATE: typing.TypeAlias = typing.Literal["pending", "processing", "persisted", "deleted"]
+
+
+# TODO: Rewriting a few things here, to remove the "fail" status, basically, and remove anything
+# related to failure. A file should be represented as a file only, not an attempt to something.
 
 
 class FileCommitResult(typing.TypedDict):
@@ -136,6 +143,9 @@ class File:
         self.composer = PythonFormatComposer()
         self.data = {}
 
+    def __str__(self):
+        return f"<File name={self.name} state={self.state} destination={self.destination} composer={self.composer.name}>"
+
     def compute_destination(self) -> pathlib.Path:
         """
         Compute the destination of the file.
@@ -246,7 +256,7 @@ class File:
         self.composer = composer
         return self
 
-    def with_data(self, data: MutableData, *, overwrite: bool = True) -> Self:
+    def with_data(self, data: Data, *, overwrite: bool = True) -> Self:
         """
         Add data to pass to the template.
 
@@ -344,21 +354,22 @@ class File:
             raise PreconditionException(self, "destination must be set.")
         if not self.content:
             raise PreconditionException(self, "content must be set.")
+        if self.destination.exists() and not self.destination.stat().st_mode & (
+            stat.S_IREAD | stat.S_IWRITE
+        ):
+            raise MissingPermissions(self, self.destination, "read", "write")
         if self.state == "processing":
             raise FileCommitException(self, ErrorReason.IS_PENDING)
-        if self.state == "persisted":
-            raise FileCommitException(self, ErrorReason.ALREADY_PERSISTED)
-        if self.state == "deleted":
-            raise FileCommitException(self, ErrorReason.ALREADY_DELETED)
-        if self.state == "failed":
-            raise FileCommitException(self, ErrorReason.FAILED)
 
         destination = self.compute_destination()
 
-        if destination.exists() and not self.should_overwrite:
-            exception = FileExistsError(f"File '{self.name}' already exists.")
-            exception.filename = self.name
-            raise exception
+        try:
+            if destination.exists() and not self.should_overwrite:
+                exception = FileExistsError(f"File '{self.name}' already exists.")
+                exception.filename = self.name
+                raise exception
+        except PermissionError as exception:
+            raise MissingPermissions(self, destination, "read", "write")
 
         self.state = "processing"
 
@@ -376,8 +387,8 @@ class File:
                     destination.write_text(final_content)
                     self.state = "persisted"
         except Exception as exception:
-            self.state = "failed"
             on_file_commit_fail.send(self)
+            raise exception
 
         commit = FileCommitResult(
             name=self.name,

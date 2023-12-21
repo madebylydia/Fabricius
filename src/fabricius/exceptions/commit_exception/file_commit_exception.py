@@ -1,7 +1,7 @@
 import enum
 import typing
 
-from fabricius.exceptions.base import FabriciusException
+from fabricius.exceptions.commit_exception.base import CommitException
 from fabricius.exceptions.precondition_exception import PreconditionException
 
 if typing.TYPE_CHECKING:
@@ -16,7 +16,7 @@ class ErrorReason(enum.StrEnum):
     FAILED = "File {} failed to be committed. Create a new File instance to retry."
 
 
-class FileCommitException(FabriciusException):
+class FileCommitException(CommitException):
     def __init__(self, file: "File", error_reason: ErrorReason) -> None:
         try:
             destination = str(file.compute_destination())

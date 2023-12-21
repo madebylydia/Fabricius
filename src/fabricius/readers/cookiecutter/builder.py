@@ -1,16 +1,23 @@
-import json
+import logging
 import pathlib
 import typing
+from fnmatch import fnmatch
 
 from fabricius.composers import JinjaComposer
+from fabricius.configurator.reader.cookiecutter import (
+    CookieCutterConfigReader,
+    CookieCutterExtra,
+)
+from fabricius.configurator.universal import QuestionConfig, UniversalConfig
 from fabricius.exceptions.expectation_failed_exception import ExpectationFailedException
 from fabricius.exceptions.precondition_exception import PreconditionException
 from fabricius.models.file import File
 from fabricius.models.generator import Generator
-from fabricius.readers.cookiecutter.builder_config import CookieCutterBuilderConfig
 from fabricius.readers.cookiecutter.config import get_config
 from fabricius.readers.cookiecutter.types import WrappedInCookiecutter
+from fabricius.utils import determine_file_destination, get_files_only_recursively
 
+_log = logging.getLogger(__name__)
 EXTENSIONS = [
     "fabricius.readers.cookiecutter.extensions.JsonifyExtension",
     "fabricius.readers.cookiecutter.extensions.RandomStringExtension",
@@ -20,7 +27,7 @@ EXTENSIONS = [
 ]
 
 
-def obtain_template_path(base_folder: pathlib.Path) -> pathlib.Path | None:
+def to_template_path(base_folder: pathlib.Path) -> pathlib.Path | None:
     return next(
         (
             path
@@ -29,6 +36,12 @@ def obtain_template_path(base_folder: pathlib.Path) -> pathlib.Path | None:
         ),
         None,
     )
+
+
+class FileInfo(typing.TypedDict):
+    name: str
+    source: pathlib.Path
+    output: pathlib.Path
 
 
 class CookieCutterBuilder:
@@ -52,7 +65,7 @@ class CookieCutterBuilder:
     The answers to the prompts.
     """
 
-    context: CookieCutterBuilderConfig
+    config: UniversalConfig[CookieCutterExtra]
     """
     The context class.
     """
@@ -62,22 +75,36 @@ class CookieCutterBuilder:
         source_folder: pathlib.Path,
         output_folder: pathlib.Path,
     ) -> None:
-        self.source = source_folder
-        self.output = output_folder
+        self.source = source_folder.resolve()
+        self.output = output_folder.resolve()
 
         cookiecutter_path = (source_folder / "cookiecutter.json").resolve()
         if not cookiecutter_path.exists():
             raise PreconditionException(
                 self.source.name, "cookiecutter.json must exist in source folder"
             )
-        self.context = CookieCutterBuilderConfig(json.loads(cookiecutter_path.read_text()))
+        self.config = CookieCutterConfigReader(cookiecutter_path).obtain()
 
         self.answers = {}
         self.extra_context = {}
 
-    def set_extra_context(self, extra_context: dict[str, typing.Any]) -> typing.Self:
-        self.extra_context = extra_context
-        return self
+    def should_copy(self, file: File):
+        """
+        Determine if a file should be copied or rendered.
+
+        Parameters
+        ----------
+        file : :py:class:`File <fabricius.models.file.File>`
+            The file we're checking.
+        """
+        # TODO: To rewrite, so it use a rendered context.
+        if not self.config.extra.get("_copy_without_render"):
+            return False
+        to_ignore: list[str] = self.config.extra.get("_copy_without_render", [])
+        context = self.get_final_context()
+        for index, value in enumerate(to_ignore):
+            to_ignore[index] = JinjaComposer().push_data(context).render(value)
+        return any(fnmatch(str(file.compute_destination()), value) for value in to_ignore)
 
     @property
     def files(self) -> list[pathlib.Path]:
@@ -85,51 +112,57 @@ class CookieCutterBuilder:
         Return all files in the source folder.
         Does not translate their name.
         """
-        return [file for file in self.source.iterdir() if file.is_file()]
+        return get_files_only_recursively(self.get_template_path())
 
-    def render_files(self) -> dict[str, str]:
+    def render_files_names(self) -> list[FileInfo]:
         """
-        Render all files in the source folder.
+        Render files with their rendered name, and their destination path.
         """
-        files: dict[str, str] = {}
+        files: list[FileInfo] = []
         composer = self.get_composer()
         composer.push_data(self.get_final_context())
         for file in self.files:
-            files[
-                str(pathlib.Path(file).parent.resolve().relative_to(self.source).resolve())
-            ] = composer.render(file.name)
+            destination = determine_file_destination(file, self.get_template_path(), self.output)
+            files.append(
+                FileInfo(
+                    name=composer.render(file.name),
+                    source=file.resolve(),
+                    output=destination.resolve(),
+                )
+            )
         return files
 
     @property
     def has_template_path(self) -> bool:
-        return bool(obtain_template_path(self.source))
+        return bool(to_template_path(self.source))
 
     def get_template_path(self) -> pathlib.Path:
         """
-        Return the template path.
+        Return the path to the template.
+
+        Exceptions
+        ----------
+        :py:exc:`fabricius.exceptions.ExpectationFailedException` :
+            If the template path is not found.
         """
-        if path := obtain_template_path(self.source):
+        if path := to_template_path(self.source):
             return path
         raise ExpectationFailedException("Template path not found")
 
-    def get_prompts_or_ask(self) -> dict[str, typing.Any]:
+    def get_questions(self) -> list[QuestionConfig]:
         """
-        Return the prompts or ask the user for them.
+        Return the questions.
         """
-        prompts = self.context.get_prompts()
-        if not prompts:
-            return {}
-        return prompts
+        return self.config.questions
 
     def get_composer(self) -> JinjaComposer:
         composer = JinjaComposer()
-        for extension in [*EXTENSIONS, *self.context.get_extensions()]:
+        for extension in [*EXTENSIONS, *self.config.extra["_extensions"]]:
             composer.environment.add_extension(extension)
         return composer
 
     def get_generator(self) -> Generator[JinjaComposer]:
-        generator = Generator(self.get_composer())
-        return generator
+        return Generator(self.get_composer())
 
     def get_final_context(self) -> WrappedInCookiecutter:
         data: dict[str, typing.Any] = {}
@@ -137,7 +170,8 @@ class CookieCutterBuilder:
         user_config = get_config()
 
         data |= user_config["default_context"]
-        data |= self.context.get_default_context()
+        data |= self.extra_context
+        data |= self.answers
 
         data |= {
             "_template": str(self.get_template_path().resolve()),
@@ -149,8 +183,12 @@ class CookieCutterBuilder:
 
     def execute(self):
         generator = self.get_generator()
-        for file_destination, file_name in self.render_files().items():
-            file = File(file_name)
-            file.to_directory(file_destination)
+        for file_info in self.render_files_names():
+            file = File(file_info["name"])
+            file.from_content(file_info["source"].read_text()).to_directory(
+                file_info["output"]
+            ).with_composer(self.get_composer())
             generator.add_file(file)
-        _log
+        generator.with_data(self.get_final_context())
+        generator.to_directory(self.output)
+        generator.execute()

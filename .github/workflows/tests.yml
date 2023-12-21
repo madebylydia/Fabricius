@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
         python-version: ['3.12']
 
     runs-on: ${{ matrix.os }}
@@ -27,19 +27,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
 
-      - name: Setup poetry
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-
-      - name: Load cached virtual environment
-        uses: actions/cache@v2
-        with:
-          path: .venv
-          key: venv-${{ matrix.os }}-${{ hashFiles('poetry.lock') }}
-
       - name: Install package
-        run: poetry install --with dev,docs,actions
+        run: poetry install --with dev,actions
 
       # - name: Run linting
       #   run: poetry run poe lint
@@ -48,7 +37,8 @@ jobs:
         run: poetry run tox
 
       - name : Upload test report
+        if: ! cancelled()
         uses: actions/upload-artifact@v3
         with:
-          name: tests-report
+          name: tests-report-${{ matrix.os }}-py${{ matrix.python-version }}
           path: ./tests/report/

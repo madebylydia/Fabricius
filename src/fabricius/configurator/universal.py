@@ -2,12 +2,14 @@ import dataclasses
 import pathlib
 import typing
 
+from rich import get_console
+from rich.prompt import Confirm, FloatPrompt, IntPrompt, Prompt, PromptBase
+
 from fabricius.configurator.reader.base import BaseReader
-from fabricius.exceptions import UserInputException
 
 
 @dataclasses.dataclass(kw_only=True)
-class QuestionConfig[QuestionType: type]:
+class QuestionConfig:
     id: str
     """
     The "ID" of the question.
@@ -19,38 +21,47 @@ class QuestionConfig[QuestionType: type]:
     help: str | None
     """
     An optional help string to show to the user.
+    Supports `Rich's console markup <https://rich.readthedocs.io/en/stable/markup.html>`.
 
-    This is what the terminal will output to the user.
-    If None, the question's ID will be printed instead.
+    This string will be shown just once and before the prompt.
+    To edit the prompt, use the "prompt" attribute.
     """
 
-    type: QuestionType | None
+    prompt: str | None
+    """
+    The question to ask when prompting to the user.
+    Supports `Rich's console markup <https://rich.readthedocs.io/en/stable/markup.html>`.
+
+    If None, the question's ID will be used.
+    """
+
+    type: typing.Any | None
     """
     The type the question must be.
 
-    Fabricius, will prompting the user, will attempt to convert the question's answer by
-    attempting a class's initialization, like this:
-
-    .. code:: python
-
-       question = QuestionConfig(id="test", type=int)
-
-       user_input = "123"
-       # Do notice here, that this is a string, and not an integer, so conversion is needed.
-
-       final_answer = question.answer("123")
-
-       print(type(final_answer))
-       # <type 'int'>
-       # You don't need to know what ".answer" does, but it basically will do the conversion based
-       # on what you've given as a type and make other checks.
+    Supported types:
+    - str
+    - bool
+    - int
+    - float
     """
 
-    default: QuestionType | None
+    default: typing.Any | None
     """
     The default value of the question.
 
     If None, the user will be prompted to answer the question.
+    """
+
+    hidden: bool
+    """
+    If the question should be shown to the user.
+    """
+
+    factory: typing.Callable[[str], typing.Any] | None
+    """
+    An optional function that is ran after the user's answer is received.
+    Used to transform the answer into something else.
     """
 
     choices: list[str] | None
@@ -60,39 +71,49 @@ class QuestionConfig[QuestionType: type]:
     If None, the user is free to pass anything.
     """
 
-    def validate(self, user_answer: str) -> QuestionType:
+    def _get_prompt(self) -> PromptBase[typing.Any]:
         """
-        Attempt to return the expected output of the user's input (TL;DR get user's final answer)
-
-        Parameters
-        ----------
-        user_answer : str
-            The raw answer of the user.
+        Obtain the right prompt correspoding to the given type.
 
         Returns
         -------
-        TypeVar: _QT
-            The associated type of the question.
-
-        Raises
-        ------
-        fabricius.exceptions.UserInputException
-            Raised when either the question is not contained into the list of choice, or the
-            answer cannot be converted to the given type.
+        PromptBase
+            The prompt to use.
         """
-        if self.choices and user_answer not in self.choices:
-            raise UserInputException(user_answer, ", ".join(self.choices))
-        if self.type:
-            try:
-                return self.type(user_answer)
-            except TypeError as exception:
-                raise UserInputException(user_answer, str(type(self.type))) from exception
+        if self.type == bool:
+            return Confirm(self.prompt or self.id)
+        elif self.type == int:
+            return IntPrompt(self.prompt or self.id)
+        elif self.type == float:
+            return FloatPrompt(self.prompt or self.id)
         else:
-            return typing.cast(QuestionType, user_answer)
+            return Prompt(self.prompt or self.id)
+
+    def ask(self) -> str | None:
+        """
+        Ask the question to the user.
+
+        Returns
+        -------
+        str
+            The user's answer.
+        """
+        if self.hidden:
+            return None
+        console = get_console()
+        if self.help:
+            console.print(self.help)
+        prompt = self._get_prompt()
+        if self.default:
+            answer = prompt.ask(self.prompt or self.id, choices=self.choices, default=self.default)
+        else:
+            answer = prompt.ask(self.prompt or self.id, choices=self.choices)
+
+        return self.factory(str(answer)) if self.factory else str(answer)
 
 
 @dataclasses.dataclass(kw_only=True)
-class UniversalConfig:
+class UniversalConfig[Extra: typing.Mapping[str, typing.Any]]:
     root: pathlib.Path
     """
     The source of the template.
@@ -105,12 +126,18 @@ class UniversalConfig:
     No extra sub-folders will be created.
     """
 
-    questions: list[QuestionConfig[typing.Any]]
+    questions: list[QuestionConfig]
     """
     A list of questions to ask to the users.
     """
 
+    extra: Extra
+    """
+    An attribute that comes unused to the user, but that can be used to store extra metadata.
+    (Eg. CookieCutter's extensions, Jinja's environment settings, etc.)
+    """
+
     @classmethod
-    def obtain(cls, reader: BaseReader[typing.Any]):
+    def obtain(cls, reader: BaseReader[typing.Any, Extra]):
         data = reader.process()
         return reader.to_universal(data)

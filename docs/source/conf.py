@@ -20,8 +20,8 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = "Fabricius"
-copyright = "2022, Predeactor"
-author = "Predeactor"
+copyright = "2022-present, Julien Mauroy"
+author = "Julien Mauroy"
 
 # The full version, including alpha/beta/rc tags
 release = fabricius.__version__
@@ -52,10 +52,7 @@ exclude_patterns: "list[str]" = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "furo"
-html_css_files = [
-    "furo_custom.css",
-]
+html_theme = "pydata_sphinx_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import typing
 
@@ -6,10 +7,10 @@ from fabricius.exceptions.precondition_exception import PreconditionException
 from fabricius.models.composer import Composer
 from fabricius.models.file import File, FileCommitResult
 from fabricius.signals import after_generator_start, before_generator_start
-from fabricius.types import MutableData, PathLike
+from fabricius.types import Data, PathLike
 from fabricius.utils import contains_files, force_rm
 
-# TODO: Rewrite this class. It's being heavily reworked.
+_log = logging.getLogger(__name__)
 
 
 class GeneratorExecutionResult(typing.TypedDict):
@@ -27,7 +28,7 @@ class GeneratorExecutionResult(typing.TypedDict):
     The base folder where the files were generated.
     """
 
-    data: MutableData
+    data: Data
     """
     The data that was passed to files.
     """
@@ -56,7 +57,7 @@ class Generator[ComposerType: Composer]:
     The composer to use to render the files.
     """
 
-    data: MutableData
+    data: Data
     """
     The data to pass to the files at generation.
     """
@@ -135,7 +136,7 @@ class Generator[ComposerType: Composer]:
         self.destination = path
         return self
 
-    def with_data(self, data: MutableData):
+    def with_data(self, data: Data):
         """
         Set data to pass to the generator.
 
@@ -164,6 +165,7 @@ class Generator[ComposerType: Composer]:
         :py:class:`fabricius.file.File` :
             The generated file. You then have to set file's options.
         """
+        _log.debug("[Generator id=%s] Adding %s", id(self), file)
         self.files.append(file)
         return file
 

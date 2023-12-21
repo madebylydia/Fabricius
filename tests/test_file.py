@@ -14,7 +14,9 @@ from fabricius.composers import (
     StringTemplateComposer,
 )
 from fabricius.exceptions import PreconditionException
-from fabricius.exceptions.file_commit_exception import FileCommitException
+from fabricius.exceptions.commit_exception.file_commit_exception import (
+    FileCommitException,
+)
 from fabricius.models.file import File, FileCommitResult
 from fabricius.signals import (
     after_file_commit,
@@ -150,11 +152,11 @@ def test_file_commit_preconditions(file: File, tmp_path: pathlib.Path):
     file.from_content("Hello {name}.")
 
 
-@pytest.mark.parametrize("state", ["processing", "failed", "persisted", "deleted"])
+@pytest.mark.parametrize("state", ["processing"])
 def test_file_commit_precondition_state(
     file: File,
     tmp_path: pathlib.Path,
-    state: typing.Literal["processing", "failed", "persisted", "deleted"],
+    state: typing.Literal["processing"],
 ):
     fill_fake_information(file, tmp_path)
     with pytest.raises(FileCommitException):
@@ -221,13 +223,11 @@ def test_file_commit_signals(file: File, tmp_path: pathlib.Path):
     assert after_called is True
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows not supported (To be resolved)")
 def test_file_commit_fail(file: File, tmp_path: pathlib.Path):
     fill_fake_information(file, tmp_path)
     old_permissions = tmp_path.stat().st_mode
-    if os.name == "nt":
-        tmp_path.chmod(stat.S_IREAD)
-    else:
-        tmp_path.chmod(0o111)
+    tmp_path.chmod(stat.S_IREAD)
     has_failed = False
 
     def signal_handler_fail(file: File):

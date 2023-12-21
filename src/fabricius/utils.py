@@ -43,9 +43,56 @@ def contains_files(path: "pathlib.Path") -> bool:
     return any(path.iterdir())
 
 
+def get_files_only_recursively(path: "pathlib.Path") -> list["pathlib.Path"]:
+    """
+    Return a list of all the files in a directory.
+
+    Parameters
+    ----------
+    path : :py:class:`pathlib.Path`
+        The path to iterate.
+
+    Returns
+    -------
+    :py:class:`list` of :py:class:`pathlib.Path` :
+        A list of files in the directory.
+    """
+    files: list[pathlib.Path] = []
+    for file in path.iterdir():
+        if file.is_file():
+            files.append(file)
+        elif file.is_dir():
+            files.extend(get_files_only_recursively(file))
+    return files
+
+
+def determine_file_destination(
+    file: "pathlib.Path", source: "pathlib.Path", output: "pathlib.Path"
+):
+    """
+    Determine the destination of a file by preserving its subdirectory.
+
+    Parameters
+    ----------
+    file : :py:class:`pathlib.Path`
+        The file to determine the destination of.
+    source : :py:class:`pathlib.Path`
+        The source folder of the file.
+    output : :py:class:`pathlib.Path`
+        The output folder.
+
+    Returns
+    -------
+    :py:class:`pathlib.Path` :
+        The final destination of the file.
+    """
+    relative_path = str(file.parent.resolve().relative_to(source))
+    return output / relative_path
+
+
 def deep_merge(
-    to_dict: typing.Mapping[typing.Any, typing.Any],
-    from_dict: typing.Mapping[typing.Any, typing.Any],
+    to_dict: dict[typing.Any, typing.Any],
+    from_dict: dict[typing.Any, typing.Any],
 ) -> typing.Mapping[typing.Any, typing.Any]:
     """
     Deeply merges two dictionaries. If a key from original dictionary is conflicting, value from
