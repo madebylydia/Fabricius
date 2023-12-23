@@ -1,8 +1,8 @@
 import enum
 import typing
 
+from fabricius.exceptions import PreconditionException
 from fabricius.exceptions.commit_exception.base import CommitException
-from fabricius.exceptions.precondition_exception import PreconditionException
 
 if typing.TYPE_CHECKING:
     from fabricius.models.file import File

@@ -1,6 +1,3 @@
-from .commit_exception.file_commit_exception import (
-    FileCommitException as FileCommitException,
-)
 from .expectation_failed_exception import (
     ExpectationFailedException as ExpectationFailedException,
 )

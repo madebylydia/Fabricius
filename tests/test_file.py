@@ -1,7 +1,6 @@
 import os
 import pathlib
 import stat
-import sys
 import typing
 import uuid
 
@@ -14,14 +13,14 @@ from fabricius.composers import (
     StringTemplateComposer,
 )
 from fabricius.exceptions import PreconditionException
-from fabricius.exceptions.commit_exception.file_commit_exception import (
+from fabricius.exceptions.commit_exception import (
     FileCommitException,
+    MissingPermissions,
 )
 from fabricius.models.file import File, FileCommitResult
-from fabricius.signals import (
+from fabricius.signals import (  # on_file_commit_fail,
     after_file_commit,
     before_file_commit,
-    on_file_commit_fail,
     on_file_deleted,
 )
 
@@ -228,16 +227,9 @@ def test_file_commit_fail(file: File, tmp_path: pathlib.Path):
     fill_fake_information(file, tmp_path)
     old_permissions = tmp_path.stat().st_mode
     tmp_path.chmod(stat.S_IREAD)
-    has_failed = False
 
-    def signal_handler_fail(file: File):
-        nonlocal has_failed
-        has_failed = True
-
-    on_file_commit_fail.connect(signal_handler_fail)
-    file.commit()
-    assert file.state == "failed"
-    assert has_failed is True
+    with pytest.raises(MissingPermissions):
+        file.commit()
 
     tmp_path.chmod(old_permissions)
 

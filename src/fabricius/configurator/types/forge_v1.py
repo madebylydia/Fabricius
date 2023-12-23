@@ -2,9 +2,10 @@ import pathlib
 import typing
 
 
-class QuestionV1[QuestionType: typing.Any](typing.TypedDict):
-    id: str
+class QuestionV1[QuestionType: typing.Any](typing.TypedDict, total=False):
+    id: typing.Required[str]
     help: str
+    prompt: str
     type: QuestionType
     default: QuestionType
     choices: list[str]

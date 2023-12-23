@@ -3,8 +3,6 @@ import pathlib
 import stat
 import typing
 
-from typing_extensions import Self
-
 from fabricius.composers import (
     ChevronComposer,
     JinjaComposer,
@@ -12,25 +10,16 @@ from fabricius.composers import (
     StringTemplateComposer,
 )
 from fabricius.exceptions import PreconditionException
-from fabricius.exceptions.commit_exception.file_commit_exception import (
-    ErrorReason,
+from fabricius.exceptions.commit_exception import (
     FileCommitException,
+    MissingPermissions,
 )
-from fabricius.exceptions.commit_exception.missing_permissions import MissingPermissions
+from fabricius.exceptions.commit_exception.file_commit_exception import ErrorReason
 from fabricius.models.composer import Composer
-from fabricius.signals import (
-    after_file_commit,
-    before_file_commit,
-    on_file_commit_fail,
-    on_file_deleted,
-)
+from fabricius.signals import after_file_commit, before_file_commit, on_file_deleted
 from fabricius.types import Data, MutableData, PathLike
 
 FILE_STATE: typing.TypeAlias = typing.Literal["pending", "processing", "persisted", "deleted"]
-
-
-# TODO: Rewriting a few things here, to remove the "fail" status, basically, and remove anything
-# related to failure. A file should be represented as a file only, not an attempt to something.
 
 
 class FileCommitResult(typing.TypedDict):
@@ -166,7 +155,7 @@ class File:
 
         return (self.destination / self.name).resolve()
 
-    def from_file(self, path: str | pathlib.Path) -> Self:
+    def from_file(self, path: PathLike) -> typing.Self:
         """
         Read the content from a file template.
 
@@ -184,7 +173,7 @@ class File:
         self.content = path.read_text()
         return self
 
-    def from_content(self, content: str) -> Self:
+    def from_content(self, content: str) -> typing.Self:
         """
         Read the content from a string.
 
@@ -196,7 +185,7 @@ class File:
         self.content = content
         return self
 
-    def to_directory(self, directory: PathLike) -> Self:
+    def to_directory(self, directory: PathLike) -> typing.Self:
         """
         Set the directory where the file will be saved.
 
@@ -222,28 +211,28 @@ class File:
         self.destination = path
         return self
 
-    def use_mustache(self) -> Self:
+    def use_mustache(self) -> typing.Self:
         """
         Use chevron (Mustache) to render the template.
         """
         self.composer = ChevronComposer()
         return self
 
-    def use_string_template(self) -> Self:
+    def use_string_template(self) -> typing.Self:
         """
         Use string.Template to render the template.
         """
         self.composer = StringTemplateComposer()
         return self
 
-    def use_jinja(self) -> Self:
+    def use_jinja(self) -> typing.Self:
         """
         Use Jinja2 to render the template.
         """
         self.composer = JinjaComposer()
         return self
 
-    def with_composer(self, composer: Composer) -> Self:
+    def with_composer(self, composer: Composer) -> typing.Self:
         """
         Use a custom composer to render the template.
 
@@ -256,7 +245,7 @@ class File:
         self.composer = composer
         return self
 
-    def with_data(self, data: Data, *, overwrite: bool = True) -> Self:
+    def with_data(self, data: Data, *, overwrite: bool = True) -> typing.Self:
         """
         Add data to pass to the template.
 
@@ -273,7 +262,7 @@ class File:
         self.data.update(data)
         return self
 
-    def overwrite(self, should_overwrite: bool) -> Self:
+    def overwrite(self, should_overwrite: bool) -> typing.Self:
         """
         Set the file to overwrite or not.
         This will overwrite any existing file that might be already be on the disk.
@@ -286,7 +275,7 @@ class File:
         self.should_overwrite = should_overwrite
         return self
 
-    def fake(self, should_fake: bool) -> Self:
+    def fake(self, should_fake: bool) -> typing.Self:
         """
         Set the file to fake the commit.
         This will ensure that the file does not get stored on the machine upon commit.
@@ -387,8 +376,7 @@ class File:
                     destination.write_text(final_content)
                     self.state = "persisted"
         except Exception as exception:
-            on_file_commit_fail.send(self)
-            raise exception
+            raise FileCommitException(self, ErrorReason.FAILED) from exception
 
         commit = FileCommitResult(
             name=self.name,
