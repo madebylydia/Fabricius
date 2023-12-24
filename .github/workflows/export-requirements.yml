@@ -1,0 +1,31 @@
+name: Export Requirements
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+  push:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    name: Export dependencies
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Poetry
+        run: |
+          pipx install poetry==1.7.1
+          pipx inject poetry poetry-plugin-export
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+          cache: 'poetry'
+
+      - name: Export dependencies
+        run: |
+          poetry export -f requirements.txt -o requirements/requirements.txt
+          poetry export -f requirements.txt --with dev -o requirements/requirements-dev.txt
+          poetry export -f requirements.txt --with docs -o requirements/requirements-docs.txt
