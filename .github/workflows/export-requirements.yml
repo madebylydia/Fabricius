@@ -17,6 +17,7 @@ jobs:
         run: |
           pipx install poetry==1.7.1
           pipx inject poetry poetry-plugin-export
+          poetry config warnings.export false
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -29,3 +30,11 @@ jobs:
           poetry export -f requirements.txt -o requirements/requirements.txt
           poetry export -f requirements.txt --with dev -o requirements/requirements-dev.txt
           poetry export -f requirements.txt --with docs -o requirements/requirements-docs.txt
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "deps: update requirements-*.txt files"
+          git push
