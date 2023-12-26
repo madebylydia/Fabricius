@@ -59,6 +59,7 @@ optional = true
 Sphinx = "^7.2.6"
 sphinx-autobuild = "^2021.3.14"
 pydata-sphinx-theme = "^0.14.4"
+sphinx-design = "^0.5.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.11.0"

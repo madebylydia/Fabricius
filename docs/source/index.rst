@@ -1,35 +1,51 @@
-Fabricius: The Documentation
-============================
+Fabricius: The modern Py3k template renderer
+============================================
 
-.. module:: fabricius
+.. caution::
 
-**Fabricius: Python templates renderer**
+   The documentation is **NOT READY!**
 
-Fabricius is a tool that allows you to render files template & projects template.
+   That means that the code you might see in here is probably outdated, and requires update.
+   Same goes to terms used in the documentation (E.g: ``Composers`` used to be called ``Renderers``).
 
-Key features of Fabricius:
-
-- (Will) Ship with its own project templating solution
-- Supports CookieCutter templates
-- Extendable with `observers <https://refactoring.guru/design-patterns/observer>`_ (AKA signals)
-- User-friendly API
-
-Installation
-------------
-
-The primary requirement of Fabricius is `Python <https://python.org>`_.
-It must be a version equal to or greater to Python ``3.10``.
-
-You can install Fabricius using ``pip``, the Python's package manager (It comes bundled with Python). Install Fabricius using the following command:
-
-.. code-block::
-
-   pip install Fabricius
+   Feel free to explore and see what Fabricius has to offer, however, and until `1.0.0` is released, this documentation should be considered as a **draft**.
 
 .. note::
 
-   Typically, Fabricius should be installed globally on your system (As you shouldn't need it in a specific project, it's a tool).
-   As such, Windows might tell you to add the ``--user`` option, if so, try doing ``pip install fabricius --user``!
+   State of documentation: Completed at ``5%``/``100%``
+
+.. note::
+
+   State of Fabricius: Completed at ``40%``/``100%``
+
+   .. image:: https://img.shields.io/pypi/status/fabricius
+      :alt: PyPI - Status
+
+   .. image:: https://img.shields.io/pypi/v/fabricius?label=version
+      :alt: PyPI - Version
+
+   .. image:: https://img.shields.io/pypi/pyversions/fabricius
+      :alt: PyPI - Python Version
+
+
+.. tip::
+
+   Found a bug? Something crashed?
+
+   Don't wait! Send us a report on Fabricius's `GitHub <https://github.com/madebylydia/fabricius/issues>`_!
+
+
+.. module:: fabricius
+
+**Fabricius** (Latin word, meaning "Artisan" ``\aʁ.ti.zɑ̃\`` in French, translatable into "Craftman") is a Python CLI tool which permit the render of projects templates.
+
+Why should you use Fabricius?
+
+* ``Supports CookieCutter``: CookieCutter templates are 100% usable with Fabricius and can be used as if you were using the CookieCutter CLI tool.
+* ``Extendable``: You can extend the behavior of Fabricius as you wish, make use of a complete and documented API.
+* ``Developer friendly``: Key point of Fabricius is its models, not only limited to be a CLI tool, you can also use its objects to create great tools for yourself, or... just use it as you'd like to!
+* ``Modern``: Written using Python 3.12, Fabricius will never let a developer down! Enjoy type-hinting as you hear it!
+* ``Crash-free``: We'll do our best to make sure Fabricius is as stable as possible, and if it crashes, an update will be shipped ASAP!
 
 Guides
 ------
@@ -41,18 +57,15 @@ Guides
    Guides (for now) are here to show you how Fabricius can work  and how you should expect things to work out.
 
 .. toctree::
-   :caption: Guides
-   :maxdepth: 1
+   :maxdepth: 2
 
-   guides/guide_create_forge_file
-   guides/guide_rendering
-   guides/guide_cookiecutter_templates
+   guides/index
 
 
 API
 ---
 
-.. topic:: Careful here, commander!
+.. topic:: Achtung, achtung! ⚠️
 
    This section is reserved for the peoples that are interested to use more complex tools in order to better understand how Fabricius works behind the scene & use it themselves.
 
@@ -60,12 +73,6 @@ API
 
 
 .. toctree::
-   :caption: API
    :maxdepth: 2
 
-   api/models
-   api/renderers
-   api/types
-   api/signals
-   api/configs
-   api/exceptions
+   api/index

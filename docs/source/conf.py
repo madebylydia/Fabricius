@@ -36,6 +36,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.coverage",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,17 +60,36 @@ html_theme = "pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_favicon = "_static/favicon.ico"
-
+html_sidebars = {
+    "**": ["sidebar-nav-bs", "sidebar-ethical-ads"],
+}
 
 # -- Extension configuration -------------------------------------------------
 coverage_show_missing_items = True
 
-# -- Options for Furo theme --------------------------------------------------
-announcement = "⚠️ Fabricius is a work in progress, the documentation only shows what will be realizable in the future with Fabricius as a tool.<br>Guides are only here to show you what will be possible, and they might not be reproducible as of today."
+# -- Options for Pydata theme ------------------------------------------------
+announcement = "⚠️ The documentation is not ready and much work is still needed. Please consider the documentation as a draft only. See the home page for more information."
 html_theme_options = {
-    "light_logo": "logo-dark.png",
-    "dark_logo": "logo-white.png",
+    "logo": {
+        "image_light": "logo-dark.png",
+        "image_dark": "logo-white.png",
+        "text": "Fabricius",
+    },
     "announcement": announcement,
+    "icon_links": [
+        {
+            "name": "Go to Fabricius repo",
+            "url": "https://github.com/madebylydia/Fabricius",
+            "icon": "fa-brands fa-github-alt",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Join the Discord",
+            "url": "https://discord.gg/FFpHbSbNj5",
+            "icon": "fa-brands fa-discord",
+            "type": "fontawesome",
+        },
+    ],
 }
 
 
