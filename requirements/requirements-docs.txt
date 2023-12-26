@@ -366,6 +366,9 @@ soupsieve==2.5 ; python_version >= "3.12" and python_version < "4.0" \
 sphinx-autobuild==2021.3.14 ; python_version >= "3.12" and python_version < "4.0" \
     --hash=sha256:8fe8cbfdb75db04475232f05187c776f46f6e9e04cacf1e49ce81bdac649ccac \
     --hash=sha256:de1ca3b66e271d2b5b5140c35034c89e47f263f2cd5db302c9217065f7443f05
+sphinx-design==0.5.0 ; python_version >= "3.12" and python_version < "4.0" \
+    --hash=sha256:1af1267b4cea2eedd6724614f19dcc88fe2e15aff65d06b2f6252cee9c4f4c1e \
+    --hash=sha256:e8e513acea6f92d15c6de3b34e954458f245b8e761b45b63950f65373352ab00
 sphinx==7.2.6 ; python_version >= "3.12" and python_version < "4.0" \
     --hash=sha256:1e09160a40b956dc623c910118fa636da93bd3ca0b9876a7b3df90f07d691560 \
     --hash=sha256:9a5160e1ea90688d5963ba09a2dcd8bdd526620edbb65c328728f1b2228d5ab5
