@@ -1,3 +1,4 @@
+import collections.abc
 import errno
 import pathlib
 import subprocess
@@ -10,9 +11,6 @@ from fabricius.exceptions import SignalException
 from fabricius.models.file import FileCommitResult
 from fabricius.models.generator import Generator
 from fabricius.types import Data
-
-if typing.TYPE_CHECKING:
-    import collections.abc
 
 HOOKS = ["pre_prompt", "pre_gen_project", "post_gen_project"]
 
@@ -91,8 +89,8 @@ def adapt(
 def adapt(
     hook: pathlib.Path, hook_type: typing.Literal["pre_prompt", "pre", "post"]
 ) -> (
-    "collections.abc.Callable[[Generator[JinjaComposer]], typing.Any]"
-    | "collections.abc.Callable[[Generator[JinjaComposer], list[FileCommitResult]], typing.Any]"
+    collections.abc.Callable[[Generator[JinjaComposer]], typing.Any]
+    | collections.abc.Callable[[Generator[JinjaComposer], list[FileCommitResult]], typing.Any]
 ):
     if hook_type == "pre_prompt":
 

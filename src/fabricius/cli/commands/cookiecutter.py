@@ -107,7 +107,7 @@ def cookiecutter(
             "Please ensure that [blue]your output directory is empty[/], or that you have "
             "[blue]allowed overwriting[/]."
         )
-        console.print(f"Exception message: {exception}")
+        console.print(f"[red]Exception message:[/] {exception}")
         return
 
     console.print(f"[green]Successfully generated {input_path.name}! :thumbsup:")
