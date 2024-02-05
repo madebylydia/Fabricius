@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
     from fabricius.types import Extra
 
 
-class BaseReader[ParsedData: typing.Any, Extra: Extra](abc.ABC):
+class BaseReader[ParsedData: typing.Any, Extra: "Extra"](abc.ABC):
     config_file: pathlib.Path
 
     def __init__(self, file: pathlib.Path) -> None:
@@ -22,7 +22,7 @@ class BaseReader[ParsedData: typing.Any, Extra: Extra](abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def to_universal(self, parsed_data: ParsedData) -> "UniversalConfig[Extra]":
+    def universalize(self, parsed_data: ParsedData) -> "UniversalConfig[Extra]":
         """
         An abstract class that must return an
         :py:class:`fabricius.configurator.universal.UniversalConfig` class.
@@ -40,4 +40,12 @@ class BaseReader[ParsedData: typing.Any, Extra: Extra](abc.ABC):
         raise NotImplementedError()
 
     def obtain(self):
-        return self.to_universal(self.process())
+        """
+        Obtain the UniversalConfig from the reader.
+
+        Returns
+        -------
+        :py:class:`fabricius.configurator.universal.UniversalConfig` :
+            The parsed data under the form of UniversalConfig.
+        """
+        return self.universalize(self.process())

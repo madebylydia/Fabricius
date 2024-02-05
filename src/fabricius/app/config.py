@@ -5,7 +5,7 @@ import pathlib
 import platformdirs
 import pydantic
 
-from fabricius.exceptions import ExpectationFailedException
+from fabricius.exceptions.precondition_exception import PreconditionException
 from fabricius.utils import deep_merge
 
 _log = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class Config(pydantic.BaseModel):
             If no config file is opened.
         """
         if not self.config_file:
-            raise ExpectationFailedException("No config file opened.")
+            raise PreconditionException(self, "No config file opened.")
         with self.config_file as file:
             _log.debug("Persisting config at %s", file)
             file.write_text(self.model_dump_json())

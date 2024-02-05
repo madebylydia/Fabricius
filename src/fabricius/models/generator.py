@@ -14,78 +14,56 @@ _log = logging.getLogger(__name__)
 
 
 class GeneratorExecutionResult(typing.TypedDict):
-    """
-    The result of a generator execution.
-    """
+    """The result of a generator execution."""
 
     files: list[File]
-    """
-    The file that was generated.
-    """
+    """The file that was generated."""
 
     base_folder: pathlib.Path
-    """
-    The base folder where the files were generated.
-    """
+    """The base folder where the files were generated."""
 
     data: Data
-    """
-    The data that was passed to files.
-    """
+    """The data that was passed to files."""
 
 
 class Generator[ComposerType: Composer]:
-    """
-    The Generator class represents a file generator that is responsible for generating files
+    """The Generator class represents a file generator that is responsible for generating files
     based on a set of templates and data.
 
     This is used to generate multiple files that share the same settings all together.
     """
 
     files: list[File]
-    """
-    The list of files to generate with the generator.
-    """
+    """The list of files to generate with the generator."""
 
     destination: pathlib.Path | None = None
-    """
-    A path indicating the default destination for a newly created File instance.
-    """
+    """A path indicating the default destination for a newly created File instance."""
 
     composer: ComposerType
-    """
-    The composer to use to render the files.
-    """
+    """The composer to use to render the files."""
 
     data: Data
-    """
-    The data to pass to the files at generation.
-    """
+    """The data to pass to the files at generation."""
 
-    _atomic: bool
-    """
-    Define the generator as atomic.
+    is_atomic: bool
+    """Define the generator as atomic.
     Means that if one file fails, the whole generator will fail and committed files will be
     deleted.
     """
 
-    _fake: bool
-    """
-    If the generator should create the files or not.
-    """
+    should_fake: bool
+    """If the generator should create the files or not."""
 
-    _overwrite: bool
-    """
-    If the generator should overwrite existing files or not.
-    """
+    should_overwrite: bool
+    """If the generator should overwrite existing files or not."""
 
     def __init__(self, composer: ComposerType) -> None:
         self.files = []
         self.composer = composer
         self.destination = None
-        self._atomic = False
-        self._fake = False
-        self._overwrite = False
+        self.is_atomic = False
+        self.should_fake = False
+        self.should_overwrite = False
         super().__init__()
 
     def _prepare_file(self, file: File) -> None:
@@ -95,12 +73,11 @@ class Generator[ComposerType: Composer]:
             file.to_directory(self.destination)
         file.with_data(self.data)
         file.with_composer(self.composer)
-        file.fake(self._fake)
-        file.overwrite(self._overwrite)
+        file.fake(self.should_fake)
+        file.overwrite(self.should_overwrite)
 
     def fake(self, should_fake: bool) -> typing.Self:
-        """
-        Set the generator to fake the execution.
+        """Set the generator to fake the execution.
         In other words, not generate the files it receives.
 
         .. warning::
@@ -113,32 +90,38 @@ class Generator[ComposerType: Composer]:
         should_fake : :py:class:`bool`
             The value to set the generator to.
         """
-        self._fake = should_fake
+        self.should_fake = should_fake
         return self
 
-    def to_directory(self, directory: PathLike, *, allow_not_empty: bool = False) -> typing.Self:
+    def overwrite(self, should_overwrite: bool) -> typing.Self:
+        """Set the generator to overwrite files that already exist.
+
+        Parameters
+        ----------
+        should_overwrite : :py:class:`bool`
+            The value to set the generator to.
         """
-        Indicate the directory where the files will be generated.
+        self.should_overwrite = should_overwrite
+        return self
+
+    def to_directory(self, directory: PathLike) -> typing.Self:
+        """Indicate the directory where the files will be generated.
 
         Parameters
         ----------
         directory : :py:class:`str` or :py:class:`pathlib.Path`
             The directory where the files will be generated.
-        allow_not_empty : :py:class:`bool`
-            If the directory is not empty, shall the generator still generate files or not.
-            If ``False``, an exception will be raised.
         """
         path = pathlib.Path(directory).resolve()
         if path.exists() and not path.is_dir():
-            raise exceptions.ExpectationFailedException(f"Path {path} is not a directory.")
-        if not allow_not_empty and path.exists() and contains_files(path):
-            raise exceptions.ExpectationFailedException(f"Directory {path} is not empty.")
+            raise exceptions.PreconditionException(self, f"Path {path} is not a directory.")
+        # if not allow_not_empty and contains_files(path):
+        #     raise exceptions.ExpectationFailedException(f"Directory {path} is not empty.")
         self.destination = path
         return self
 
     def with_data(self, data: Data):
-        """
-        Set data to pass to the generator.
+        """Set data to pass to the generator.
 
         Parameters
         ----------
@@ -149,8 +132,7 @@ class Generator[ComposerType: Composer]:
         return self
 
     def add_file(self, file: File) -> File:
-        """
-        Add a file to the generator.
+        """Add a file to the generator.
 
         Parameters
         ----------
@@ -170,8 +152,7 @@ class Generator[ComposerType: Composer]:
         return file
 
     def add_files(self, *files: File) -> typing.Self:
-        """
-        Add multiple files to the generator.
+        """Add multiple files to the generator.
 
         Parameters
         ----------
@@ -182,21 +163,8 @@ class Generator[ComposerType: Composer]:
             self.files.append(file)
         return self
 
-    def overwrite(self, value: bool) -> typing.Self:
-        """
-        Set the generator to overwrite files that already exist.
-
-        Parameters
-        ----------
-        value : :py:class:`bool`
-            The value to set the generator to.
-        """
-        self._overwrite = value
-        return self
-
     def atomic(self, value: bool):
-        """
-        Define the generator as atomic.
+        """Define the generator as atomic.
         This means that if one file fails, the whole generator will fail and committed files will
         be deleted.
 
@@ -205,12 +173,11 @@ class Generator[ComposerType: Composer]:
         value : :py:class:`bool`
             If the generator should be atomic or not.
         """
-        self._atomic = value
+        self.is_atomic = value
         return self
 
     def execute(self) -> GeneratorExecutionResult:
-        """
-        Execute generator's tasks.
+        """Execute generator's tasks.
 
         Parameters
         ----------
@@ -244,10 +211,9 @@ class Generator[ComposerType: Composer]:
                 has_generation_failed = True, exception
                 break
 
-        if (
-            has_generation_failed[0] is True
-        ):  # Don't remove the "is True", it's used for the the 2nd item in the tuple, which wouldn't be checked correctly otherwise
-            if self._atomic:
+        # Don't remove the "is True", it's used for the the 2nd item in the tuple, which wouldn't be checked correctly otherwise
+        if has_generation_failed[0] is True:
+            if self.is_atomic:
                 self.cleanup("unlink", files=results.keys())
             raise has_generation_failed[1]
 
@@ -259,8 +225,7 @@ class Generator[ComposerType: Composer]:
         )
 
     def _cleanup_rmdir(self):
-        """
-        Do a cleanup by attempting removing the directory.
+        """Do a cleanup by attempting removing the directory.
 
         .. warning::
 
@@ -272,8 +237,7 @@ class Generator[ComposerType: Composer]:
         force_rm(self.destination)
 
     def _cleanup_unlink(self, files: typing.Iterable[File] | None = None) -> None:
-        """
-        Do a cleanup by removing all committed file.
+        """Do a cleanup by removing all committed file.
 
         Parameters
         ----------
@@ -302,8 +266,7 @@ class Generator[ComposerType: Composer]:
         *,
         files: typing.Iterable[File] | None = None,
     ) -> None:
-        """
-        Cleanup the destination folder. Either remove the folder and its content or committed
+        """Cleanup the destination folder. Either remove the folder and its content or committed
         linked to this generator.
 
         **Methods**

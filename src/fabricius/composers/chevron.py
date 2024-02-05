@@ -7,4 +7,4 @@ class ChevronComposer(Composer):
     name = "Chevron (Moustache)"
 
     def render(self, content: str) -> str:
-        return chevron.render(content, self.data)
+        return chevron.render(content, dict(self.data))

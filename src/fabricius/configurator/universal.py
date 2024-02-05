@@ -5,8 +5,6 @@ import typing
 from rich import get_console
 from rich.prompt import Confirm, FloatPrompt, IntPrompt, Prompt, PromptBase
 
-from fabricius.configurator.reader.base import BaseReader
-
 
 @dataclasses.dataclass(kw_only=True)
 class QuestionConfig:
@@ -100,6 +98,7 @@ class QuestionConfig:
         """
         if self.hidden:
             return None
+
         console = get_console()
         if self.help:
             console.print(self.help)
@@ -126,18 +125,13 @@ class UniversalConfig[Extra: typing.Mapping[str, typing.Any]]:
     No extra sub-folders will be created.
     """
 
-    questions: list[QuestionConfig]
+    questions: "list[QuestionConfig]"
     """
     A list of questions to ask to the users.
     """
 
-    extra: Extra
+    extra: "Extra"
     """
     An attribute that comes unused to the user, but that can be used to store extra metadata.
     (Eg. CookieCutter's extensions, Jinja's environment settings, etc.)
     """
-
-    @classmethod
-    def obtain(cls, reader: BaseReader[typing.Any, Extra]):
-        data = reader.process()
-        return reader.to_universal(data)

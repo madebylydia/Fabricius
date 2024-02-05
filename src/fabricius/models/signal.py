@@ -6,8 +6,14 @@ _log = logging.getLogger(__name__)
 
 
 class Signal[**FuncHint]:
-    """
-    The Listener is the base class used to create listeners of events.
+    """Signals permits an event-based experience for developers to interact with Fabricius.
+    You can connect and disconnect listeners to signals, and send a signal to connect listerners.
+
+    More info at https://refactoring.guru/design-patterns/observer.
+
+    To create a signal, simply create an instance of this class.
+    You might indicate what arguments your listeners should receive by using the `FuncHint` type.
+    It is unused at runtime.
     """
 
     name: typing.Final[str]

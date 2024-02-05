@@ -8,7 +8,7 @@ class JinjaComposer(Composer):
 
     environment: Environment = Environment(loader=BaseLoader())
     """
-    The environment the composer will use.
+    The environment this composer will use.
     It is suggested for developers to directly interact with this attribute.
     The loader is the default jinja2's BaseLoader.
     """

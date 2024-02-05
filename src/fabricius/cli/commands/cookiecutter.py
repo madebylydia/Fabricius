@@ -5,8 +5,10 @@ import click
 import rich
 from rich.prompt import Confirm
 
+from fabricius.exceptions.invalid_template.missing_config import MissingConfigException
 from fabricius.exceptions.precondition_exception import PreconditionException
 from fabricius.readers.cookiecutter.builder import CookieCutterBuilder
+from fabricius.readers.cookiecutter.hooks import get_hooks
 
 
 def validate_extra_context(ctx: click.Context, param: str, context_value: str):
@@ -20,6 +22,8 @@ def validate_extra_context(ctx: click.Context, param: str, context_value: str):
     return values
 
 
+# List of options here:
+# https://github.com/cookiecutter/cookiecutter/blob/5d2b1e37b90ad11ac412c691f131689445840709/cookiecutter/cli.py#L70-L153
 @click.command()
 @click.argument("name_or_path")
 @click.argument("extra_context", nargs=-1, callback=validate_extra_context)
@@ -54,21 +58,29 @@ def cookiecutter(
     input_path = pathlib.Path(name_or_path).resolve()
     output_path = pathlib.Path(output_folder).resolve()
 
-    builder = CookieCutterBuilder(input_path, output_path)
-
     try:
-        builder.execute()
-    except PreconditionException as error:
-        click.echo(f"Error while setting up template: {error}")
+        builder = CookieCutterBuilder(input_path, output_path)
+    except MissingConfigException:
+        console.print(
+            "[red]It appears that this path does not contain any [bold]cookiecutter.json[/] file."
+        )
+        console.print("Please make sure that you are in the right folder and try again.")
         return
+
+    if not no_input:
+        answers: dict[str, str | None] = {}
+        questions = builder.get_questions()
+        for question in questions:
+            answers[question.id] = question.ask()
+        builder.answers = answers
 
     if accept_hooks == "ask":
         hooks = get_hooks(input_path)
         if (hooks["post_gen_project"] or hooks["pre_gen_project"]) and Confirm.ask(
             "There are hooks that can be connected, would you like to use them?"
         ):
-            connect_hooks(hooks)
+            pass
 
-    cookiecutter_run(template, overwrite=overwrite, keep_on_failure=keep_on_failure)
+    builder.execute(overwrite)
 
     console.print(f"[green]Successfully generated {input_path.name}! :thumbsup:")

@@ -18,11 +18,7 @@ from fabricius.exceptions.commit_exception import (
     MissingPermissions,
 )
 from fabricius.models.file import File, FileCommitResult
-from fabricius.signals import (  # on_file_commit_fail,
-    after_file_commit,
-    before_file_commit,
-    on_file_deleted,
-)
+from fabricius.signals import after_file_commit, before_file_commit, on_file_deleted
 
 from .utils import TEST_ROOT
 
@@ -99,11 +95,11 @@ def test_file_with_data_no_overwrite(file: File):
 
 
 def test_file_fake(file: File):
-    assert not file.will_fake
+    assert not file.should_fake
     file.fake(True)
-    assert file.will_fake
+    assert file.should_fake
     file.fake(False)
-    assert not file.will_fake
+    assert not file.should_fake
 
 
 def test_file_overwrite(file: File):

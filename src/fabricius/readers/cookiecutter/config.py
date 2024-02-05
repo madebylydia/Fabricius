@@ -25,5 +25,5 @@ def read_config_file(file: pathlib.Path) -> Config:
 
 def get_config(file: pathlib.Path | None = None) -> Config:
     conf_data = read_config_file(file or pathlib.Path("~/.cookiecutterrc").expanduser())
-    data = deep_merge(DEFAULT_CONFIG, conf_data)
+    data = deep_merge(dict(DEFAULT_CONFIG), dict(conf_data))
     return Config(default_context=data["default_context"])

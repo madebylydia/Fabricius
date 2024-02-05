@@ -102,7 +102,7 @@ class File:
     The data that will be passed to the composer.
     """
 
-    will_fake: bool
+    should_fake: bool
     """
     If the file should fake its creation upon commit.
     """
@@ -126,7 +126,7 @@ class File:
         self.state = "pending"
         self.content = None
         self.destination = None
-        self.will_fake = False
+        self.should_fake = False
         self.should_overwrite = False
 
         self.composer = PythonFormatComposer()
@@ -290,7 +290,7 @@ class File:
         should_fake : :py:class:`bool`
             The value to set the fake parameter to.
         """
-        self.will_fake = should_fake
+        self.should_fake = should_fake
         return self
 
     def generate(self) -> str:
@@ -326,11 +326,6 @@ class File:
             If the file has already been persisted, deleted, or being persisted.
         :py:exc:`FileExistsError` :
             If the file already exists on the disk and the file is not set to overwrite.
-
-            This is different from
-            :py:exc:`AlreadyCommittedError <fabricius.exceptions.AlreadyCommittedError>`
-            because this indicates that the content of the file this generator was never actually
-            saved.
         :py:exc:`OSError` :
             The file's name is not valid for the OS.
 
@@ -367,7 +362,7 @@ class File:
         try:
             before_file_commit.send(self)
 
-            if self.will_fake:
+            if self.should_fake:
                 self.state = "persisted"
             else:
                 with contextlib.suppress(NotADirectoryError):
@@ -376,6 +371,7 @@ class File:
                     destination.write_text(final_content)
                     self.state = "persisted"
         except Exception as exception:
+            self.state = "pending"
             raise FileCommitException(self, ErrorReason.FAILED) from exception
 
         commit = FileCommitResult(
@@ -385,7 +381,7 @@ class File:
             template_content=self.content,
             content=final_content,
             destination=self.destination / self.name,
-            fake=self.will_fake,
+            fake=self.should_fake,
         )
 
         after_file_commit.send(self, commit)

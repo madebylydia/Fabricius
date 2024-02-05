@@ -75,11 +75,11 @@ def determine_file_destination(
     Parameters
     ----------
     file : :py:class:`pathlib.Path`
-        The file to determine the destination of.
+        The source file to determine the destination of.
     source : :py:class:`pathlib.Path`
         The source folder of the file.
     output : :py:class:`pathlib.Path`
-        The output folder.
+        The root output folder.
 
     Returns
     -------
@@ -93,7 +93,7 @@ def determine_file_destination(
 def deep_merge(
     to_dict: dict[typing.Any, typing.Any],
     from_dict: dict[typing.Any, typing.Any],
-) -> typing.Mapping[typing.Any, typing.Any]:
+) -> typing.MutableMapping[typing.Any, typing.Any]:
     """
     Deeply merges two dictionaries. If a key from original dictionary is conflicting, value from
     the dict we copy from is preferred.
@@ -139,7 +139,7 @@ def calculate_text_color(
         The color we're calculating against to.
         This must be a Color class (From Rich)
     threshold : :py:class:`int`
-        The threshold to determine if the text is black or white.
+        The threshold to determine if the text is black or white. Default to 150.
 
     Raises
     ------

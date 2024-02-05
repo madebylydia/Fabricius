@@ -1,6 +1,9 @@
 import pathlib
 import typing
 
+if typing.TYPE_CHECKING:
+    from fabricius.models.file import File
+
 TEMPLATE_STATE = typing.Literal["pending", "failed", "persisted", "deleted"]
 
 
@@ -17,7 +20,7 @@ class Template:
     The path of the template.
     """
 
-    files: dict[str, File]
+    files: dict[str, "File"]
     """
     A dictionnary indicating the files to render.
     """

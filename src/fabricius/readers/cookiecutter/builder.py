@@ -9,11 +9,12 @@ from fabricius.configurator.reader.cookiecutter import (
     CookieCutterExtra,
 )
 from fabricius.configurator.universal import QuestionConfig, UniversalConfig
-from fabricius.exceptions.expectation_failed_exception import ExpectationFailedException
+from fabricius.exceptions.invalid_template.missing_config import MissingConfigException
 from fabricius.exceptions.precondition_exception import PreconditionException
 from fabricius.models.file import File
 from fabricius.models.generator import Generator
 from fabricius.readers.cookiecutter.config import get_config
+from fabricius.readers.cookiecutter.hooks import AvailableHooks, get_hooks
 from fabricius.readers.cookiecutter.types import WrappedInCookiecutter
 from fabricius.utils import determine_file_destination, get_files_only_recursively
 
@@ -75,54 +76,75 @@ class CookieCutterBuilder:
         source_folder: pathlib.Path,
         output_folder: pathlib.Path,
     ) -> None:
+        """Create a new CookieCutter builder.
+
+        Parameters
+        ----------
+        source_folder : pathlib.Path
+            The source folder where the template is located.
+        output_folder : pathlib.Path
+            The output folder where the template will be rendered.
+
+        Raises
+        ------
+        MissingConfigException
+            If the cookiecutter.json file is not found.
+        """
         self.source = source_folder.resolve()
         self.output = output_folder.resolve()
 
         cookiecutter_path = (source_folder / "cookiecutter.json").resolve()
         if not cookiecutter_path.exists():
-            raise PreconditionException(
-                self.source.name, "cookiecutter.json must exist in source folder"
-            )
+            raise MissingConfigException(self.source, "cookiecutter.json")
         self.config = CookieCutterConfigReader(cookiecutter_path).obtain()
 
         self.answers = {}
         self.extra_context = {}
 
-    def should_copy(self, file: File):
+    def computed_output(self) -> pathlib.Path:
+        composer = self.get_composer()
+        context = self.get_final_context()
+        if self.has_template_path:
+            template_path = to_template_path(self.source)
+            assert template_path
+            return self.output / composer.push_data(context).render(template_path.name)
+        return self.output
+
+    @property
+    def files(self) -> list[pathlib.Path]:
+        """Return all files in the source folder.
+        Does not translate their name.
         """
-        Determine if a file should be copied or rendered.
+        return get_files_only_recursively(self.get_template_path())
+
+    @property
+    def hooks(self) -> AvailableHooks:
+        """Return all hooks in the source folder."""
+        return get_hooks(self.source)
+
+    def should_copy(self, file: File):
+        """Determine if a file should be copied or rendered.
 
         Parameters
         ----------
         file : :py:class:`File <fabricius.models.file.File>`
             The file we're checking.
         """
-        # TODO: To rewrite, so it use a rendered context.
-        if not self.config.extra.get("_copy_without_render"):
-            return False
-        to_ignore: list[str] = self.config.extra.get("_copy_without_render", [])
+        to_ignore: list[str] = self.config.extra["_copy_without_render"]
         context = self.get_final_context()
         for index, value in enumerate(to_ignore):
             to_ignore[index] = JinjaComposer().push_data(context).render(value)
         return any(fnmatch(str(file.compute_destination()), value) for value in to_ignore)
 
-    @property
-    def files(self) -> list[pathlib.Path]:
-        """
-        Return all files in the source folder.
-        Does not translate their name.
-        """
-        return get_files_only_recursively(self.get_template_path())
-
     def render_files_names(self) -> list[FileInfo]:
-        """
-        Render files with their rendered name, and their destination path.
-        """
+        """Render files with their rendered name, and their destination path."""
         files: list[FileInfo] = []
         composer = self.get_composer()
         composer.push_data(self.get_final_context())
         for file in self.files:
-            destination = determine_file_destination(file, self.get_template_path(), self.output)
+            destination = determine_file_destination(
+                file, self.get_template_path(), self.computed_output()
+            )
             files.append(
                 FileInfo(
                     name=composer.render(file.name),
@@ -137,22 +159,19 @@ class CookieCutterBuilder:
         return bool(to_template_path(self.source))
 
     def get_template_path(self) -> pathlib.Path:
-        """
-        Return the path to the template.
+        """Return the path to the template.
 
         Exceptions
         ----------
-        :py:exc:`fabricius.exceptions.ExpectationFailedException` :
+        :py:exc:`fabricius.exceptions.PreconditionException` :
             If the template path is not found.
         """
         if path := to_template_path(self.source):
             return path
-        raise ExpectationFailedException("Template path not found")
+        raise PreconditionException(self, "Template path not found")
 
     def get_questions(self) -> list[QuestionConfig]:
-        """
-        Return the questions.
-        """
+        """Return the questions to ask to the user."""
         return self.config.questions
 
     def get_composer(self) -> JinjaComposer:
@@ -165,6 +184,10 @@ class CookieCutterBuilder:
         return Generator(self.get_composer())
 
     def get_final_context(self) -> WrappedInCookiecutter:
+        """Obtain the final context for this template and the data that have been passed.
+        This will wrap the data into a "cookiecutter" key, and add metadata information about this
+        template. (_template, _repo_dir, _output_dir)
+        """
         data: dict[str, typing.Any] = {}
 
         user_config = get_config()
@@ -181,7 +204,16 @@ class CookieCutterBuilder:
 
         return {"cookiecutter": data}
 
-    def execute(self):
+    def execute(self, overwrite: bool = False):
+        """Execute this builder.
+
+        This will render the files, and deposit them in the destination folder.
+
+        Parameters
+        ----------
+        overwrite : bool
+            If the files should be overwritten if they already exist.
+        """
         generator = self.get_generator()
         for file_info in self.render_files_names():
             file = File(file_info["name"])
@@ -189,6 +221,15 @@ class CookieCutterBuilder:
                 file_info["output"]
             ).with_composer(self.get_composer())
             generator.add_file(file)
+
+        # That has been troublesome to try to implement "correctly", if you have a better
+        # suggestion here, feel free to throw a PR.
+        # Makes me unhappy, but I can't throw that directly in "get_final_context" because
+        # that would make an infinite loop with "computed_output".
+        fixed_data = self.get_final_context()
+        fixed_data["cookiecutter"]["_output_dir"] = str(self.computed_output().resolve())
+
         generator.with_data(self.get_final_context())
+        generator.overwrite(overwrite)
         generator.to_directory(self.output)
         generator.execute()

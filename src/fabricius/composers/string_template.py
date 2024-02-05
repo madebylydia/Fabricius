@@ -11,7 +11,7 @@ class StringTemplateComposer(Composer):
     """
     Indicate if the composer should use
     :py:meth:`string.Template.safe_substitute` or
-    :py:meth:`string.Template.substitute`
+    :py:meth:`string.Template.substitute`.
     """
 
     def __init__(self, *, safe: bool = True) -> None:

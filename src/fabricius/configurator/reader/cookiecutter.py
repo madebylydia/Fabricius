@@ -21,7 +21,8 @@ class CookieCutterConfigReader(BaseReader[dict[str, typing.Any], CookieCutterExt
     def process(self) -> dict[str, typing.Any]:
         return yaml.safe_load(self.config_file.read_text())
 
-    def _get_prompt(self, parsed_data: dict[str, typing.Any], key: str) -> str:
+    @staticmethod
+    def _get_prompt(parsed_data: dict[str, typing.Any], key: str) -> str:
         # https://cookiecutter.readthedocs.io/en/stable/advanced/human_readable_prompts.html
         if not parsed_data.get("__prompts__"):
             return sentence_case(key)
@@ -32,7 +33,7 @@ class CookieCutterConfigReader(BaseReader[dict[str, typing.Any], CookieCutterExt
             return human_prompts.get(key, sentence_case(key))
         return sentence_case(key)
 
-    def to_universal(
+    def universalize(
         self, parsed_data: dict[str, typing.Any]
     ) -> UniversalConfig[CookieCutterExtra]:
         questions: list[QuestionConfig] = []
