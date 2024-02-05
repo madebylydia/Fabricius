@@ -5,6 +5,7 @@ import click
 import rich
 from rich.prompt import Confirm
 
+from fabricius.exceptions.invalid_template.invalid_config import InvalidConfigException
 from fabricius.exceptions.invalid_template.missing_config import MissingConfigException
 from fabricius.exceptions.precondition_exception import PreconditionException
 from fabricius.readers.cookiecutter.builder import CookieCutterBuilder
@@ -66,6 +67,13 @@ def cookiecutter(
         )
         console.print("Please make sure that you are in the right folder and try again.")
         return
+    except InvalidConfigException:
+        console.print(
+            "[red]It appears that your [bold]cookiecutter.json[/] file is invalid. Check the and try again."
+        )
+        return
+
+    console.print(f"[green]Generating {input_path.name}...")
 
     if not no_input:
         answers: dict[str, str | None] = {}
@@ -81,6 +89,19 @@ def cookiecutter(
         ):
             pass
 
-    builder.execute(overwrite)
+    builder.delete_on_failure = not keep_on_failure
+
+    try:
+        builder.execute(overwrite)
+    except PreconditionException as exception:
+        console.print()
+        console.print(
+            "[red]Uhm, it appears that something went wrong during the generation of your project."
+        )
+        console.print(
+            "Please ensure that [blue]your output directory is empty[/], or that you have [blue]allowed overwriting[/]."
+        )
+        console.print(f"Exception message: {exception}")
+        return
 
     console.print(f"[green]Successfully generated {input_path.name}! :thumbsup:")

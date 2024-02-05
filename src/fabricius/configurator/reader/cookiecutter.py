@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import typing
@@ -6,6 +7,7 @@ import yaml
 
 from fabricius.configurator.reader.base import BaseReader
 from fabricius.configurator.universal import QuestionConfig, UniversalConfig
+from fabricius.exceptions.invalid_template.invalid_config import InvalidConfigException
 from fabricius.utils import sentence_case
 
 
@@ -19,7 +21,12 @@ class CookieCutterExtra(typing.TypedDict):
 
 class CookieCutterConfigReader(BaseReader[dict[str, typing.Any], CookieCutterExtra]):
     def process(self) -> dict[str, typing.Any]:
-        return yaml.safe_load(self.config_file.read_text())
+        try:
+            return json.loads(self.config_file.read_text())
+        except json.JSONDecodeError:
+            raise InvalidConfigException(
+                self.config_file, self, "Config file cannot be read as expected."
+            )
 
     @staticmethod
     def _get_prompt(parsed_data: dict[str, typing.Any], key: str) -> str:

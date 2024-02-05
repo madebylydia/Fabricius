@@ -203,7 +203,7 @@ You can install Fabricius using different tool, either with ``pip`` or ``pipx``.
 
    .. tab-item:: Using pipx
 
-       More information about pipx can be found `here <https://github.com/pypa/pipx>_`.
+       More information about pipx can be found `here <https://github.com/pypa/pipx>`_.
 
        You first need to install pipx on your system using the following command:
 

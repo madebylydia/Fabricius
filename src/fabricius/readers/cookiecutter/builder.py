@@ -47,29 +47,22 @@ class FileInfo(typing.TypedDict):
 
 class CookieCutterBuilder:
     source: pathlib.Path
-    """
-    The source folder where the template is located.
-    """
+    """The source folder where the template is located."""
 
     output: pathlib.Path
-    """
-    The output folder where the template will be rendered.
-    """
+    """The output folder where the template will be rendered."""
 
     extra_context: dict[str, typing.Any]
-    """
-    Any extra context to add to the final context.
-    """
+    """Any extra context to add to the final context."""
 
     answers: dict[str, typing.Any]
-    """
-    The answers to the prompts.
-    """
+    """The answers to the prompts."""
+
+    delete_on_failure: bool
+    """Defines if the output folder should be deleted if the execution fails."""
 
     config: UniversalConfig[CookieCutterExtra]
-    """
-    The context class.
-    """
+    """The context class."""
 
     def __init__(
         self,
@@ -98,6 +91,7 @@ class CookieCutterBuilder:
             raise MissingConfigException(self.source, "cookiecutter.json")
         self.config = CookieCutterConfigReader(cookiecutter_path).obtain()
 
+        self.delete_on_failure = True
         self.answers = {}
         self.extra_context = {}
 
@@ -231,5 +225,6 @@ class CookieCutterBuilder:
 
         generator.with_data(self.get_final_context())
         generator.overwrite(overwrite)
+        generator.atomic(self.delete_on_failure)
         generator.to_directory(self.output)
         generator.execute()

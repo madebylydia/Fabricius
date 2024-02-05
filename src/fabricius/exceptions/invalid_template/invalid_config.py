@@ -11,7 +11,7 @@ class InvalidConfigException(InvalidTemplateException):
     """
 
     def __init__(
-        self, file: pathlib.Path, reader: type[BaseReader[typing.Any, typing.Any]], reason: str
+        self, file: pathlib.Path, reader: BaseReader[typing.Any, typing.Any], reason: str
     ) -> None:
         super().__init__(
             f"Could not read config file ({file}) using {reader.__class__.__name__}: {reason}"

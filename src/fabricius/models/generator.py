@@ -115,8 +115,6 @@ class Generator[ComposerType: Composer]:
         path = pathlib.Path(directory).resolve()
         if path.exists() and not path.is_dir():
             raise exceptions.PreconditionException(self, f"Path {path} is not a directory.")
-        # if not allow_not_empty and contains_files(path):
-        #     raise exceptions.ExpectationFailedException(f"Directory {path} is not empty.")
         self.destination = path
         return self
 
@@ -194,6 +192,10 @@ class Generator[ComposerType: Composer]:
         """
         if not self.destination:
             raise PreconditionException(self, "destination must be set")
+        if not self.should_overwrite and contains_files(self.destination):
+            raise exceptions.PreconditionException(
+                self, f"Directory {self.destination} is not empty and overwrite is not allowed."
+            )
 
         before_generator_start.send(self)
 
