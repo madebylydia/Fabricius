@@ -3,6 +3,8 @@ import typing
 
 
 class QuestionV1[QuestionType: typing.Any](typing.TypedDict, total=False):
+    """Fabricius-centric typed dict for questions to ask to the users."""
+
     id: typing.Required[str]
     help: str
     prompt: str
@@ -12,6 +14,8 @@ class QuestionV1[QuestionType: typing.Any](typing.TypedDict, total=False):
 
 
 class TemplateV1(typing.TypedDict):
+    """Fabricius-centric typed dict for configuration of templates."""
+
     version: typing.Literal[1]
     type: typing.Literal["template"]
     root: pathlib.Path
@@ -20,6 +24,8 @@ class TemplateV1(typing.TypedDict):
 
 
 class RepositoryV1(typing.TypedDict):
+    """Fabricius-centric typed dict for configuration of a repository."""
+
     version: typing.Literal[1]
     type: typing.Literal["repository"]
     root: pathlib.Path

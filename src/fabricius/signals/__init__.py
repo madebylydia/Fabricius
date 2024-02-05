@@ -1,3 +1,5 @@
+# pylint: disable=W0613,C0103
+
 import typing
 
 from fabricius.models.signal import Signal

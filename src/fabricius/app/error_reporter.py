@@ -3,7 +3,10 @@ import logging
 import typing
 
 _log = logging.getLogger(__name__)
-HASHED_CODE = "aHR0cHM6Ly9iYzYzNTJkNGQxOTg1YTFlZmQ0YmI2NGMzYjFmZWFmZUBvNDQ1ODY0LmluZ2VzdC5zZW50cnkuaW8vNDUwNjQ2MzExNjg1MzI0OA=="
+HASHED_CODE = (
+    "aHR0cHM6Ly9iYzYzNTJkNGQxOTg1YTFlZmQ0YmI2NGMzYjFmZWFmZUBvNDQ1ODY0LmluZ2VzdC5zZW50cnkua"
+    "W8vNDUwNjQ2MzExNjg1MzI0OA=="
+)
 
 try:
     import sentry_sdk
@@ -15,7 +18,7 @@ try:
     )
 except ImportError:
     sentry_sdk = None
-    _log.warn("Sentry is not installed. Error reporting is disabled.")
+    _log.warning("Sentry is not installed. Error reporting is disabled.")
 
 
 def can_report() -> bool:

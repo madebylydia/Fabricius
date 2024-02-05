@@ -104,6 +104,7 @@ load-plugins=pylint.extensions.typing,
              pylint.extensions.docstyle,
              pylint.extensions.docparams,
              pylint.extensions.code_style,
+             pylint_pydantic
 
 # Pickle collected data for later comparisons.
 persistent=yes

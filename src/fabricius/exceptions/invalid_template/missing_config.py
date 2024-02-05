@@ -8,6 +8,6 @@ class MissingConfigException(InvalidTemplateException):
 
     def __init__(self, base_path: pathlib.Path, expected_file: str):
         super().__init__(
-            f'Template at {base_path.resolve()} is missing a config file: Expected "{expected_file}" to '
-            "be there."
+            f"Template at {base_path.resolve()} is missing a config file: Expected "
+            f'"{expected_file}" to be there.'
         )

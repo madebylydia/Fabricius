@@ -2,13 +2,10 @@ from fabricius.exceptions.base import FabriciusException
 
 
 class SignalException(FabriciusException):
-    """
-    Raised when a hook run fails.
-    """
+    """Raised when a hook run fails."""
 
     exit_code: int | None
-    """
-    The associated exit code of the exception, if any.
+    """The associated exit code of the exception, if any.
     Must be used when this exception is raised, the runtime won't stop by itself.
     """
 

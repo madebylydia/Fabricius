@@ -40,12 +40,21 @@ def to_template_path(base_folder: pathlib.Path) -> pathlib.Path | None:
 
 
 class FileInfo(typing.TypedDict):
+    """A dict containing information about a file."""
+
     name: str
     source: pathlib.Path
     output: pathlib.Path
 
 
 class CookieCutterBuilder:
+    """Builder for CookieCutter-based templates.
+
+    This will render the template and deposit it in the output folder.
+    It facilitates (or at least, should facilitate) the rendering of the template by calling the
+    necessary methods only.
+    """
+
     source: pathlib.Path
     """The source folder where the template is located."""
 
@@ -170,7 +179,7 @@ class CookieCutterBuilder:
 
     def get_composer(self) -> JinjaComposer:
         composer = JinjaComposer()
-        for extension in [*EXTENSIONS, *self.config.extra["_extensions"]]:
+        for extension in (*EXTENSIONS, *self.config.extra["_extensions"]):
             composer.environment.add_extension(extension)
         return composer
 

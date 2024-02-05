@@ -1,3 +1,4 @@
+import collections.abc
 import typing
 
 if typing.TYPE_CHECKING:
@@ -5,9 +6,9 @@ if typing.TYPE_CHECKING:
     import pathlib
 
 
-MutableData: typing.TypeAlias = typing.MutableMapping[str, typing.Any]
-Data: typing.TypeAlias = typing.Mapping[str, typing.Any]
-Extra: typing.TypeAlias = typing.Mapping[str, typing.Any]
+MutableData: typing.TypeAlias = collections.abc.MutableMapping[str, typing.Any]
+Data: typing.TypeAlias = collections.abc.Mapping[str, typing.Any]
+Extra: typing.TypeAlias = collections.abc.Mapping[str, typing.Any]
 
 NoExtraDict = typing.TypedDict("NoExtraDict", {})
 

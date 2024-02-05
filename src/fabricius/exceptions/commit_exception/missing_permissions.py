@@ -8,7 +8,9 @@ if typing.TYPE_CHECKING:
 
 
 class MissingPermissions(CommitException, PermissionError):
-    """Base class for all exceptions related to commiting, which allow for more conscise exceptions."""
+    """Base class for all exceptions related to commiting, which allow for more conscise
+    exceptions.
+    """
 
     def __init__(
         self,
@@ -17,5 +19,6 @@ class MissingPermissions(CommitException, PermissionError):
         *has_expected: typing.Literal["read", "write", "execute"],
     ) -> None:
         super().__init__(
-            f"{file} is missing permissions at {at_path}, expected {', '.join(has_expected)} permission(s)."
+            f"{file} is missing permissions at {at_path}, expected "
+            f"{', '.join(has_expected)} permission(s)."
         )

@@ -9,6 +9,8 @@ if typing.TYPE_CHECKING:
 
 
 class ErrorReason(enum.StrEnum):
+    """A list (enum) of possible reasons for a file to fail to be committed."""
+
     ALREADY_EXIST = "File {} already exist on disk."
     ALREADY_PERSISTED = "File {} is already persisted and cannot be re-committed."
     ALREADY_DELETED = "File {} is already deleted and cannot be re-committed."
@@ -17,6 +19,8 @@ class ErrorReason(enum.StrEnum):
 
 
 class FileCommitException(CommitException):
+    """An exception raised when a file has failed to be committed."""
+
     def __init__(self, file: "File", error_reason: ErrorReason) -> None:
         try:
             destination = str(file.compute_destination())

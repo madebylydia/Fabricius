@@ -4,11 +4,15 @@ import typing
 
 from fabricius import exceptions
 from fabricius.exceptions.precondition_exception import PreconditionException
-from fabricius.models.composer import Composer
 from fabricius.models.file import File, FileCommitResult
 from fabricius.signals import after_generator_start, before_generator_start
 from fabricius.types import Data, PathLike
 from fabricius.utils import contains_files, force_rm
+
+if typing.TYPE_CHECKING:
+    import collections.abc
+
+    from fabricius.models.composer import Composer
 
 _log = logging.getLogger(__name__)
 
@@ -26,7 +30,7 @@ class GeneratorExecutionResult(typing.TypedDict):
     """The data that was passed to files."""
 
 
-class Generator[ComposerType: Composer]:
+class Generator[ComposerType: "Composer"]:
     """The Generator class represents a file generator that is responsible for generating files
     based on a set of templates and data.
 
@@ -134,16 +138,13 @@ class Generator[ComposerType: Composer]:
 
         Parameters
         ----------
-        name : :py:class:`str`
-            The name of the file
-        extension : Optional, :py:class:`str`
-            The extension of the file, can be optional.
-            If none, no extension will be added.
+        file : :py:class:`fabricius.models.File`
+            The file to append to this generator.
 
         Returns
         -------
         :py:class:`fabricius.file.File` :
-            The generated file. You then have to set file's options.
+            The same file.
         """
         _log.debug("[Generator id=%s] Adding %s", id(self), file)
         self.files.append(file)
@@ -177,11 +178,14 @@ class Generator[ComposerType: Composer]:
     def execute(self) -> GeneratorExecutionResult:
         """Execute generator's tasks.
 
-        Parameters
-        ----------
-        allow_overwrite : :py:class:`bool`
-            If files exist at their set path, shall this parameter say if files should be
-            overwritten or not.
+        Raises
+        ------
+        :py:class:`fabricius.exceptions.PreconditionException` :
+            This error will be raised if the destination is not set.
+            It can also be raised if the destination is not empty and that overwriting is not
+            allowed.
+        :py:class:`Exception` :
+            Any exception raised by a file during its commit.
 
         Returns
         -------
@@ -199,9 +203,9 @@ class Generator[ComposerType: Composer]:
 
         before_generator_start.send(self)
 
-        has_generation_failed: typing.Union[
-            tuple[typing.Literal[False], None], tuple[typing.Literal[True], Exception]
-        ] = (False, None)
+        has_generation_failed: (
+            tuple[typing.Literal[False], None] | tuple[typing.Literal[True], Exception]
+        ) = (False, None)
         results: dict[File, FileCommitResult] = {}
 
         for file in self.files:
@@ -213,7 +217,8 @@ class Generator[ComposerType: Composer]:
                 has_generation_failed = True, exception
                 break
 
-        # Don't remove the "is True", it's used for the the 2nd item in the tuple, which wouldn't be checked correctly otherwise
+        # Don't remove the "is True", it's used for the the 2nd item in the tuple, which wouldn't
+        # be checked correctly otherwise
         if has_generation_failed[0] is True:
             if self.is_atomic:
                 self.cleanup("unlink", files=results.keys())
@@ -238,7 +243,7 @@ class Generator[ComposerType: Composer]:
             raise exceptions.PreconditionException(self, "No base folder set.")
         force_rm(self.destination)
 
-    def _cleanup_unlink(self, files: typing.Iterable[File] | None = None) -> None:
+    def _cleanup_unlink(self, files: "collections.abc.Iterable[File] | None" = None) -> None:
         """Do a cleanup by removing all committed file.
 
         Parameters
@@ -246,7 +251,7 @@ class Generator[ComposerType: Composer]:
         files : Optional, :py:class:`list` of :py:class:`fabricius.file.File`
             The files to cleanup. If ``None``, all files that have been persisted will be removed.
         """
-        for file in [file for file in self.files if file.state == "persisted"]:
+        for file in [file for file in files or self.files if file.state == "persisted"]:
             file.delete()
 
     @typing.overload
@@ -254,7 +259,7 @@ class Generator[ComposerType: Composer]:
         self,
         method: typing.Literal["rmdir", "unlink"] = "unlink",
         *,
-        files: typing.Iterable[File] | None = None,
+        files: "collections.abc.Iterable[File] | None" = None,
     ) -> None:
         ...
 
@@ -266,7 +271,7 @@ class Generator[ComposerType: Composer]:
         self,
         method: typing.Literal["rmdir", "unlink"] | None = None,
         *,
-        files: typing.Iterable[File] | None = None,
+        files: "collections.abc.Iterable[File] | None" = None,
     ) -> None:
         """Cleanup the destination folder. Either remove the folder and its content or committed
         linked to this generator.

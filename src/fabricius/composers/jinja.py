@@ -4,6 +4,8 @@ from fabricius.models.composer import Composer
 
 
 class JinjaComposer(Composer):
+    """Composer using ``jinja2``'s environments to render the content."""
+
     name = "Jinja Template"
 
     environment: Environment = Environment(loader=BaseLoader())

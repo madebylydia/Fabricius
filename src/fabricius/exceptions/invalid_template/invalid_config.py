@@ -6,9 +6,7 @@ from fabricius.exceptions.invalid_template.base import InvalidTemplateException
 
 
 class InvalidConfigException(InvalidTemplateException):
-    """
-    Raised when the config file is invalid.
-    """
+    """Raised when the config file is invalid."""
 
     def __init__(
         self, file: pathlib.Path, reader: BaseReader[typing.Any, typing.Any], reason: str

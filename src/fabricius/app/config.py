@@ -17,34 +17,31 @@ _DEFAULT_CONFIG_PATH = platformdirs.user_config_path("fabricius", ensure_exists=
 def get_or_create_default_config():
     if _DEFAULT_CONFIG_PATH.exists():
         return _DEFAULT_CONFIG_PATH
-    _log.info(f"Creating new config file at {_DEFAULT_CONFIG_PATH.resolve()}")
+    _log.info("Creating new config file at %s", _DEFAULT_CONFIG_PATH.resolve())
     _DEFAULT_CONFIG_PATH.touch()
-    _DEFAULT_CONFIG_PATH.write_text(Config.defaults().model_dump_json())
+    _DEFAULT_CONFIG_PATH.write_text(Config.defaults().model_dump_json(), encoding="utf-8")
     return _DEFAULT_CONFIG_PATH
 
 
 class Config(pydantic.BaseModel):
+    """The configuration class for Fabricius. This is used in order to know informations such as
+    where to store downloaded content, what content is stored, etc.
+    """
+
     config_file: pathlib.Path | None = pydantic.Field(exclude=True)
-    """
-    The config file that is used to store the config.
-    Not stored.
-    """
+    """The config file that is used to store the config. Not stored."""
 
     download_path: pathlib.Path = pydantic.Field()
-    """
-    The path where the downloaded repositories will be stored.
-    """
+    """The path where the downloaded repositories will be stored."""
 
     stored_repositories: dict[str, pathlib.Path] = pydantic.Field()
-    """
-    List of stored repositories.
+    """List of stored repositories.
     The key is the alias and the value is the informations about the repository.
     """
 
     @classmethod
     def defaults(cls) -> "Config":
-        """
-        Instantiate a new instance of the class with default values.
+        """Instantiate a new instance of the class with default values.
 
         Returns
         -------
@@ -58,14 +55,13 @@ class Config(pydantic.BaseModel):
         )
 
     def persist(self) -> None:
-        """
-        Persists the current configuration to a file.
+        """Persists the current configuration to a file.
         It requires a config file to be opened. (Done by using the :py:meth:`.load` method)
 
         Raises
         ------
-        ExpectationFailedException
-            If no config file is opened.
+        :py:exc:`fabricius.exceptions.PreconditionException`
+            If no config file is opened, this exception is raised.
         """
         if not self.config_file:
             raise PreconditionException(self, "No config file opened.")
@@ -75,8 +71,7 @@ class Config(pydantic.BaseModel):
 
     @classmethod
     def load(cls, config_file: pathlib.Path) -> "Config":
-        """
-        Load a configuration from the given file.
+        """Load a configuration from the given file.
 
         Parameters
         ----------

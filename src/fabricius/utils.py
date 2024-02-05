@@ -7,14 +7,14 @@ import inflection
 from rich.color import Color
 
 if typing.TYPE_CHECKING:
+    import collections.abc
     import pathlib
 
     from _typeshed import StrOrBytesPath
 
 
 class DictAllowMiss(dict[str, typing.Any]):
-    """
-    A subclass of Dict to return an empty string in case of missing key, instead of raising an
+    """A subclass of Dict to return an empty string in case of missing key, instead of raising an
     error, so that it can play nice with composers.
 
     :meta private:
@@ -25,8 +25,7 @@ class DictAllowMiss(dict[str, typing.Any]):
 
 
 def contains_files(path: "pathlib.Path") -> bool:
-    """
-    Check if a directory contains files.
+    """Check if a directory contains files.
 
     Parameters
     ----------
@@ -44,8 +43,7 @@ def contains_files(path: "pathlib.Path") -> bool:
 
 
 def get_files_only_recursively(path: "pathlib.Path") -> list["pathlib.Path"]:
-    """
-    Return a list of all the files in a directory.
+    """Return a list of all the files in a directory.
 
     Parameters
     ----------
@@ -69,8 +67,7 @@ def get_files_only_recursively(path: "pathlib.Path") -> list["pathlib.Path"]:
 def determine_file_destination(
     file: "pathlib.Path", source: "pathlib.Path", output: "pathlib.Path"
 ):
-    """
-    Determine the destination of a file by preserving its subdirectory.
+    """Determine the destination of a file by preserving its subdirectory.
 
     Parameters
     ----------
@@ -93,16 +90,15 @@ def determine_file_destination(
 def deep_merge(
     to_dict: dict[typing.Any, typing.Any],
     from_dict: dict[typing.Any, typing.Any],
-) -> typing.MutableMapping[typing.Any, typing.Any]:
-    """
-    Deeply merges two dictionaries. If a key from original dictionary is conflicting, value from
-    the dict we copy from is preferred.
+) -> "collections.abc.MutableMapping[typing.Any, typing.Any]":
+    """Deeply merges two dictionaries. If a key from original dictionary is conflicting, value
+    from the dict we copy from is preferred.
 
     Parameters
     ----------
-    original : :py:class:`dict`
+    to_dict : :py:class:`dict`
         The original dictionary.
-    copy_from : :py:class:`dict`
+    from_dict : :py:class:`dict`
         The dictionary we copy from.
 
     Returns
@@ -128,8 +124,7 @@ def deep_merge(
 def calculate_text_color(
     color: str | Color, *, threshold: int = 150
 ) -> typing.Literal["black", "bright_white"]:
-    """
-    Calculate if the text should be in black or white depending on a color.
+    """Calculate if the text should be in black or white depending on a color.
     It uses the following formula: (r * 0.299 + g * 0.587 + b * 0.114) > threshold
     Where r, g, and b are the RGB (triplet) values of the color.
 
@@ -160,8 +155,7 @@ def calculate_text_color(
 
 
 def camel_case(text: str) -> str:
-    """
-    Return the text formatted in camel case
+    """Return the text formatted in camel case
 
     Parameters
     ----------
@@ -185,8 +179,7 @@ def camel_case(text: str) -> str:
 
 
 def snake_case(text: str) -> str:
-    """
-    Return the text formatted in snake case
+    """Return the text formatted in snake case
 
     Parameters
     ----------
@@ -210,8 +203,7 @@ def snake_case(text: str) -> str:
 
 
 def dash_case(text: str) -> str:
-    """
-    Return the text formatted in dash case
+    """Return the text formatted in dash case
 
     Parameters
     ----------
@@ -235,8 +227,7 @@ def dash_case(text: str) -> str:
 
 
 def pascal_case(text: str) -> str:
-    """
-    Return the text formatted in pascal case
+    """Return the text formatted in pascal case
 
     Parameters
     ----------
@@ -260,8 +251,7 @@ def pascal_case(text: str) -> str:
 
 
 def capital_case(text: str) -> str:
-    """
-    Return the text formatted in capital case
+    """Return the text formatted in capital case
 
     Parameters
     ----------
@@ -285,8 +275,7 @@ def capital_case(text: str) -> str:
 
 
 def sentence_case(text: str) -> str:
-    """
-    Return the text formatted in sentence case
+    """Return the text formatted in sentence case
 
     Parameters
     ----------
@@ -314,8 +303,7 @@ def sentence_case(text: str) -> str:
 
 
 def force_rm(path: "StrOrBytesPath"):
-    """
-    A modified version of rmtree, which allow for removal of directory that contains git files.
+    """A modified version of rmtree, which allow for removal of directory that contains git files.
 
     Parameters
     ----------
@@ -331,7 +319,9 @@ def force_rm(path: "StrOrBytesPath"):
 
     """
 
-    def on_rmtree_exception(_: typing.Callable[..., typing.Any], path: str, __: typing.Any):
+    def on_rmtree_exception(
+        _: "collections.abc.Callable[..., typing.Any]", path: str, __: typing.Any
+    ):
         os.chmod(path, stat.S_IWRITE)
         os.unlink(path)
 

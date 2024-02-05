@@ -7,6 +7,8 @@ from fabricius.utils import deep_merge
 
 
 class Config(typing.TypedDict):
+    """The configuration for cookiecutter. *sigh*, not much use but it is what it is..."""
+
     default_context: dict[typing.Any, typing.Any]
 
 
@@ -24,6 +26,7 @@ def read_config_file(file: pathlib.Path) -> Config:
 
 
 def get_config(file: pathlib.Path | None = None) -> Config:
+    """Obtain the config content from the user's cookiecutter's configuration file."""
     conf_data = read_config_file(file or pathlib.Path("~/.cookiecutterrc").expanduser())
     data = deep_merge(dict(DEFAULT_CONFIG), dict(conf_data))
     return Config(default_context=data["default_context"])

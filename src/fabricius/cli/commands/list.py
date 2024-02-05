@@ -6,9 +6,9 @@ from fabricius.app.config import Config
 from fabricius.cli.utils import pass_config
 
 
-@click.command()
+@click.command("list")
 @pass_config
-def list(config: Config):
+def cmd_list(config: Config):
     """
     List repositories stored by Fabricius.
     """

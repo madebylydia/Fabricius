@@ -5,6 +5,8 @@ from fabricius.utils import DictAllowMiss
 
 
 class StringTemplateComposer(Composer):
+    """Composer using ``string.Template`` to render the content."""
+
     name = "Python string.Template"
 
     safe: bool
@@ -21,5 +23,4 @@ class StringTemplateComposer(Composer):
     def render(self, content: str) -> str:
         if self.safe:
             return string.Template(content).safe_substitute(DictAllowMiss(self.data))
-        else:
-            return string.Template(content).substitute(self.data)
+        return string.Template(content).substitute(self.data)
