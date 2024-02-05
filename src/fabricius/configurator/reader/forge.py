@@ -8,6 +8,8 @@ from fabricius.types import NoExtraDict
 
 
 class ForgeConfigReader(BaseReader[ALL_EXPORTABLE_FORGE, NoExtraDict]):
+    """The config reader for Forge based templates."""
+
     def process(self):
         return json.loads(self.config_file.read_text())
 
@@ -45,11 +47,11 @@ class ForgeConfigReader(BaseReader[ALL_EXPORTABLE_FORGE, NoExtraDict]):
 
         except KeyError as exception:
             raise InvalidConfigException(
-                self.config_file, type(self), f"Missing key: {exception}"
+                self.config_file, self, f"Missing key: {exception}"
             ) from exception
 
         raise InvalidConfigException(
             self.config_file,
-            type(self),
+            self,
             f"Unknown forge type: {parsed_data['type']}",
         )

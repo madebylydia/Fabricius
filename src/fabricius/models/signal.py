@@ -1,3 +1,4 @@
+import collections.abc
 import contextlib
 import logging
 import typing
@@ -17,44 +18,38 @@ class Signal[**FuncHint]:
     """
 
     name: typing.Final[str]
-    """
-    The name of the signal.
-    """
+    """The name of the signal."""
 
-    listeners: list[typing.Callable[FuncHint, typing.Any]]
-    """
-    The list of listeners that are subscribed to this signal.
-    """
+    listeners: list[collections.abc.Callable[FuncHint, typing.Any]]
+    """The list of listeners that are subscribed to this signal."""
 
     def __init__(
-        self, name: str, *, func_hint: typing.Callable[FuncHint, typing.Any] | None = None
+        self,
+        name: str,
+        *,
+        func_hint: collections.abc.Callable[FuncHint, typing.Any]
+        | None = None,  # pylint: disable=W0613
     ) -> None:
         self.name = name
         self.listeners = []
 
-    def connect(self, listener: typing.Callable[FuncHint, typing.Any]) -> None:
-        """
-        Connect a listener to this signal.
-        """
+    def connect(self, listener: collections.abc.Callable[FuncHint, typing.Any]) -> None:
+        """Connect a listener to this signal."""
         if listener not in self.listeners:
-            _log.debug(f"Connecting {listener} to signal {self.name}")
+            _log.debug("Connecting %s to signal %s", listener, self.name)
             self.listeners.append(listener)
 
-    def disconnect(self, listener: typing.Callable[FuncHint, typing.Any]) -> None:
-        """
-        Disconnect a listener to this signal.
-        """
+    def disconnect(self, listener: collections.abc.Callable[FuncHint, typing.Any]) -> None:
+        """Disconnect a listener to this signal."""
         if listener in self.listeners:
-            _log.debug(f"Disconnecting {listener} from signal {self.name}")
+            _log.debug("Disconnecting %s from signal %s", listener, self.name)
             self.listeners.remove(listener)
 
     def send(self, *args: FuncHint.args, **kwargs: FuncHint.kwargs) -> list[typing.Any]:
-        """
-        Sends the signal to all subscribed listeners.
-        """
+        """Sends the signal to all subscribed listeners."""
         results: list[typing.Any] = []
         for listener in self.listeners:
-            _log.debug(f"Sending signal {self.name} to {listener}")
+            _log.debug("Sending signal %s to %s", self.name, listener)
             with contextlib.suppress(NotImplementedError):
                 result = listener(*args, **kwargs)
                 results.append(result)

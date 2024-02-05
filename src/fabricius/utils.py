@@ -325,4 +325,4 @@ def force_rm(path: "StrOrBytesPath"):
         os.chmod(path, stat.S_IWRITE)
         os.unlink(path)
 
-    shutil.rmtree(path, onerror=on_rmtree_exception)
+    shutil.rmtree(path, onexc=on_rmtree_exception)

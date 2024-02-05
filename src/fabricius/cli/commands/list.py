@@ -9,13 +9,12 @@ from fabricius.cli.utils import pass_config
 @click.command("list")
 @pass_config
 def cmd_list(config: Config):
-    """
-    List repositories stored by Fabricius.
-    """
+    """List repositories stored by Fabricius."""
     console = get_console()
 
     if len(config.stored_repositories) == 0:
-        return console.print("There is no repository stored.")
+        console.print("There is no repository stored.")
+        return
 
     table = Table(title="Stored Repositories")
 

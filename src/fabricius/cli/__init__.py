@@ -37,7 +37,7 @@ def cli(
         datefmt="%H:%M:%S",
     )
     _log.root.setLevel(log_level)
-    _log.info(f"Log have been set to {log_level}.")
+    _log.info("Log have been set to %s.", log_level)
 
     ctx.ensure_object(dict)
     ctx.obj["config"] = Config.load(get_or_create_default_config())
@@ -50,22 +50,25 @@ def main():
     ccl.register_commands(cli, pathlib.Path(__file__, "..", "commands").resolve(), "file")
 
     try:
-        cli()
-    except Exception as exception:
+        cli()  # pylint: disable=E1120
+    except Exception as exception:  # pylint: disable=W0718
         console = rich.get_console()
         console.print_exception(suppress=SUPPRESSED_MODULES)
         console.print("\n[bold]❌ Sorry! Fabricius has crashed *really* hard.")
         console.print("[bold red]This error was not handled.[/]")
         console.print(
-            "You should report this issue to the developers at [blue underline]https://github.com/madebylydia/Fabricius[/]"
+            "You should report this issue to the developers at "
+            "[blue underline]https://github.com/madebylydia/Fabricius[/]"
         )
 
         if can_report():
             console.print(
-                "\n\nAs you have installed the Sentry SDK, you have the ability to automatically report this issue to the developers."
+                "\n\nAs you have installed the Sentry SDK, you have the ability to automatically "
+                "report this issue to the developers."
             )
             console.print(
-                "For more information about your privacy, please visit [blue underline]https://sentry.io/security/[/]"
+                "For more information about your privacy, please visit "
+                "[blue underline]https://sentry.io/security/[/]"
             )
             console.print("No personnal information will be collected.")
 

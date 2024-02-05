@@ -25,9 +25,7 @@ from fabricius.utils import snake_case
 )
 @pass_config
 def clone(config: Config, repository: str, as_name: str | None, *, at: pathlib.Path | None):
-    """
-    Download a repository and store it inside Fabricius.
-    """
+    """Download a repository and store it inside Fabricius."""
     console = get_console()
 
     alias = as_name if as_name is not None else snake_case(repository.lower().split("/")[-1])

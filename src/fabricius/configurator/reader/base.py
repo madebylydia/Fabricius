@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
     from fabricius.types import Extra
 
 
-class BaseReader[ParsedData: typing.Any, Extra: "Extra"](abc.ABC):
+class BaseReader[ParsedData, Extra: "Extra"](abc.ABC):
     """The base class for all file readers to implement.
 
     This consists of two methods that must be implemented by the child class:

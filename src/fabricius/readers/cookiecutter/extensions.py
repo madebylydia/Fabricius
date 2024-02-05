@@ -1,6 +1,6 @@
 # pylint: disable=W0223
 
-# Taken from https://github.com/cookiecutter/cookiecutter/blob/0fb68d913116d940a15c407535c88c0d5ab3e7ba/cookiecutter/extensions.py
+# Taken from https://github.com/cookiecutter/cookiecutter/blob/0fb68d913116d940a15c407535c88c0d5ab3e7ba/cookiecutter/extensions.py  # pylint: disable=C0301 # IT'S A COMMENT, PYLINT, NOT CODE, COMMENT. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA LONG AT HOW LONG THIS IS GONNA BE AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 # Licensed under the BSD 3-Clause License.
 
 import datetime

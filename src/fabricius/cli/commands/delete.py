@@ -21,9 +21,7 @@ from fabricius.utils import force_rm
 )
 @pass_config
 def delete(config: Config, alias: str, *, no_confirm: bool = False):
-    """
-    Delete a downloaded repository.
-    """
+    """Delete a downloaded repository."""
     console = get_console()
 
     if alias not in config.stored_repositories:

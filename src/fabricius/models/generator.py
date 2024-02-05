@@ -221,7 +221,7 @@ class Generator[ComposerType: "Composer"]:
         # be checked correctly otherwise
         if has_generation_failed[0] is True:
             if self.is_atomic:
-                self.cleanup("unlink", files=results.keys())
+                self.cleanup("unlink")
             raise has_generation_failed[1]
 
         after_generator_start.send(self)
@@ -243,7 +243,7 @@ class Generator[ComposerType: "Composer"]:
             raise exceptions.PreconditionException(self, "No base folder set.")
         force_rm(self.destination)
 
-    def _cleanup_unlink(self, files: "collections.abc.Iterable[File] | None" = None) -> None:
+    def _cleanup_unlink(self, files: "collections.abc.Iterable[File]") -> None:
         """Do a cleanup by removing all committed file.
 
         Parameters
@@ -251,27 +251,12 @@ class Generator[ComposerType: "Composer"]:
         files : Optional, :py:class:`list` of :py:class:`fabricius.file.File`
             The files to cleanup. If ``None``, all files that have been persisted will be removed.
         """
-        for file in [file for file in files or self.files if file.state == "persisted"]:
+        for file in [file for file in files if file.state == "persisted"]:
             file.delete()
-
-    @typing.overload
-    def cleanup(
-        self,
-        method: typing.Literal["rmdir", "unlink"] = "unlink",
-        *,
-        files: "collections.abc.Iterable[File] | None" = None,
-    ) -> None:
-        ...
-
-    @typing.overload
-    def cleanup(self, method: typing.Literal["rmdir", "unlink"] | None = None) -> None:
-        ...
 
     def cleanup(
         self,
         method: typing.Literal["rmdir", "unlink"] | None = None,
-        *,
-        files: "collections.abc.Iterable[File] | None" = None,
     ) -> None:
         """Cleanup the destination folder. Either remove the folder and its content or committed
         linked to this generator.
@@ -297,7 +282,7 @@ class Generator[ComposerType: "Composer"]:
             case "rmdir":
                 self._cleanup_rmdir()
             case "unlink":
-                self._cleanup_unlink(files)
+                self._cleanup_unlink(self.files)
             case None:
                 for file in [file for file in self.files if file.state == "persisted"]:
                     file.delete()

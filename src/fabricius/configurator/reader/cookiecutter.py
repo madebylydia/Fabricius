@@ -10,6 +10,8 @@ from fabricius.utils import sentence_case
 
 
 class CookieCutterExtra(typing.TypedDict):
+    """Extra information needed for the CookieCutter builder."""
+
     _extensions: list[str]
     _jinja2_env_vars: dict[str, typing.Any]
     _copy_without_render: list[str]
@@ -18,6 +20,8 @@ class CookieCutterExtra(typing.TypedDict):
 
 
 class CookieCutterConfigReader(BaseReader[dict[str, typing.Any], CookieCutterExtra]):
+    """The config reader for CookieCutter based templates."""
+
     def process(self) -> dict[str, typing.Any]:
         try:
             return json.loads(self.config_file.read_text())

@@ -1,3 +1,5 @@
+# pylint: disable=R0913,R0914 # It's CookieCutter's stuff, what am I supposed to do?
+
 import pathlib
 from typing import Literal
 
@@ -12,7 +14,7 @@ from fabricius.readers.cookiecutter.builder import CookieCutterBuilder
 from fabricius.readers.cookiecutter.hooks import get_hooks
 
 
-def validate_extra_context(ctx: click.Context, param: str, context_value: str):
+def validate_extra_context(_: click.Context, __: str, context_value: str):
     """Validate extra context."""
     values: dict[str, str] = {}
     for string in context_value:
@@ -45,8 +47,7 @@ def cookiecutter(
     accept_hooks: Literal["yes", "ask", "no"],
     keep_on_failure: bool,
 ) -> None:
-    """
-    Run a CookieCutter template.
+    """Run a CookieCutter template.
 
     Mimics the CookieCutter CLI options.
 
@@ -69,11 +70,14 @@ def cookiecutter(
         return
     except InvalidConfigException:
         console.print(
-            "[red]It appears that your [bold]cookiecutter.json[/] file is invalid. Check the and try again."
+            "[red]It appears that your [bold]cookiecutter.json[/] file is invalid. Check the and "
+            "try again."
         )
         return
 
     console.print(f"[green]Generating {input_path.name}...")
+
+    builder.extra_context = extra_context
 
     if not no_input:
         answers: dict[str, str | None] = {}
@@ -96,10 +100,12 @@ def cookiecutter(
     except PreconditionException as exception:
         console.print()
         console.print(
-            "[red]Uhm, it appears that something went wrong during the generation of your project."
+            "[red]Uhm, it appears that something went wrong during the generation of your "
+            "project."
         )
         console.print(
-            "Please ensure that [blue]your output directory is empty[/], or that you have [blue]allowed overwriting[/]."
+            "Please ensure that [blue]your output directory is empty[/], or that you have "
+            "[blue]allowed overwriting[/]."
         )
         console.print(f"Exception message: {exception}")
         return

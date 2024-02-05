@@ -19,102 +19,70 @@ from fabricius.models.composer import Composer
 from fabricius.signals import after_file_commit, before_file_commit, on_file_deleted
 from fabricius.types import Data, MutableData, PathLike
 
-FILE_STATE: typing.TypeAlias = typing.Literal["pending", "processing", "persisted", "deleted"]
+FileState: typing.TypeAlias = typing.Literal["pending", "processing", "persisted", "deleted"]
 
 
 class FileCommitResult(typing.TypedDict):
-    """
-    A FileCommitResult is returned when a file was successfully saved.
+    """A FileCommitResult is returned when a file was successfully saved.
     It returns its information after its creation.
     """
 
     name: str
-    """
-    The name of the file.
-    """
+    """The name of the file."""
 
-    state: FILE_STATE
-    """
-    The state of the file. Should always be "persisted".
-    """
+    state: FileState
+    """The state of the file. Should always be "persisted"."""
 
     destination: pathlib.Path
-    """
-    Where the file is located/has been saved.
-    """
+    """Where the file is located/has been saved."""
 
     data: MutableData
-    """
-    The data that has been passed during rendering.
-    """
+    """The data that has been passed during rendering."""
 
     template_content: str
-    """
-    The original content of the template.
-    """
+    """The original content of the template."""
 
     content: str
-    """
-    The resulting content of the saved file.
-    """
+    """The resulting content of the saved file."""
 
     fake: bool
-    """
-    If the file was faked.
+    """If the file was faked.
     If faked, the file has not been saved to the disk.
     """
 
 
 class File:
-    """
-    The builder class to initialize a file template.
+    """The builder class to initialize a file template.
     The result (Through the :py:meth:`.generate` method) is the render of the file's content.
     You can "commit" the file to the disk to persist the file's content.
     """
 
     name: str
-    """
-    The name of the file that will be generated.
-    """
+    """The name of the file that will be generated."""
 
-    state: FILE_STATE
-    """
-    The state of the file.
-    """
+    state: FileState
+    """The state of the file."""
 
     content: str | None
-    """
-    The template's content.
-    """
+    """The template's content."""
 
     destination: pathlib.Path | None
-    """
-    The destination of the file, if set.
-    """
+    """The destination of the file, if set."""
 
     composer: Composer
-    """
-    The composer to use to generate the file.
-    """
+    """The composer to use to generate the file."""
 
     data: MutableData
-    """
-    The data that will be passed to the composer.
-    """
+    """The data that will be passed to the composer."""
 
     should_fake: bool
-    """
-    If the file should fake its creation upon commit.
-    """
+    """If the file should fake its creation upon commit."""
 
     should_overwrite: bool
-    """
-    If the file should overwrite an existing file upon commit.
-    """
+    """If the file should overwrite an existing file upon commit."""
 
     def __init__(self, name: str, extension: str | None = None) -> None:
-        """
-        Parameters
+        """Parameters
         ----------
         name : :py:class:`str`
             The name of the file.
@@ -133,11 +101,13 @@ class File:
         self.data = {}
 
     def __str__(self):
-        return f"<File name={self.name} state={self.state} destination={self.destination} composer={self.composer.name}>"
+        return (
+            f"<File name={self.name} state={self.state} destination={self.destination} "
+            f"composer={self.composer.name}>"
+        )
 
     def compute_destination(self) -> pathlib.Path:
-        """
-        Compute the destination of the file.
+        """Compute the destination of the file.
 
         Raises
         ------
@@ -156,8 +126,7 @@ class File:
         return (self.destination / self.name).resolve()
 
     def from_file(self, path: PathLike) -> typing.Self:
-        """
-        Read the content from a file template.
+        """Read the content from a file template.
 
         Raises
         ------
@@ -170,12 +139,11 @@ class File:
             The path of the file template.
         """
         path = pathlib.Path(path).resolve()
-        self.content = path.read_text()
+        self.content = path.read_text(encoding="utf-8")
         return self
 
     def from_content(self, content: str) -> typing.Self:
-        """
-        Read the content from a string.
+        """Read the content from a string.
 
         Parameters
         ----------
@@ -186,8 +154,7 @@ class File:
         return self
 
     def to_directory(self, directory: PathLike) -> typing.Self:
-        """
-        Set the directory where the file will be saved.
+        """Set the directory where the file will be saved.
 
         .. warning ::
            If a file already exist at this location, it will raise an exception if you do not
@@ -212,29 +179,22 @@ class File:
         return self
 
     def use_mustache(self) -> typing.Self:
-        """
-        Use chevron (Mustache) to render the template.
-        """
+        """Use chevron (Mustache) to render the template."""
         self.composer = ChevronComposer()
         return self
 
     def use_string_template(self) -> typing.Self:
-        """
-        Use string.Template to render the template.
-        """
+        """Use string.Template to render the template."""
         self.composer = StringTemplateComposer()
         return self
 
     def use_jinja(self) -> typing.Self:
-        """
-        Use Jinja2 to render the template.
-        """
+        """Use Jinja2 to render the template."""
         self.composer = JinjaComposer()
         return self
 
     def with_composer(self, composer: Composer) -> typing.Self:
-        """
-        Use a custom composer to render the template.
+        """Use a custom composer to render the template.
 
         Parameters
         ----------
@@ -246,8 +206,7 @@ class File:
         return self
 
     def with_data(self, data: Data, *, overwrite: bool = True) -> typing.Self:
-        """
-        Add data to pass to the template.
+        """Add data to pass to the template.
 
         Parameters
         ----------
@@ -263,8 +222,7 @@ class File:
         return self
 
     def overwrite(self, should_overwrite: bool) -> typing.Self:
-        """
-        Set the file to overwrite or not.
+        """Set the file to overwrite or not.
         This will overwrite any existing file that might be already be on the disk.
 
         Parameters
@@ -276,8 +234,7 @@ class File:
         return self
 
     def fake(self, should_fake: bool) -> typing.Self:
-        """
-        Set the file to fake the commit.
+        """Set the file to fake the commit.
         This will ensure that the file does not get stored on the machine upon commit.
 
         .. warning::
@@ -294,8 +251,7 @@ class File:
         return self
 
     def generate(self) -> str:
-        """
-        Generate the file's content.
+        """Generate the file's content.
         This method does not store the file on the disk, but just generate the final content. You
         should use :py:meth:`.commit` to save the file permanently.
 
@@ -315,8 +271,7 @@ class File:
         return self.composer.push_data(self.data).render(self.content)
 
     def commit(self) -> FileCommitResult:
-        """
-        Save the file to the disk.
+        """Save the file to the disk.
 
         Raises
         ------
@@ -353,7 +308,7 @@ class File:
                 exception.filename = self.name
                 raise exception
         except PermissionError as exception:
-            raise MissingPermissions(self, destination, "read", "write")
+            raise MissingPermissions(self, destination, "read", "write") from exception
 
         self.state = "processing"
 
@@ -388,9 +343,7 @@ class File:
         return commit
 
     def delete(self) -> None:
-        """
-        Delete the file if persisted.
-        """
+        """Delete the file if persisted."""
         if not self.compute_destination().exists():
             error = FileNotFoundError(f"Cannot delete {self.name}: File does not exist on disk.")
             error.filename = self.compute_destination()

@@ -12,8 +12,7 @@ from fabricius.utils import force_rm
 @click.command()
 @pass_config
 def integrity(config: Config):
-    """
-    Check Fabricius's Config integrity.
+    """Check Fabricius's Config integrity.
     Useful when something goes wrong inside Fabricius.
     """
     found_integrity_issues = 0
