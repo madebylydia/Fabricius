@@ -28,13 +28,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install package
-        run: pdm install --dev
+        run: |
+          pdm install --dev
 
       # - name: Run linting
       #   run: pdm run lint
 
       - name: Run Tox
-        run: tox
+        run: pdm run tox
 
       - name : Upload test report
         if: ${{ ! cancelled() }}
