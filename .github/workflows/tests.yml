@@ -18,23 +18,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Install Poetry
-        run: pipx install poetry==1.7.1
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ matrix.python-version }} & PDM
+        uses: pdm-project/setup-pdm@v4
         with:
+          cache: true
+          cache-dependency-path: |
+            pdm.lock
+            pyproject.toml
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
 
       - name: Install package
-        run: poetry install --with dev,actions
+        run: pdm install --dev
 
       # - name: Run linting
-      #   run: poetry run poe lint
+      #   run: pdm run lint
 
       - name: Run Tox
-        run: poetry run tox
+        run: tox
 
       - name : Upload test report
         if: ${{ ! cancelled() }}

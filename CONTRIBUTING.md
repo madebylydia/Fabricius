@@ -104,11 +104,11 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/madeby
 ### Your First Code Contribution
 <!-- TODO include Setup of env, IDE and typical getting started instructions? -->
 
-We use [Poetry](https://python-poetry.org/) to manage our environment of development, it is extremely recommended you use this tool yourself when editing Fabricius source code. This guide will explain you how to configure, edit, push and request changes into Fabricius.
+We use [PDM](https://pdm-project.org/latest/) to manage our environment of development, it is extremely recommended you use this tool yourself when editing Fabricius source code. This guide will explain you how to configure, edit, push and request changes into Fabricius.
 
-#### Install Poetry
+#### Install PDM
 
-To install Poetry, please follow the guide provided by the Poetry's documentation: <https://python-poetry.org/docs/#installation>
+To install PDM, please follow the guide provided by the PDM's documentation: <https://pdm-project.org/latest/#installation>
 
 #### Fork & Clone Fabricius repository
 

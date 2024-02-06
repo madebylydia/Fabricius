@@ -1,6 +1,6 @@
 # Fabricius
 
-Fabricius - A [Py3K](https://peps.python.org/pep-3000/).12,  Project Template engine with superpowers!
+Fabricius - A [Py3K](https://peps.python.org/pep-3000/).12, Project Template engine with superpowers!
 
 > :warning: Fabricius is a work in progress! Please, play with it with a grain of salt; expect bugs, crashes, non-documented portion of the application & more unexpected behavior.
 

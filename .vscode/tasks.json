@@ -4,25 +4,13 @@
     {
       "label": "Build docs",
       "type": "shell",
-      "command": "poetry run make html",
+      "command": "make html",
       "group": {
         "kind": "build",
         "isDefault": true
       },
       "options": {
         "cwd": "${workspaceFolder}/docs"
-      }
-    },
-    {
-      "label": "Autobuild API docs",
-      "type": "shell",
-      "command": "poetry",
-      "args": ["run", "sphinx-apidoc", "${cwd}/fabricius", "-o", "${cwd}/docs/source/api", "--force"],
-      "group": {
-        "kind": "build"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}"
       }
     }
   ]
