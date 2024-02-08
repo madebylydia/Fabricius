@@ -226,9 +226,11 @@ class Generator[ComposerType: "Composer"]:
         ) = (False, None)
         results: dict[File, FileCommitResult] = {}
 
-        for file in self.compiled_files:
+        for file in self.files:
+            # TODO: Switch to self.compiled_files
             try:
                 _log.debug("Committing %s", file.name)
+                self._prepare_file(file)
                 result = file.commit()
                 results[file] = result
             except Exception as exception:
