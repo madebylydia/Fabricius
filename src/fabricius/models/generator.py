@@ -1,6 +1,7 @@
 import logging
 import pathlib
 import typing
+from copy import copy
 
 from fabricius import exceptions
 from fabricius.exceptions.precondition_exception import PreconditionException
@@ -63,9 +64,10 @@ class Generator[ComposerType: "Composer"]:
 
     def __init__(self, composer: ComposerType) -> None:
         self.files = []
+        self.data = {}
         self.composer = composer
         self.destination = None
-        self.is_atomic = False
+        self.is_atomic = True
         self.should_fake = False
         self.should_overwrite = False
         super().__init__()
@@ -75,10 +77,21 @@ class Generator[ComposerType: "Composer"]:
             raise exceptions.PreconditionException(self, "destination must be set")
         if not file.destination:
             file.to_directory(self.destination)
-        file.with_data(self.data)
+        file.with_data(self.data, overwrite=False)
         file.with_composer(self.composer)
         file.fake(self.should_fake)
         file.overwrite(self.should_overwrite)
+
+    @property
+    def compiled_files(self) -> list[File]:
+        """Return the list of files that have been compiled."""
+        # TODO: I wonder if this is okay-ish...
+        files: list[File] = []
+        for file in self.files:
+            file = copy(file)
+            self._prepare_file(file)
+            files.append(file)
+        return files
 
     def fake(self, should_fake: bool) -> typing.Self:
         """Set the generator to fake the execution.
@@ -115,6 +128,11 @@ class Generator[ComposerType: "Composer"]:
         ----------
         directory : :py:class:`str` or :py:class:`pathlib.Path`
             The directory where the files will be generated.
+
+        Raises
+        ------
+        :py:class:`fabricius.exceptions.PreconditionException` :
+            This error will be raised if the path is not a directory.
         """
         path = pathlib.Path(directory).resolve()
         if path.exists() and not path.is_dir():
@@ -208,9 +226,9 @@ class Generator[ComposerType: "Composer"]:
         ) = (False, None)
         results: dict[File, FileCommitResult] = {}
 
-        for file in self.files:
+        for file in self.compiled_files:
             try:
-                self._prepare_file(file)
+                _log.debug("Committing %s", file.name)
                 result = file.commit()
                 results[file] = result
             except Exception as exception:
@@ -220,7 +238,9 @@ class Generator[ComposerType: "Composer"]:
         # Don't remove the "is True", it's used for the the 2nd item in the tuple, which wouldn't
         # be checked correctly otherwise
         if has_generation_failed[0] is True:
+            _log.error("Generation failed")
             if self.is_atomic:
+                _log.info("Cleaning up generator's files")
                 self.cleanup("unlink")
             raise has_generation_failed[1]
 

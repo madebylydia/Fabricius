@@ -1,4 +1,5 @@
 import contextlib
+import logging
 import pathlib
 import stat
 import typing
@@ -20,6 +21,9 @@ from fabricius.signals import after_file_commit, before_file_commit, on_file_del
 from fabricius.types import Data, MutableData, PathLike
 
 FileState: typing.TypeAlias = typing.Literal["pending", "processing", "persisted", "deleted"]
+
+
+_log = logging.getLogger(__name__)
 
 
 class FileCommitResult(typing.TypedDict):
@@ -304,6 +308,7 @@ class File:
 
         try:
             if destination.exists() and not self.should_overwrite:
+                _log.debug("File '%s' already exists.", self.name)
                 exception = FileExistsError(f"File '{self.name}' already exists.")
                 exception.filename = self.name
                 raise exception
@@ -318,11 +323,14 @@ class File:
             before_file_commit.send(self)
 
             if self.should_fake:
+                _log.debug("'%s' faked.", self.name)
                 self.state = "persisted"
             else:
                 with contextlib.suppress(NotADirectoryError):
                     if not destination.parent.exists():
+                        _log.info("Creating directory %s.", destination.parent)
                         destination.parent.mkdir(parents=True)
+                    _log.debug("Writing file %s.", destination)
                     destination.write_text(final_content)
                     self.state = "persisted"
         except Exception as exception:
