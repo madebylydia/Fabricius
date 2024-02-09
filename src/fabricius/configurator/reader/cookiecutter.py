@@ -24,7 +24,7 @@ class CookieCutterConfigReader(BaseReader[dict[str, typing.Any], CookieCutterExt
 
     def process(self) -> dict[str, typing.Any]:
         try:
-            return json.loads(self.config_file.read_text())
+            return json.loads(self.config_file.resolve().read_text())
         except json.JSONDecodeError as exception:
             raise InvalidConfigException(
                 self.config_file, self, "Config file cannot be read as expected."

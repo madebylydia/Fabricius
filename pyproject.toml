@@ -100,10 +100,16 @@ includes = [
 _format_black = "black ."
 _format_isort = "isort ./src ./tests ./typings"
 _ruff = "ruff ./src/fabricius"
-_mypy = "mypy -p fabricius --enable-incomplete-feature=Unpack"
+_mypy = "mypy -p fabricius"  # Can't really use until PEP 695 is supported
+# https://github.com/python/mypy/issues/15238
+_pylint = "pylint ./src --output-format=colorized --disable=undefined-variable,unsubscriptable-object"
+# Pylint support PEP 695, but there is a current issue that make it throw "unsubscriptable object"
+# and "undefined variable" errors on generics classes, even tho it is valid.
+# Don't try to circumvent it, just wait for fix & patch, hopefully.
+# https://github.com/pylint-dev/pylint/issues/9335
 format = { composite = ["_format_black", "_format_isort"], help = "Format the source files (black, isort)" }
 test = { cmd = "pytest . --verbose --html=tests/report/index.html --cov-config=.coveragerc --cov-context=test --cov-report=html --cov=src/fabricius", help = "Run tests with pytest." }
-lint = { composite = ["_ruff", "_mypy"], help = "Run linters (ruff, mypy)" }
+lint = { composite = ["_ruff", "_pylint"], help = "Run linters (ruff, pylint)" }
 _go_to_docs = {shell = "cd `{pdm} info --where`/docs && pwd"}
 _echo = {shell="pwd"}
 docs = { composite = ["_go_to_docs", "_echo"] }

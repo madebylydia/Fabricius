@@ -17,7 +17,7 @@ class Signal[**FuncHint]:
     It is unused at runtime.
     """
 
-    name: typing.Final[str]
+    name: typing.Final[str]  # pylint: disable=invalid-name # Says it should be uppercase.
     """The name of the signal."""
 
     listeners: list[collections.abc.Callable[FuncHint, typing.Any]]
@@ -27,8 +27,10 @@ class Signal[**FuncHint]:
         self,
         name: str,
         *,
-        func_hint: collections.abc.Callable[FuncHint, typing.Any]
-        | None = None,  # pylint: disable=W0613
+        func_hint: collections.abc.Callable[
+            FuncHint, typing.Any
+        ]  # pylint: disable=unused-argument
+        | None = None,
     ) -> None:
         self.name = name
         self.listeners = []

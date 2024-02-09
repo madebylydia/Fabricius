@@ -11,7 +11,10 @@ class ForgeConfigReader(BaseReader[ALL_EXPORTABLE_FORGE, NoExtraDict]):
     """The config reader for Forge based templates."""
 
     def process(self):
-        return json.loads(self.config_file.read_text())
+        # TODO: Wrong/Temporary implementation. Need final implementation.
+        # Should have the reference on the Notion page.
+        # There will be an additional thank to Rapptz for the help he gave me.
+        return json.loads(self.config_file.resolve().read_text())
 
     def universalize(self, parsed_data: ALL_EXPORTABLE_FORGE) -> UniversalConfig[NoExtraDict]:
         try:
