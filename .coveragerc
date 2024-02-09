@@ -1,0 +1,11 @@
+[run]
+source =
+    src/fabricius
+
+[report]
+precision = 1
+show_missing = True
+
+[html]
+directory = tests/htmlcov
+show_contexts = true

@@ -1,0 +1,49 @@
+name: Export Requirements
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+  push:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    name: Export dependencies
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python & PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          cache: true
+          cache-dependency-path: |
+            pdm.lock
+            pyproject.toml
+          python-version: 3.12
+
+      - name: Update dependencies
+        run: |
+          pdm install --dev
+          pdm update --dev
+          pdm lock --refresh
+
+      - name: Export dependencies
+        # Support poetry once implemented
+        run: |
+          pdm export -f requirements --prod --output requirements/requirements.txt
+          pdm export -f requirements --dev --output requirements/requirements-dev.txt
+          pdm export -f requirements --group docs --output requirements/requirements-docs.txt
+
+      - name: Commit changes
+        run: |
+          if [[ `git status --porcelain` ]]; then
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add .
+            git commit -m "deps: update requirements-*.txt files"
+            git push
+          else
+            echo "No changes were detected. Exiting + Thank you for push."
+          fi
+        shell: bash

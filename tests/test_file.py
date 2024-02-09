@@ -1,143 +1,269 @@
+import os
 import pathlib
-import unittest
+import stat
+import typing
+import uuid
 
-from fabricius.models.file import AlreadyCommittedError, File
-from fabricius.renderers import (
-    ChevronRenderer,
-    PythonFormatRenderer,
-    StringTemplateRenderer,
+import pytest
+
+from fabricius.composers import (
+    ChevronComposer,
+    JinjaComposer,
+    PythonFormatComposer,
+    StringTemplateComposer,
 )
+from fabricius.exceptions import PreconditionException
+from fabricius.exceptions.commit_exception import (
+    FileCommitException,
+    MissingPermissions,
+)
+from fabricius.models.file import File, FileCommitResult
+from fabricius.signals import after_file_commit, before_file_commit, on_file_deleted
+
+from .utils import TEST_ROOT
 
 
-class TestFile(unittest.TestCase):
-    """
-    Test Fabricius's File.
-    """
+@pytest.fixture
+def file() -> File:
+    return File(f"{uuid.uuid4()}", "txt")
 
-    TEMPLATE_PATH = pathlib.Path(__file__, "..", "files", "templates").resolve()
-    DESTINATION_PATH = pathlib.Path(__file__, "..", "results", "file").resolve()
 
-    def test_file_name(self):
-        """
-        Test File's proper name.
-        """
-        file = File("my_file_name")
-        self.assertEqual(file.name, "my_file_name")
-        file = File("my_file_name", "txt")
-        self.assertEqual(file.name, "my_file_name.txt")
+def fill_fake_information(file: File, tmp_path: pathlib.Path):
+    file.to_directory(tmp_path)
+    file.from_content("Hello World")
+    file.with_data({"foo": "bar"})
 
-    def test_file_state(self):
-        """
-        Test File's proper state.
-        """
-        file = File("test")
-        self.assertEqual(file.state, "pending")
 
-    def test_file_content(self):
-        """
-        Test File's proper content usage.
-        """
-        file = File("test", "txt")
-        file_content = self.TEMPLATE_PATH.joinpath("python_template.txt").read_text()
+def test_file_read_file(file: File):
+    assert file.content is None
+    file.from_file(TEST_ROOT / "assets" / "test_file" / "test_file_read_file.txt")
+    assert isinstance(file.content, str)
+    assert "Hello {name}." == file.content.strip()
 
-        with self.assertRaises(FileNotFoundError):
-            file.from_file(self.TEMPLATE_PATH.joinpath("idonotexist.txt"))
 
-        file.from_file(self.TEMPLATE_PATH.joinpath("python_template.txt"))
-        self.assertEqual(file_content, file.content)
+def test_file_read_from_content(file: File):
+    assert file.content is None
+    file.from_content("Hello {name}.")
+    assert file.content == "Hello {name}."
 
-        file.from_content("Hello! I am {name} with some content")
-        self.assertEqual("Hello! I am {name} with some content", file.content)
 
-    def test_file_destination(self):
-        """
-        Test File's proper destination.
-        """
-        file = File("test", "txt")
+def test_file_to_directory(file: File, tmp_path: pathlib.Path):
+    with pytest.raises(NotADirectoryError):
+        assert file.destination is None
+        file.to_directory(__file__)
 
-        file.to_directory(self.DESTINATION_PATH)
-        self.assertEqual(str(self.DESTINATION_PATH), str(file.destination))
+    file.to_directory(tmp_path)
+    assert file.destination == tmp_path
 
-        with self.assertRaises(NotADirectoryError):
-            file.to_directory(__file__)
 
-    def test_file_renderer(self):
-        """
-        Test File's proper renderer.
-        """
-        file = File("test", "txt")
-        self.assertIs(file.renderer, PythonFormatRenderer)
+def test_file_compute_destination(file: File, tmp_path: pathlib.Path):
+    with pytest.raises(PreconditionException):
+        assert file.destination is None
+        file.compute_destination()
 
-        file.use_mustache()
-        self.assertIs(file.renderer, ChevronRenderer)
+    file.to_directory(tmp_path)
+    assert file.compute_destination() == tmp_path / f"{file.name}"
 
-        file.use_string_template()
-        self.assertIs(file.renderer, StringTemplateRenderer)
 
-        file.with_renderer(PythonFormatRenderer)
-        self.assertIs(file.renderer, PythonFormatRenderer)
+def test_file_use_composer(file: File):
+    assert type(file.composer) is PythonFormatComposer
+    file.use_string_template()
+    assert type(file.composer) is StringTemplateComposer
+    file.use_mustache()
+    assert type(file.composer) is ChevronComposer
+    file.use_jinja()
+    assert type(file.composer) is JinjaComposer
 
-    def test_file_data(self):
-        """
-        Test File's proper data.
-        """
-        file = File("test", "txt")
+    file.with_composer(PythonFormatComposer())
+    assert type(file.composer) is PythonFormatComposer
 
-        file.with_data({"some": "data"})
-        self.assertDictEqual(file.data, {"some": "data"})
 
-        file.with_data({"new": "data"})
-        self.assertDictEqual(file.data, {"new": "data"})
+def test_file_with_data_overwrite(file: File):
+    assert file.data == {}
+    file.with_data({"foo": "bar"})
+    assert file.data == {"foo": "bar"}
+    file.with_data({"fizz": "buzz"})
+    assert file.data == {"fizz": "buzz"}
 
-        file.with_data({"more": "new data"}, overwrite=False)
-        self.assertDictEqual(file.data, {"new": "data", "more": "new data"})
 
-    def test_file_fake(self):
-        """
-        Test File's fake.
-        """
-        path = self.DESTINATION_PATH.joinpath("should", "not", "exist")
-        file = File("test", "txt")
+def test_file_with_data_no_overwrite(file: File):
+    assert file.data == {}
+    file.with_data({"foo": "bar"})
+    assert file.data == {"foo": "bar"}
+    file.with_data({"fizz": "buzz"}, overwrite=False)
+    assert file.data == {"foo": "bar", "fizz": "buzz"}
 
-        file.from_content("Should not be generated").to_directory(path)
-        result = file.fake().commit()
 
-        self.assertIs(result["state"], "persisted")
-        self.assertFalse(path.joinpath("test.txt").exists())
+def test_file_fake(file: File):
+    assert not file.should_fake
+    file.fake(True)
+    assert file.should_fake
+    file.fake(False)
+    assert not file.should_fake
 
-    def test_file_generate(self):
-        """
-        Test File's proper generation.
-        """
-        file = File("test", "txt")
 
-        file.from_content("My name is {name}!")
-        file.with_data({"name": "Python"})
-        result = file.generate()
+def test_file_overwrite(file: File):
+    assert not file.should_overwrite
+    file.overwrite(True)
+    assert file.should_overwrite
+    file.overwrite(False)
+    assert not file.should_overwrite
 
-        self.assertEqual(result, "My name is Python!")
 
-    def test_file_commit(self):
-        """
-        Test File's proper commit.
-        """
-        file = File("python_result", "txt")
+def test_file_generate(file: File):
+    with pytest.raises(PreconditionException):
+        assert file.content is None
+        file.generate()
 
-        file.from_file(self.TEMPLATE_PATH.joinpath("python_template.txt")).to_directory(
-            self.DESTINATION_PATH
-        ).with_data({"name": "Python's format"})
+    file.from_content("Hello {name}.").with_data({"name": "Jacques"})
+    assert file.generate() == "Hello Jacques."
 
-        result = file.commit(overwrite=True)
-        self.assertIsInstance(result, dict)
-        self.assertTrue(self.DESTINATION_PATH.joinpath("python_result.txt").exists())
-        self.assertEqual(file.state, "persisted")
+    file = (
+        File(f"{uuid.uuid4()}", "txt")
+        .use_string_template()
+        .from_content("Hello $name.")
+        .with_data({"name": "Jacques"})
+    )
+    assert file.generate() == "Hello Jacques."
 
-        with self.assertRaises(AlreadyCommittedError):
-            file.commit()
+    file = (
+        File(f"{uuid.uuid4()}", "txt")
+        .use_mustache()
+        .from_content("Hello {{name}}.")
+        .with_data({"name": "Jacques"})
+    )
+    assert file.generate() == "Hello Jacques."
 
-        with self.assertRaises(FileExistsError):
-            file = File("python_result", "txt")
-            file.from_file(self.TEMPLATE_PATH.joinpath("python_template.txt")).to_directory(
-                self.DESTINATION_PATH
-            ).with_data({"name": "Python's format"})
-            file.commit()
+
+def test_file_commit_preconditions(file: File, tmp_path: pathlib.Path):
+    with pytest.raises(PreconditionException):
+        assert file.destination is None
+        file.commit()
+    file.to_directory(tmp_path)
+
+    with pytest.raises(PreconditionException):
+        assert file.content is None
+        file.commit()
+    file.from_content("Hello {name}.")
+
+
+@pytest.mark.parametrize("state", ["processing"])
+def test_file_commit_precondition_state(
+    file: File,
+    tmp_path: pathlib.Path,
+    state: typing.Literal["processing"],
+):
+    fill_fake_information(file, tmp_path)
+    with pytest.raises(FileCommitException):
+        file.state = state
+        file.commit()
+
+
+def test_file_commit_file_exist_no_overwrite(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+    tmp_path.joinpath(file.name).touch()
+
+    with pytest.raises(FileExistsError):
+        file.commit()
+
+
+def test_file_commit(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+    file.overwrite(True)
+    result = file.commit()
+    assert isinstance(result, dict)
+    assert result.keys() == FileCommitResult.__required_keys__
+    assert file.state == "persisted"
+
+
+def test_file_commit_create_parents_folder(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+    path = tmp_path / "foo" / "bar" / "baz"
+    file.to_directory(path)
+    file.commit()
+    assert path.exists()
+
+
+def test_file_commit_fake(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+    file.fake(True)
+    result = file.commit()
+    assert file.state == "persisted"
+    assert result["destination"].exists() is False
+
+
+def test_file_commit_signals(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+
+    before_called = False
+    after_called = False
+
+    def signal_handler_before(file: File):
+        nonlocal before_called
+        before_called = True
+
+    def signal_handler_after(file: File, result: FileCommitResult):
+        nonlocal after_called
+        after_called = True
+
+    before_file_commit.connect(signal_handler_before)
+    after_file_commit.connect(signal_handler_after)
+
+    assert before_called is False
+    assert after_called is False
+
+    file.commit()
+
+    assert before_called is True
+    assert after_called is True
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows not supported (To be resolved)")
+def test_file_commit_fail(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+    old_permissions = tmp_path.stat().st_mode
+    tmp_path.chmod(stat.S_IREAD)
+
+    with pytest.raises(MissingPermissions):
+        file.commit()
+
+    tmp_path.chmod(old_permissions)
+
+
+def test_file_delete_file_not_exist(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+    with pytest.raises(FileNotFoundError):
+        file.delete()
+
+
+def test_file_delete(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+
+    file.commit()
+    assert file.state == "persisted"
+    assert file.compute_destination().exists() is True
+
+    file.delete()
+    print(file.__dict__)
+    assert file.state == "deleted"
+    assert file.compute_destination().exists() is False
+
+
+def test_file_delete_signal(file: File, tmp_path: pathlib.Path):
+    fill_fake_information(file, tmp_path)
+
+    file.commit()
+    assert file.state == "persisted"
+    assert file.compute_destination().exists() is True
+
+    was_called = False
+
+    def signal_handler(file: File):
+        nonlocal was_called
+        was_called = True
+
+    on_file_deleted.connect(signal_handler)
+
+    file.delete()
+    assert file.state == "deleted"
+    assert was_called is True

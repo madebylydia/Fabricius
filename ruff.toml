@@ -1,0 +1,5 @@
+line-length = 99
+target-version = "py312"
+
+[lint]
+ignore = ["F403"]

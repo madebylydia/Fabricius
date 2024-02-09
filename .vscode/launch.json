@@ -4,21 +4,12 @@
     {
       "name": "Launch tests",
       "type": "python",
-      "module": "unittest",
-      "args": [
-        "--failfast"
-      ],
+      "module": "poethepoet",
+      "args": ["test"],
+      "cwd": "${workspaceFolder}",
       "request": "launch",
       "console": "integratedTerminal",
       "justMyCode": true
-    },
-    {
-      "type": "firefox",
-      "request": "launch",
-      "reAttach": true,
-      "preLaunchTask": "Build docs",
-      "name": "Launch docs",
-      "file": "${workspaceFolder}/docs/build/html/index.html"
     }
   ]
 }

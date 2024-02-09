@@ -1,6 +1,6 @@
 # Fabricius
 
-Fabricius - A Python 3.10 Project Template engine with superpowers!
+Fabricius - A [Py3K](https://peps.python.org/pep-3000/).12, Project Template engine with superpowers!
 
 > :warning: Fabricius is a work in progress! Please, play with it with a grain of salt; expect bugs, crashes, non-documented portion of the application & more unexpected behavior.
 
@@ -8,34 +8,22 @@ Documentation: <https://fabricius.readthedocs.io>
 
 > :warning: Fabricius still does not comes with it's CLI tool! It is a work in progress!
 
-## Project Status Update
+## Defining terms
 
-### #1. Slowing down.
+It is important to define the terms that Fabricius uses.
 
-Hi! Fabricius's developer writing.
+1. **Template** : A template lays the base of an application, it is what will be renderer with Fabricius using the data it'll be given.
+    - Rules:
+        - Only one composer can be used
+        - Only one reader can be set (Eg. either Fabricius's builtin reader or CookieCutter, but not both).
 
-This is to report how things are going for Fabricius, maybe it get interest for some peoples, or not, well, whoever you might be, if you're reading this, thanks for passing by :)
+2. **Repository** : Contains one or more templates. All templates that are contained inside the repository can be rendered.
+3. **Project** : A project is the result of Fabricius rendering a template, it is the final code that has been created.
+    - Rules:
+        - If there is any file existing at the destination, do not overwrite.
+        - Allow atomic creation : Delete all files that were created if needed.
 
-I've been pretty busy recently with life, many things are changing in my life that make poorly available for some free time and I don't have much time to code recently, I try to from time-to-time, but it's rare.
-I've also had some trouble about considering how Fabricius should be built, I don't think the way I've built it is the right way, and I always question myself on how right should things be. I'm happy with certain things, but the overall layout of the application just doesn't feel right to me.
-
-Not that I'm into a full rewrite, but I want to rework the way I'm building the application, and that takes time and a lot of consideration about how to handle things again.
-
-Maybe when I have some free time again, I will do stuff here and there, but I really don't want to give promises about the future of this application. I'm considering of switching languages to something more "mature" and interesting to me, plus that I've lost the reason why I was building this app in the end, but it's not a big change to me.
-
-So overall, Fabricius is more or less frozen for the time being because of my personal life. I wish I could make this app ASAP and deliver it to everyone as to release a work I've been very hyped to work on.
-
-I'm not particularly interested in someone else taking up my work (If any??) but... there's a license so... if I ever don't keep up... code's here!
-
-Thanks for reading, apologizes for these little words, but I hope to "be back" soon enough!
-
-### 2. Going forward!
-
-THINGS ARE GOING CLEANER IN MY HEAD! Finally!
-
-Fabricius is going back to having some awesome time! :) Check out branch I'm working on from time to time (At this time, dev/structure)
-
-## Goals
+## Goals:
 
 1. Create a working project from a project template
 2. Create a fully working CLI using Rich

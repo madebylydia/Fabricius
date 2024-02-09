@@ -12,7 +12,7 @@ BUILDDIR      = build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 livehtml:
-	sphinx-autobuild --watch . --watch ../fabricius "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	sphinx-autobuild --watch . --watch ../fabricius "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) --re-ignore .*/_build\/.*
 
 .PHONY: help Makefile
 

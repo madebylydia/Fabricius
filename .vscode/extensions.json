@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "lextudio.restructuredtext",
+    "trond-snekvik.simple-rst",
+    "editorconfig.editorconfig",
+    "charliermarsh.ruff"
+  ]
+}
