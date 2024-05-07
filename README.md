@@ -8,32 +8,16 @@ Documentation: <https://fabricius.readthedocs.io>
 
 > :warning: Fabricius still does not comes with it's CLI tool! It is a work in progress!
 
-## Project Status Update
-
-### #1. Slowing down.
-
-Hi! Fabricius's developer writing.
-
-This is to report how things are going for Fabricius, maybe it get interest for some peoples, or not, well, whoever you might be, if you're reading this, thanks for passing by :)
-
-I've been pretty busy recently with life, many things are changing in my life that make poorly available for some free time and I don't have much time to code recently, I try to from time-to-time, but it's rare.
-I've also had some trouble about considering how Fabricius should be built, I don't think the way I've built it is the right way, and I always question myself on how right should things be. I'm happy with certain things, but the overall layout of the application just doesn't feel right to me.
-
-Not that I'm into a full rewrite, but I want to rework the way I'm building the application, and that takes time and a lot of consideration about how to handle things again.
-
-Maybe when I have some free time again, I will do stuff here and there, but I really don't want to give promises about the future of this application. I'm considering of switching languages to something more "mature" and interesting to me, plus that I've lost the reason why I was building this app in the end, but it's not a big change to me.
-
-So overall, Fabricius is more or less frozen for the time being because of my personal life. I wish I could make this app ASAP and deliver it to everyone as to release a work I've been very hyped to work on.
-
-I'm not particularly interested in someone else taking up my work (If any??) but... there's a license so... if I ever don't keep up... code's here!
-
-Thanks for reading, apologizes for these little words, but I hope to "be back" soon enough!
-
-### 2. Going forward!
-
-THINGS ARE GOING CLEANER IN MY HEAD! Finally!
-
-Fabricius is going back to having some awesome time! :) Check out branch I'm working on from time to time (At this time, dev/structure)
+> [!CAUTION]  
+> As of 7 March 2024, this repository has been officially dropped and is **no longer supported**.
+> The reasons are:
+> - I do not want to deal with Python for my personnal projects.
+> - I believe there's no real need for me to keep this project "as alive" when I do not plan to commit ever again.
+>
+> I feel truly sorry for the person I might disappoint here. I know a few peoples was following the project and had interest. I just don't feel like keeping up with Python and how unsupportive it feels toward my programming goals.
+> I also feel disappointed toward myself as, that mean, I never could achieve the goal I was trying to reach for. But this feel like a necessity for me. Farewell, Python.
+>
+> As such, this repository will now be archived. I hope you understand this decision. If you'd like to, feel free to fork this repository, make changes, and enjoy it yourself.
 
 ## Goals
 
